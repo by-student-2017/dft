@@ -14,7 +14,8 @@
 double H = 1.00; //distace of slit [nm]
 double sigma_ss = 0.34; // [nm]
 unsigned int nstep = 100;
-double dr = (H-sigma_ss)/double(nstep);
+double w_pw = (H-sigma_ss); // pore width [nm]
+double dr = w_pw/double(nstep);
 
 // iteration of rho
 unsigned int cycle_max = 20;
@@ -166,7 +167,7 @@ double mu_b(double rho_b){
 	double mu_id, mu_hs, mu_b_out;
 	mu_id = k*T*std::log(std::pow(lam,3.0)*rho_b);
 	mu_hs = mu_id + mu_ex(rho_b);
-	mu_b_out = mu_hs + rho_b*-1.0*alpha; 
+	mu_b_out = mu_hs - rho_b*alpha; 
 	return mu_b_out;
 }
 
@@ -191,18 +192,18 @@ double drhos_per_drho(double *rho, double r1, double r2, double *r){
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 double xi(double *rho, double r1, double rho_b, double *r){
 	unsigned int j;
-	double rho_fex_int, rho_phi_int;
+	double rho_dfex_int, rho_phi_int;
 	double xi_out;
-	rho_fex_int = 0.0;
-	rho_phi_int = 0.0;
+	rho_dfex_int = 0.0;
+	rho_phi_int  = 0.0;
 	for (j=0; j<nstep; j++) {
 		// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-		rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r)*dr;
-		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r1-r[j]))*dr;
+		rho_dfex_int = rho_dfex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r)*dr;
+		rho_phi_int  = rho_phi_int  + rho[j]*phi_att(std::abs(r1-r[j]))*dr;
 		//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r1,r[j],r) << std::endl;
 	}
-	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_fex_int - rho_phi_int;
-	//std::cout << f_ex(rho_s(rho,r1,r)) << ", " << rho_fex_int << ", " << rho_phi_int << std::endl;
+	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
+	//std::cout << f_ex(rho_s(rho,r1,r)) << ", " << rho_dfex_int << ", " << rho_phi_int << std::endl;
 	return xi_out;
 }
 
