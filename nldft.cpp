@@ -150,7 +150,7 @@ double phi_ext(double z){
 double mu_ex(double rho_b){
 	double y, mu_ex_out;
 	y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
-	mu_ex_out = k*T*(8.0*y-9.0*std::pow(y,2.0)+3.0*std::pow(y,3.0))/std::pow((1.0-y),3.0);
+	mu_ex_out = k*T*(8.0*y-9.0*y*y+3.0*y*y*y)/std::pow((1.0-y),3.0);
 	return mu_ex_out;
 }
 
@@ -167,7 +167,7 @@ double dfex_per_drhos(double rho_s){
         double dfex_per_drhos_out;
 	double eta;
 	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	dfex_per_drhos_out = k*T * ( 4.0-18.0*eta+12.0*eta*eta ) * M_PI*std::pow(d_hs,3.0)/6.0;
+	dfex_per_drhos_out = k*T*(4.0-18.0*eta+12.0*eta*eta)*M_PI*std::pow(d_hs,3.0)/6.0;
 	return dfex_per_drhos_out;
 }
 
@@ -205,56 +205,77 @@ double press_hs(double rho_b){
 	return press_hs_out;
 }
 
+double Maxwell_equal_area_rule(void){
+	unsigned int i,j;
+	unsigned int iter_max_drhob0 = 1000000;
+	unsigned int iter_max_dmue = 5000;
+	double drhob0 = 0.000001;
+	double dmue = 0.01;
+	double threshold_diff = 0.1;
+	double threshold_find = 0.1;
+	//
+	double mu_b_per_epsilon_ff[iter_max_drhob0];
+	double mu_e_per_epsilon_ff,diff,diffp;
+	int flag;
+	double press_b0;
+	double rho_b0;
+	// rho_b vs. mu_b/epsilon_ff
+	for (i=0; i<iter_max_drhob0; i++){
+		rho_b0 = drhob0*double(i+1.0);
+		mu_b_per_epsilon_ff[i] = mu_b(rho_b0)/epsilon_ff;
+		//std::cout << "rho_b0 = "<< rho_b0 << ", mu_b/epsilon_ff = " << mu_b_per_epsilon_ff[i] << std::endl;
+	}
+	// Maxwell equal area rule
+	for (j=0; j<iter_max_dmue; j++){
+		mu_e_per_epsilon_ff = dmue*double(j+1.0) - 25.0;
+		diff = 0.0;
+		flag = 0;
+		for (i=0; i<iter_max_drhob0; i++){
+			diffp = mu_b_per_epsilon_ff[i] - mu_e_per_epsilon_ff;
+			if (diffp > 0.0 && flag != 1) {
+				diff = diff + diffp*drhob0;
+			} else if (diffp <= 0.0) {
+				diff = diff + diffp*drhob0;
+				flag = 1;
+			}
+			//std::cout << diffp << std::endl;
+		}
+		//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
+		if (std::abs(diff) <= threshold_diff) {
+			//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
+			//break;
+		}
+	}
+	// find rho_b0
+	for (i=0; i<iter_max_drhob0; i++){
+		rho_b0 = drhob0*double(i+1.0);
+		if (std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find) {
+			//std::cout << rho_b0 << std::endl;
+			//break;
+		}
+	}
+	//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << std::endl;
+	//std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	return rho_b0;
+}
+
 int main(){
 	unsigned int i,j,k;
 	double w = 0.3;
 	double r[nstep];
-	double mu_b_per_epsilon_ff[1000];
 	double mu_e,diff,diffp;
 	int flag;
-	double rho[nstep];
-	double rho_old[nstep];
+	double rho[nstep], rho_old[nstep];
 	double v_gamma;
-	double press_b;
-	double press_b0;
-	double rho_b;
-	double rho_b0;
-	double pp0;
+	double press_b, press_b0, pp0;
+	double rho_b, rho_b0;
 	// set dr
 	for (i=0; i<nstep; i++){
 		r[i] = sigma_ss/2.0 + (H-sigma_ss/2.0)/nstep*i;
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
-	// rho_b vs. mu_b/epsilon_ff
-	for (i=1; i<=1000; i++){
-		rho_b0 = 0.01*i;
-		mu_b_per_epsilon_ff[i] = mu_b(rho_b0)/epsilon_ff;
-	}
-	// Maxwell equal area rule
-	for (j=0; j<=1000; j++){
-		mu_e = j - 500.0;
-		diff = 0.0;
-		flag = 0;
-		for (i=1; i<=1000; i++){
-			diffp = mu_b_per_epsilon_ff[i] - mu_e;
-			if (diffp < 0.0 && flag != 1) {
-				diff = diff + diffp;
-			} else if (diffp >= 0.0) {
-				diff = diff + diffp;
-				flag = 1;
-			}
-		}
-		if (std::abs(diff) <= 20.0) {
-			//std::cout << mu_e << std::endl;
-			break;
-		}
-	}
-	for (i=1; i<=1000; i++){
-		rho_b0 = 0.01*i;
-		if (std::abs(mu_b(rho_b0)/epsilon_ff - mu_e) <= 0.01) {
-			//std::cout << rho_b << std::endl;
-		}
-	}
+	// set rho_b0
+	//rho_b0 = Maxwell_equal_area_rule();
 	rho_b0 = 0.67;
 	// initialization
 	for (i=0; i<nstep; i++){
@@ -281,7 +302,7 @@ int main(){
 			v_gamma = v_gamma + rho[i];
 		}
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
-		std::cout << "V= " << v_gamma <<  " [nm3]" << std::endl;
+		std::cout << "V= " << v_gamma << std::endl;
 		//
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
