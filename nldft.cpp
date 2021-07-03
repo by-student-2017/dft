@@ -36,7 +36,7 @@ double sigma_sf = 0.3508; // [nm]
 
 // slit pore (graphite)
 double delta = 0.335; // [nm]
-double rho_ss = 11.4; // [nm^-3]
+double rho_ss = 114.0; // [nm^-3] (0.114 [A^-3])
 
 //double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
 double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
@@ -142,9 +142,9 @@ double f_ex(double rho_s){
 //Steele 10-4-3 potential
 double phi_sf(double z){
 	double phi_sf_out;
-	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*
-		delta*( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
-			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
+	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
+				( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
+				(3.0*delta*std::pow((0.61*delta+z),3.0)) );
 	return phi_sf_out;
 }
 
@@ -175,7 +175,7 @@ double dfex_per_drhos(double rho_s){
         double dfex_per_drhos_out;
 	double eta;
 	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	dfex_per_drhos_out = k*T*(4.0-18.0*eta+12.0*eta*eta)*M_PI*std::pow(d_hs,3.0)/6.0;
+	dfex_per_drhos_out = k*T*(4.0-2.0*eta)/std::pow((1-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
 	return dfex_per_drhos_out;
 }
 
