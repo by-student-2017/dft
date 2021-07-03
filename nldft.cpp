@@ -119,7 +119,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_s_out;
 	rho_s_out = 0.0;
 	for (j=0; j<nstep; j++) {
-		rho_s_out = rho_s_out + rho[j]*wi(std::abs(r1-r[j]),i);
+		rho_s_out = rho_s_out + rho[j]*wi(std::abs(r1-r[j]),i)*dr;
 	}
 	return rho_s_out;
 }
@@ -133,7 +133,7 @@ double rho_s(double *rho, double r1, double *r){
 }
 
 double f_ex(double rho_s){
-        double eta, f_ex_out;
+	double eta, f_ex_out;
 	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
 	f_ex_out = k*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
 	return f_ex_out;
@@ -189,7 +189,7 @@ double drhos_per_drho(double *rho, double r1, double r2, double *r){
 
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, int i, double rho_b, double *r){
+double xi(double *rho, double r1, double rho_b, double *r){
 	unsigned int j;
 	double rho_fex_int, rho_phi_int;
 	double xi_out;
@@ -197,12 +197,12 @@ double xi(double *rho, int i, double rho_b, double *r){
 	rho_phi_int = 0.0;
 	for (j=0; j<nstep; j++) {
 		// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-		rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r[i],r[j],r)*dr;
-		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r[i]-r[j]))*dr;
-		//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r[i],r[j],r) << std::endl;
+		rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r)*dr;
+		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r1-r[j]))*dr;
+		//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r1,r[j],r) << std::endl;
 	}
-	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_s(rho,r[i],r)) - rho_fex_int - rho_phi_int;
-	//std::cout << f_ex(rho_s(rho,r[i],r)) << ", " << rho_fex_int << ", " << rho_phi_int << std::endl;
+	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_fex_int - rho_phi_int;
+	//std::cout << f_ex(rho_s(rho,r1,r)) << ", " << rho_fex_int << ", " << rho_phi_int << std::endl;
 	return xi_out;
 }
 
@@ -295,8 +295,8 @@ int main(){
 	rho_b0 = Maxwell_equal_area_rule();
 	// initialization
 	for (i=0; i<nstep; i++){
-		rho[i] = 1e-6/nstep;
-		rho_old[i] = 1e-6/nstep;
+		rho[i] = 1e-6/(nstep*dr);
+		rho_old[i] = 1e-6/(nstep*dr);
 	}
 	// volume and pressure
 	for (k=0; k<100; k++){
@@ -305,10 +305,10 @@ int main(){
 		std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
-				rho[i] = rho_b*std::exp(xi(rho_old,i,rho_b,r)/(k*T));
+				rho[i] = rho_b*std::exp(xi(rho_old,r[i],rho_b,r)/(k*T));
 				rho[i] = w*rho[i] + (1.0-w)*rho_old[i];
 				rho_old[i] = rho[i];
-				//std::cout << i << ", " << rho[i] << std::endl;
+				//std::cout << i << ", " << rho[i] << ", dr = " << r[i] << std::endl;
 			}
 			//std::cout << j << ", " << rho[nstep/2] << std::endl;
 		}
@@ -316,7 +316,7 @@ int main(){
 		v_gamma = 0.0;
 		for (i=0; i<nstep; i++){
 			//std::cout << r[i] << ", " << rho[i] << std::endl;
-			v_gamma = v_gamma + rho[i];
+			v_gamma = v_gamma + rho[i]*dr;
 		}
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		std::cout << "V= " << v_gamma << std::endl;
