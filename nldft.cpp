@@ -11,23 +11,27 @@
 // usage: ./a.out
 
 double H = 1.00; //distace of slit [nm]
-double dH = 0.01;
+double dH = 0.01; //dH = dr = dz in this case, because of one dimension calculation.
 unsigned int nstep = H/dH;
 double sigma_ss = 0.34; // [nm]
 
 unsigned int cycle_max = 20;
 
-//Nitrogen 94.45 [K], 0.3575 [nm], 0.3575
+//Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
+//Argon          118.05 [K](epsilon), 0.3305 [nm](sigma), 0.3390 [nm](d_hs)
+//Nitrogen        94.45 [K](epsilon), 0.3575 [nm](sigma), 0.3575 [nm](d_hs)
 double epsilon_ff = 94.45;
 double sigma_ff = 0.3575;
 double d_hs = 0.3575;
 double rc = 12.8; // cut off
 double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
-//
-double rho_ss = 11.4; // [nm^-3]
+// Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
+// Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
 double epsilon_sf = 53.72; // [K] 
 double sigma_sf = 0.3508; // [nm]
+// slit pore (graphite)
 double delta = 0.335; // [nm]
+double rho_ss = 11.4; // [nm^-3]
 //
 double m = 14.0067/(6.02214076e23) * 2.0;
 double k = 1.0;
@@ -163,10 +167,7 @@ double dfex_per_drhos(double rho_s){
         double dfex_per_drhos_out;
 	double eta;
 	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	dfex_per_drhos_out = k*T * ( (4.0-3.0*eta)/std::pow((1.0-eta),2.0) +
-				     (eta*-3.0/std::pow((1.0-eta),2.0)) +
-				     (eta*(4.0-3.0*eta)/std::pow((1.0-eta),3.0)*2.0) ) 
-		       		 * M_PI*std::pow(d_hs,3.0)/6.0;
+	dfex_per_drhos_out = k*T * ( 4.0-18.0*eta+12.0*eta*eta ) * M_PI*std::pow(d_hs,3.0)/6.0;
 	return dfex_per_drhos_out;
 }
 
@@ -188,8 +189,8 @@ double xi(double *rho, int i, double rho_b, double *r){
 	rho_phi_int = 0.0;
 	for (j=0; j<nstep; j++) {
 		// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-        	rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r[i],r[j],r);
-		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r[i]-r[j]));
+        	rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r[i],r[j],r)*dH;
+		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r[i]-r[j]))*dH;
 		//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r[i],r[j],r) << std::endl;
 	}
 	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_s(rho,r[i],r)) - rho_fex_int - rho_phi_int;
@@ -280,7 +281,7 @@ int main(){
 			v_gamma = v_gamma + rho[i];
 		}
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
-		std::cout << "V= " << v_gamma << std::endl;
+		std::cout << "V= " << v_gamma <<  " [nm3]" << std::endl;
 		//
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
