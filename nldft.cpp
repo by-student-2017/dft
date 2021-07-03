@@ -296,12 +296,12 @@ int main(){
 	rho_b0 = Maxwell_equal_area_rule();
 	// initialization
 	for (i=0; i<nstep; i++){
-		rho[i] = 1e-6/(nstep*dr);
-		rho_old[i] = 1e-6/(nstep*dr);
+		rho[i] = rho_b0/(nstep*dr);
+		rho_old[i] = rho_b0/(nstep*dr);
 	}
 	// volume and pressure
 	for (k=0; k<100; k++){
-		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
+		rho_b = rho_b0 * std::exp(-(10.0-1.0*double(k+1.0)/10.0));
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
