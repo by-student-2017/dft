@@ -10,11 +10,13 @@
 // compiling: c++ nldft.cpp
 // usage: ./a.out
 
+// Adsorbent 
 double H = 1.00; //distace of slit [nm]
 double dH = 0.01; //dH = dr = dz in this case, because of one dimension calculation.
 unsigned int nstep = H/dH;
 double sigma_ss = 0.34; // [nm]
 
+// iteration of rho
 unsigned int cycle_max = 20;
 
 //Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
@@ -25,21 +27,26 @@ double sigma_ff = 0.3575;
 double d_hs = 0.3575;
 double rc = 12.8; // cut off
 double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
+
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
 double epsilon_sf = 53.72; // [K] 
 double sigma_sf = 0.3508; // [nm]
+
 // slit pore (graphite)
 double delta = 0.335; // [nm]
 double rho_ss = 11.4; // [nm^-3]
-//
-double m = 14.0067/(6.02214076e23) * 2.0;
+
+//double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
+double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
 double k = 1.0;
-double kb = 8.61733262e-5; //[eV/K]
-double T = 77.347;
-double h = 4.135667696e-15; //[eVs]
-double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5);
-//
+double kb = 1.38e-23; //[J/K] (8.61733262e-5 [eV/K])
+double T = 77.347; //[K]
+double h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
+// thermal de Broglie wavelength
+double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm]
+// Ref: https://www1.doshisha.ac.jp/~bukka/lecture/statistic/pdftext/std-07.pdf
+
 // alpha = integal phi_att * -1.0
 double alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
@@ -276,7 +283,7 @@ int main(){
 	}
 	// set rho_b0
 	//rho_b0 = Maxwell_equal_area_rule();
-	rho_b0 = 0.67;
+	rho_b0 = 0.50;
 	// initialization
 	for (i=0; i<nstep; i++){
 		rho[i] = 1e-6/nstep;
@@ -308,7 +315,7 @@ int main(){
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		std::cout << "P= " << press_b << std::endl;
 		pp0 = press_b/press_b0;
-		std::cout << "P/P0= " << pp0 << std::endl;
+		//std::cout << "P/P0= " << pp0 << std::endl;
 	}
         return 0;
 }
