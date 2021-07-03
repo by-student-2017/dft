@@ -26,7 +26,8 @@ double epsilon_ff = 94.45;
 double sigma_ff = 0.3575;
 double d_hs = 0.3575;
 double rc = 12.8; // cut off
-double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
+//double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
+double rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
@@ -257,8 +258,9 @@ double Maxwell_equal_area_rule(void){
 	// find rho_b0
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
-		if ( std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
-			 0.05 <= rho_b0*std::pow(d_hs,3.0) &&  rho_b0*std::pow(d_hs,3.0) <= 0.75) {
+		//if ( std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
+		//	 0.05 <= rho_b0*std::pow(d_hs,3.0) &&  rho_b0*std::pow(d_hs,3.0) <= 0.75) {
+		if ( std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find ) {
 			//std::cout << "rho_b0 = " << rho_b0 << ", rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
 			break;
 		}
@@ -279,6 +281,10 @@ int main(){
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
+	// check lam
+	//std::cout << lam << std::endl;
+	// check alpha
+	//std::cout << alpha << std::endl;
 	// set dr
 	for (i=0; i<nstep; i++){
 		//r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
@@ -299,7 +305,7 @@ int main(){
 		std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
-				rho[i] = rho_b*std::exp(xi(rho,i,rho_b,r)/(k*T));
+				rho[i] = rho_b*std::exp(xi(rho_old,i,rho_b,r)/(k*T));
 				rho[i] = w*rho[i] + (1.0-w)*rho_old[i];
 				rho_old[i] = rho[i];
 				//std::cout << i << ", " << rho[i] << std::endl;
@@ -318,8 +324,9 @@ int main(){
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		std::cout << "P= " << press_b << std::endl;
+		std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
-		//std::cout << "P/P0= " << pp0 << std::endl;
+		std::cout << "P/P0= " << pp0 << std::endl;
 	}
         return 0;
 }
