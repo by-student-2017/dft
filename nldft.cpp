@@ -81,7 +81,7 @@ double phi_att(double r){
 	return e;
 }
 
-// Tarazona theory
+// Tarazona theory, Percus-Yevick approximation
 double wi(double r, int i){
 	double wi_out;
 	switch(i){
@@ -117,12 +117,12 @@ double wi(double r, int i){
 
 double rho_si(double *rho, double r1, double *r, int i){
 	unsigned int j;
-	double rho_s_out;
-	rho_s_out = 0.0;
+	double rho_si_out;
+	rho_si_out = 0.0;
 	for (j=0; j<nstep; j++) {
-		rho_s_out = rho_s_out + rho[j]*wi(std::abs(r1-r[j]),i)*dr;
+		rho_si_out = rho_si_out + rho[j]*wi(std::abs(r1-r[j]),i)*dr;
 	}
-	return rho_s_out;
+	return rho_si_out;
 }
 
 double rho_s(double *rho, double r1, double *r){
@@ -173,7 +173,7 @@ double mu_b(double rho_b){
 
 // d(f_ex)/d(rho_s)
 double dfex_per_drhos(double rho_s){
-        double dfex_per_drhos_out;
+	double dfex_per_drhos_out;
 	double eta;
 	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
 	dfex_per_drhos_out = k*T*(4.0-2.0*eta)/std::pow((1-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
@@ -183,6 +183,7 @@ double dfex_per_drhos(double rho_s){
 // d(rho_s)/d(rho)
 double drhos_per_drho(double *rho, double r1, double r2, double *r){
 	double w, drhos_per_drho_out;
+	// Percus-Yevick approximation, Tarazona theory
 	w = wi(std::abs(r1-r2),0) + wi(std::abs(r1-r2),1)*rho_s(rho,r1,r) + wi(std::abs(r1-r2),2)*std::pow(rho_s(rho,r1,r),2.0);
 	drhos_per_drho_out = w/(1.0-rho_si(rho,r2,r,1)-2.0*rho_si(rho,r2,r,2)*rho_s(rho,r2,r));
 	return drhos_per_drho_out;
@@ -278,7 +279,7 @@ int main(){
 	unsigned int i,j,k;
 	double w = 0.3;
 	double r[nstep];
-	double rho[nstep], rho_old[nstep];
+	double rho[nstep], rho_new[nstep];
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
@@ -297,7 +298,7 @@ int main(){
 	// initialization
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
-		rho_old[i] = rho_b0/(nstep*dr);
+		rho_new[i] = 0.0;
 	}
 	// volume and pressure
 	for (k=0; k<100; k++){
@@ -306,10 +307,10 @@ int main(){
 		std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
-				rho[i] = rho_b*std::exp(xi(rho_old,r[i],rho_b,r)/(k*T));
-				rho[i] = w*rho[i] + (1.0-w)*rho_old[i];
-				rho_old[i] = rho[i];
-				//std::cout << i << ", " << rho[i] << ", dr = " << r[i] << std::endl;
+				rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T));
+			}
+			for (i=0; i<nstep; i++){
+				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
 			}
 			//std::cout << j << ", " << rho[nstep/2] << std::endl;
 		}
