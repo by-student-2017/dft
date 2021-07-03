@@ -12,9 +12,9 @@
 
 // Adsorbent 
 double H = 1.00; //distace of slit [nm]
-double dH = 0.01; //dH = dr = dz in this case, because of one dimension calculation.
-unsigned int nstep = H/dH;
 double sigma_ss = 0.34; // [nm]
+unsigned int nstep = 100;
+double dr = (H-sigma_ss)/double(nstep);
 
 // iteration of rho
 unsigned int cycle_max = 20;
@@ -70,10 +70,10 @@ double phi_att(double r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rm){
 		e = -1.0*epsilon_ff;
-	}else if (rm <= r && r < rc){
+	}else if (rm <= r && r <= rc){
 		// Lennard-Jones（LJ) potential
 		e = 4.0*epsilon_ff*( std::pow((sigma_ff/r),12.0) - std::pow((sigma_ff/r),6.0) );
-	}else if (r < rc){
+	}else if (rc < r){
 		e = 0.0;
 	}
 	return e;
@@ -196,8 +196,8 @@ double xi(double *rho, int i, double rho_b, double *r){
 	rho_phi_int = 0.0;
 	for (j=0; j<nstep; j++) {
 		// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-        	rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r[i],r[j],r)*dH;
-		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r[i]-r[j]))*dH;
+		rho_fex_int = rho_fex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r[i],r[j],r)*dr;
+		rho_phi_int = rho_phi_int + rho[j]*phi_att(std::abs(r[i]-r[j]))*dr;
 		//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r[i],r[j],r) << std::endl;
 	}
 	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_s(rho,r[i],r)) - rho_fex_int - rho_phi_int;
@@ -214,18 +214,19 @@ double press_hs(double rho_b){
 
 double Maxwell_equal_area_rule(void){
 	unsigned int i,j;
-	unsigned int iter_max_drhob0 = 1000000;
-	unsigned int iter_max_dmue = 5000;
-	double drhob0 = 0.000001;
+	unsigned int iter_max_drhob0 = 250000;
+	unsigned int iter_max_dmue = 1500;
+	double drhob0 = 0.0001;
 	double dmue = 0.01;
-	double threshold_diff = 0.1;
-	double threshold_find = 0.1;
+	double threshold_diff = 0.01;
+	double threshold_find = 1.0;
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
-	double mu_e_per_epsilon_ff,diff,diffp;
+	double mu_e_per_epsilon_ff;
+	double mu_e,diff,diffp;
 	int flag;
-	double press_b0;
 	double rho_b0;
+	//
 	// rho_b vs. mu_b/epsilon_ff
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
@@ -234,7 +235,7 @@ double Maxwell_equal_area_rule(void){
 	}
 	// Maxwell equal area rule
 	for (j=0; j<iter_max_dmue; j++){
-		mu_e_per_epsilon_ff = dmue*double(j+1.0) - 25.0;
+		mu_e_per_epsilon_ff = dmue*double(j+1.0) - 12.0;
 		diff = 0.0;
 		flag = 0;
 		for (i=0; i<iter_max_drhob0; i++){
@@ -250,19 +251,23 @@ double Maxwell_equal_area_rule(void){
 		//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
 		if (std::abs(diff) <= threshold_diff) {
 			//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
-			//break;
+			break;
 		}
 	}
 	// find rho_b0
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
-		if (std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find) {
-			//std::cout << rho_b0 << std::endl;
-			//break;
+		if ( std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
+			 0.05 <= rho_b0*std::pow(d_hs,3.0) &&  rho_b0*std::pow(d_hs,3.0) <= 0.75) {
+			//std::cout << "rho_b0 = " << rho_b0 << ", rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
+			break;
 		}
 	}
-	//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << std::endl;
-	//std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "Maxwell equal area rule" << std::endl;
+	std::cout << "chemical potential, mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << std::endl;
+	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
+	std::cout << "rho_b0 = " << rho_b0 << std::endl;
 	return rho_b0;
 }
 
@@ -270,37 +275,36 @@ int main(){
 	unsigned int i,j,k;
 	double w = 0.3;
 	double r[nstep];
-	double mu_e,diff,diffp;
-	int flag;
 	double rho[nstep], rho_old[nstep];
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
 	// set dr
 	for (i=0; i<nstep; i++){
-		r[i] = sigma_ss/2.0 + (H-sigma_ss/2.0)/nstep*i;
+		//r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
+		r[i] = sigma_ss/2.0 + dr*double(i); // dr=(H-sigma_ss)/double(nstep)
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	// set rho_b0
-	//rho_b0 = Maxwell_equal_area_rule();
-	rho_b0 = 0.50;
+	rho_b0 = Maxwell_equal_area_rule();
 	// initialization
 	for (i=0; i<nstep; i++){
 		rho[i] = 1e-6/nstep;
 		rho_old[i] = 1e-6/nstep;
 	}
 	// volume and pressure
-	for (k=1; k<=100; k++){
-		rho_b = rho_b0 * std::exp(-double(20-2*k/10));
+	for (k=0; k<100; k++){
+		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "rho_b = " << rho_b << std::endl;
-		for (j=0; j<=cycle_max; j++){
+		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
 				rho[i] = rho_b*std::exp(xi(rho,i,rho_b,r)/(k*T));
 				rho[i] = w*rho[i] + (1.0-w)*rho_old[i];
 				rho_old[i] = rho[i];
+				//std::cout << i << ", " << rho[i] << std::endl;
 			}
-			//std::cout << rho_b << ", " << j << ", " << rho[nstep/2] << std::endl;
+			//std::cout << j << ", " << rho[nstep/2] << std::endl;
 		}
 		//
 		v_gamma = 0.0;
