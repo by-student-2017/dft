@@ -44,7 +44,7 @@ double sigma_sf = 0.3508; // [nm]
 
 // slit pore (graphite)
 double delta = 0.335; // [nm]
-double rho_ss = 114.0; // [nm^-3]
+double rho_ss = 114.0; // [nm^-3], [molecules/nm3]?
 
 //double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
 double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
@@ -135,7 +135,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 			//std::cout << ra << std::endl;
 			//
 			//rho_si_out = rho_si_out + rho[j]*wi(std::abs(r1-r[j]),i)*(4.0*M_PI*r[j]*r[j])*dr;
-			rho_si_out = rho_si_out + rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/10.0))*dr;
+			rho_si_out = rho_si_out + rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/10.0)*(rc/10.0))*dr;
 		}
 	}
 	rho_si_out = rho_si_out / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
@@ -224,8 +224,8 @@ double xi(double *rho, double r1, double rho_b, double *r){
 			//std::cout << ra << std::endl;
 			//
 			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-			rho_dfex_int = rho_dfex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r,ra)*(2.0*M_PI*(double(k)*rc/10.0))*dr;
-			rho_phi_int  = rho_phi_int  + rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*rc/10.0))*dr;
+			rho_dfex_int = rho_dfex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r,ra)*(2.0*M_PI*(double(k)*rc/10.0)*(rc/10.0))*dr;
+			rho_phi_int  = rho_phi_int  + rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*rc/10.0)*(rc/10.0))*dr;
 			//std::cout << rho_dfex_int << ", " << rho_phi_int << std::endl;
 			//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r1,r[j],r) << std::endl;
 		}
@@ -331,7 +331,7 @@ int main(){
 	rho_b0 = Maxwell_construction(r);
 	// initialization
 	for (i=0; i<nstep; i++){
-		rho[i] = rho_b0/(nstep*dr);
+		rho[i] = rho_b0/(nstep*dr)*1e-10;
 		rho_new[i] = 0.0;
 	}
 	// volume and pressure
