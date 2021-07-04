@@ -5,5 +5,5 @@
 ## alpha version
 	c++ nldft.cpp
 	./a.out
-	now, main of nldft is bad !
-	Maxwell constraction routine is not good.
+	nldft routine is not good !
+	Maxwell constraction routine is not good !
