@@ -328,7 +328,7 @@ int main(){
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	// set rho_b0
-	rho_b0 = Maxwell_constraction(r);
+	rho_b0 = Maxwell_construction(r);
 	// initialization
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
