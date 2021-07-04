@@ -5,7 +5,16 @@ set xlabel "Chemical potential (mu_b/epsilon_f_f)"
 set mxtics 5
 set ylabel "Density (rho_b*d_h_s^3)"
 set mytics 5
+
 plot "Maxwell_equal_area_rule_data.txt" u 1:2 w l
+
+set parametric
+set yrange[0:1.2]
+replot -9.93,t w l dt (10,5) t "test data: x=-9.93"
+
+y=0.0034131 
+set trange[-20:5]
+replot t,y w l dt (10,5) t "test data: y=0.0034131"
 
 # pause -1
 
