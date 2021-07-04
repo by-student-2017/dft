@@ -137,7 +137,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 			}
 		}
 	}
-	rho_si_out = rho_si_out / (std::pow((2.0*rc/201.0),2.0));
+	rho_si_out = rho_si_out / (std::pow((2.0*rc),2.0));
 	return rho_si_out;
 }
 
@@ -227,8 +227,8 @@ double xi(double *rho, double r1, double rho_b, double *r){
 			}
 		}
 	}
-	rho_dfex_int = rho_dfex_int / (std::pow((2.0*rc/201.0),2.0));
-	rho_phi_int  = rho_phi_int  / (std::pow((2.0*rc/201.0),2.0));
+	rho_dfex_int = rho_dfex_int / (std::pow((2.0*rc),2.0));
+	rho_phi_int  = rho_phi_int  / (std::pow((2.0*rc),2.0));
 	//
 	xi_out = mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
 	std::cout << xi_out << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
