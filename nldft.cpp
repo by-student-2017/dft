@@ -251,8 +251,8 @@ double Maxwell_equal_area_rule(double *r){
 	unsigned int iter_max_dmue = 1500;
 	double drhob0 = 0.0001;
 	double dmue = 0.01;
-	double threshold_diff = 0.01;
-	double threshold_find = 0.01;
+	double threshold_diff = 0.3;
+	double threshold_find = 0.3;
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
 	double mu_e_per_epsilon_ff;
@@ -276,11 +276,12 @@ double Maxwell_equal_area_rule(double *r){
 		flag = 0;
 		for (i=0; i<iter_max_drhob0; i++){
 			diffp = mu_b_per_epsilon_ff[i] - mu_e_per_epsilon_ff;
-			if (diffp > 0.0 && flag != 1) {
-				diff = diff + diffp*drhob0;
-			} else if (diffp <= 0.0) {
+			if (diffp > 0.0 && flag != 2) {
 				diff = diff + diffp*drhob0;
 				flag = 1;
+			} else if (diffp <= 0.0 && flag != 0) {
+				diff = diff + diffp*drhob0;
+				flag = 2;
 			}
 			//std::cout << diffp << std::endl;
 		}
