@@ -6,4 +6,4 @@
 	c++ nldft.cpp
 	./a.out
 	now, main of nldft is bad !
-	Maxwell equal area rule is soso.
+	Maxwell constraction routine is not good.

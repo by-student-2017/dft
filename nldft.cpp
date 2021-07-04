@@ -245,7 +245,7 @@ double press_hs(double rho_b){
 	return press_hs_out;
 }
 
-double Maxwell_equal_area_rule(double *r){
+double Maxwell_constraction(double *r){
 	unsigned int i,j;
 	unsigned int iter_max_drhob0 = 250000;
 	unsigned int iter_max_dmue = 1500;
@@ -261,7 +261,7 @@ double Maxwell_equal_area_rule(double *r){
 	double rho_b0;
 	//
 	// rho_b vs. mu_b/epsilon_ff
-	std::ofstream ofs("./Maxwell_equal_area_rule_data.txt");
+	std::ofstream ofs("./Maxwell_constraction_data.txt");
 	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
@@ -328,7 +328,7 @@ int main(){
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	// set rho_b0
-	rho_b0 = Maxwell_equal_area_rule(r);
+	rho_b0 = Maxwell_constraction(r);
 	// initialization
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
