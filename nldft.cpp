@@ -20,16 +20,16 @@
 // Adsorbent 
 double H = 1.00; //distace of slit [nm]
 double sigma_ss = 0.34; // [nm]
-unsigned int nstep = 100;
+int nstep = 100;
 double w_pw = (H-sigma_ss); // pore width [nm]
 double dr = w_pw/double(nstep);
 
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
-unsigned int nrmesh = 20; //rho_si and xi function
+int nrmesh = 20; //rho_si and xi function
 
 // iteration of rho
-unsigned int cycle_max = 50;
+int cycle_max = 50;
 
 //Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
 //Argon          118.05 [K](epsilon), 0.3305 [nm](sigma), 0.3390 [nm](d_hs)
@@ -128,7 +128,7 @@ double wi(double r, int i){
 }
 
 double rho_si(double *rho, double r1, double *r, int i){
-	unsigned int j,k;
+	int j,k;
 	double rho_si_out;
 	double ra;
 	rho_si_out = 0.0;
@@ -251,9 +251,9 @@ double press_hs(double rho_b){
 }
 
 double Maxwell_construction(double *r){
-	unsigned int i,j;
-	unsigned int iter_max_drhob0 = 250000;
-	unsigned int iter_max_dmue = 1500;
+	int i,j;
+	int iter_max_drhob0 = 250000;
+	int iter_max_dmue = 1500;
 	double drhob0 = 0.0001;
 	double dmue = 0.01;
 	double threshold_diff = 0.3;
@@ -261,7 +261,7 @@ double Maxwell_construction(double *r){
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
 	double mu_e_per_epsilon_ff;
-	double mu_e,diff,diffp;
+	double diff,diffp;
 	int flag;
 	double rho_b0;
 	//
