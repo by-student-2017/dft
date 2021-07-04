@@ -25,6 +25,7 @@ double w_pw = (H-sigma_ss); // pore width [nm]
 double dr = w_pw/double(nstep);
 
 // assume rho is same value in x-y plane.
+// cylinder and normalized, because of cut off (rc).
 unsigned int nrmesh = 50; //rho_si and xi function
 
 // iteration of rho
