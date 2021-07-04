@@ -26,7 +26,7 @@ double dr = w_pw/double(nstep);
 
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
-unsigned int nrmesh = 50; //rho_si and xi function
+unsigned int nrmesh = 20; //rho_si and xi function
 
 // iteration of rho
 unsigned int cycle_max = 50;
@@ -239,7 +239,7 @@ double xi(double *rho, double r1, double rho_b, double *r){
 	rho_phi_int  = rho_phi_int  / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	//
 	xi_out = k*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
-	//std::cout << k*T*std::log(rho_b) << ", " << xi_out << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
+	std::cout << xi_out << ", " << k*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
 	return xi_out;
 }
 
@@ -319,6 +319,7 @@ int main(){
 	double w = 0.3;
 	double r[nstep];
 	double rho[nstep], rho_new[nstep];
+	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
@@ -345,14 +346,21 @@ int main(){
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
+			std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
 			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T));
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << ", " << xi(rho,r[i],rho_b,r)/(k*T) << std::endl;
 			}
+			diff = 0.0;
 			for (i=0; i<nstep; i++){
 				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
+				diff = diff + rho_new[i]-rho[i];
 			}
+			if (std::abs(diff) < 0.1) {
+				break;
+			}
+			std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
 		//
 		v_gamma = 0.0;
