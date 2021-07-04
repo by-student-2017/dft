@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <cmath>
 
@@ -260,9 +261,12 @@ double Maxwell_equal_area_rule(double *r){
 	double rho_b0;
 	//
 	// rho_b vs. mu_b/epsilon_ff
+	std::ofstream ofs("./Maxwell_equal_area_rule_data.txt");
+	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0)/epsilon_ff;
+		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*std::pow(d_hs,3.0) << std::endl;
 		//std::cout << "rho_b0 = "<< rho_b0 << ", mu_b/epsilon_ff = " << mu_b_per_epsilon_ff[i] << std::endl;
 	}
 	// Maxwell equal area rule
