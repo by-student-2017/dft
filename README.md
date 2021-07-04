@@ -5,4 +5,5 @@
 ## alpha version
 	c++ nldft.cpp
 	./a.out
-  need to check units and routine of Maxwell equal area rule.
+	now, main of nldft is bad !
+	Maxwell equal area rule is soso.
