@@ -123,7 +123,7 @@ double wi(double r, int i){
 }
 
 double rho_si(double *rho, double r1, double *r, int i){
-	unsigned int j,k,l;
+	int j,k,l;
 	double rho_si_out;
 	double ra;
 	rho_si_out = 0.0;
@@ -132,6 +132,8 @@ double rho_si(double *rho, double r1, double *r, int i){
 			for (l=-100; l<=100; l++) {
 				ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*2.0*rc/201.0),2.0) + std::pow((double(l)*2.0*rc/201.0),2.0);
 				ra = std::pow(ra,0.5);
+				//std::cout << ra << std::endl;
+				//
 				//rho_si_out = rho_si_out + rho[j]*wi(std::abs(r1-r[j]),i)*(4.0*M_PI*r[j]*r[j])*dr;
 				rho_si_out = rho_si_out + rho[j]*wi(ra,i)*(std::pow((2.0*rc/201.0),2.0))*dr;
 			}
@@ -209,7 +211,7 @@ double drhos_per_drho(double *rho, double r1, double r2, double *r){
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 double xi(double *rho, double r1, double rho_b, double *r){
-	unsigned int j,k,l;
+	int j,k,l;
 	double rho_dfex_int, rho_phi_int;
 	double xi_out;
 	double ra;
@@ -220,9 +222,12 @@ double xi(double *rho, double r1, double rho_b, double *r){
 			for (l=-100; l<=100; l++) {
 				ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*2.0*rc/201.0),2.0) + std::pow((double(l)*2.0*rc/201.0),2.0);
 				ra = std::pow(ra,0.5);
+				//std::cout << ra << std::endl;
+				//
 				// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
 				rho_dfex_int = rho_dfex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r)*(std::pow((2.0*rc/201.0),2.0))*dr;
 				rho_phi_int  = rho_phi_int  + rho[j]*phi_att(ra)*(std::pow((2.0*rc/201.0),2.0))*dr;
+				//std::cout << rho_dfex_int << ", " << rho_phi_int << std::endl;
 				//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r1,r[j],r) << std::endl;
 			}
 		}
@@ -335,7 +340,7 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
 				rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T));
-				std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i]<< std::endl;
+				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i]<< std::endl;
 			}
 			for (i=0; i<nstep; i++){
 				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
