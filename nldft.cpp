@@ -1,10 +1,11 @@
-#include <fstream>  // for outfile
+#include <fstream>   // for file in and out
 #include <iostream>  // for cout
-#include <cmath> // for log, exp
+#include <cmath>     // for log, exp
+#include <sstream>   // for read parameters
 
-#include "Maxwell_construction.h"
+//#include "maxwell_construction.h"
 
-//using namespace std;
+using namespace std;
 
 //non-local smoothed density approximation：SDA
 //non-local density functional theory（NLDFT)
@@ -20,51 +21,124 @@
 //      (gdb) backtrace
 
 // Adsorbent 
-double H = 1.00; //distace of slit [nm]
-double sigma_ss = 0.34; // [nm]
-int nstep = 100;
-double w_pw = (H-sigma_ss); // pore width [nm]
-double dr = w_pw/double(nstep);
+//double H = 1.00; //distace of slit [nm]
+//double sigma_ss = 0.34; // [nm]
+//int nstep = 100;
+//double w_pw = (H-sigma_ss); // pore width [nm]
+//double dr = w_pw/double(nstep);
+double H;
+double sigma_ss;
+int nstep;
+double w_pw;
+double dr;
 
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
-int nrmesh = 20; //rho_si and xi function
+//int nrmesh = 20; //rho_si and xi function
+int nrmesh;
 
 // iteration of rho
-int cycle_max = 50;
+//int cycle_max = 50;
+int cycle_max;
 
 //Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
 //Argon          118.05 [K](epsilon), 0.3305 [nm](sigma), 0.3390 [nm](d_hs)
 //Nitrogen        94.45 [K](epsilon), 0.3575 [nm](sigma), 0.3575 [nm](d_hs)
-double epsilon_ff = 94.45;
-double sigma_ff = 0.3575;
-double d_hs = 0.3575;
-double rc = 1.28; // [nm],cut off, (12.8 [A])
+//extern double epsilon_ff = 94.45;
+//double sigma_ff = 0.3575;
+//extern double d_hs = 0.3575; // Maxwell_construction()
+//double rc = 1.28; // [nm],cut off, (12.8 [A])
+double epsilon_ff;
+double sigma_ff;
+double d_hs;
+double rc;
+
 //double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
-double rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
+//double rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
+double rm;
 
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
-double epsilon_sf = 53.72; // [K] 
-double sigma_sf = 0.3508; // [nm]
+//double epsilon_sf = 53.72; // [K] 
+//double sigma_sf = 0.3508; // [nm]
+double epsilon_sf;
+double sigma_sf;
 
 // slit pore (graphite)
-double delta = 0.335; // [nm]
-double rho_ss = 114.0; // [nm^-3], [molecules/nm3]?
+//double delta = 0.335; // [nm]
+//double rho_ss = 114.0; // [nm^-3], [molecules/nm3]?
+double delta;
+double rho_ss;
 
 //double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
-double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
+//double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
+double m;
 double k = 1.0;
 double kb = 1.38e-23; //[J/K] (8.61733262e-5 [eV/K])
-double T = 77.347; //[K]
+//extern double T = 77.347; //[K]
+double T;
 double h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
 // thermal de Broglie wavelength
-double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm]
+//extern double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
+double lam;
 // Ref: https://www1.doshisha.ac.jp/~bukka/lecture/statistic/pdftext/std-07.pdf
 
 // alpha = integal phi_att * -1.0
-double alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
-	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
+//extern double alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
+//	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
+double alpha;
+
+void read_parameters(void){
+	std::ifstream ifs("parameters.txt");
+	std::string str;
+	double num[20];
+	int i,j;
+	j = 0;
+	while(getline(ifs,str)){
+		std::string tmp;
+		std::istringstream stream(str);
+		i = 0;
+		while(getline(stream,tmp,'=')){
+			if (i == 1){
+				num[j] = atof(tmp.c_str());
+				//std::cout<< num[j] << std::endl;
+			}
+			i++;
+		}
+		j++;
+	}
+	//
+	H = num[0]; //distace of slit [nm]
+	sigma_ss = num[1]; // [nm]
+	nstep = int(num[2]);
+	nrmesh = int(num[3]);
+	cycle_max = int(num[4]);
+	epsilon_ff = num[5]; // [K]
+	sigma_ff = num[6]; // [nm]
+	d_hs = num[7]; // [nm]
+	rc = num[8]; // [nm],cut off, (12.8 [A])
+	epsilon_sf = num[9]; // [K]
+	sigma_sf = num[10]; // [nm]
+	delta = num[11]; // nm
+	rho_ss = num[12]; // [nm^-3], [mulecules/nm3]
+	m = num[13]; // [kg]
+	T = num[14]; // [K]
+	
+	w_pw = (H-sigma_ss); // pore width [nm]
+	dr = w_pw/double(nstep);
+	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
+	
+	// thermal de Broglie wavelength
+	lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
+	
+	// alpha = integal phi_att * -1.0
+	alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
+		( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
+	
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "thermal de Broglie wavelength = " << lam << " [nm]" << std::endl;
+	std::cout << "integal phi_att * -1.0 = alpha = " << alpha << std::endl;
+}
 
 double ingegral_simpson(double *f, int n, double dx){
 	if( (n+1)%2 == 1 ){
@@ -97,7 +171,7 @@ double d_bh(void){
 }
 
 double phi_att(double r){
-        double e;
+	double e;
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rm){
 		e = -1.0*epsilon_ff;
@@ -150,6 +224,8 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_out;
 	double ra;
 	rho_si_out = 0.0;
+	double rho_si_int_j[nstep];
+	double rho_si_int_k[nrmesh];
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<=nrmesh; k++) {
 			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh)),2.0);
@@ -157,9 +233,15 @@ double rho_si(double *rho, double r1, double *r, int i){
 			//std::cout << ra << std::endl;
 			//
 			//rho_si_out = rho_si_out + rho[j]*wi(std::abs(r1-r[j]),i)*(4.0*M_PI*r[j]*r[j])*dr;
-			rho_si_out = rho_si_out + rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh))*(rc/double(nrmesh)))*dr;
+			//rho_si_out = rho_si_out + rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh))*(rc/double(nrmesh)))*dr;
+			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
 		}
+		//ingegral_simpson(double *f, int n, double dx)
+		rho_si_int_j[j] = ingegral_simpson(rho_si_int_k, nrmesh, (rc/double(nrmesh)));
 	}
+	//ingegral_simpson(double *f, int n, double dx)
+	rho_si_out = ingegral_simpson(rho_si_int_j, nstep, dr);
+	//
 	rho_si_out = rho_si_out / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	return rho_si_out;
 }
@@ -240,6 +322,8 @@ double xi(double *rho, double r1, double rho_b, double *r){
 	double ra;
 	rho_dfex_int = 0.0;
 	rho_phi_int  = 0.0;
+	double rho_dfex_int_j[nstep], rho_phi_int_j[nstep];
+	double rho_dfex_int_k[nrmesh], rho_phi_int_k[nrmesh];
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nrmesh; k++) {
 			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh)),2.0);
@@ -251,12 +335,23 @@ double xi(double *rho, double r1, double rho_b, double *r){
 			rho_phi_int  = rho_phi_int  + rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh))*(rc/double(nrmesh)))*dr;
 			//std::cout << rho_dfex_int << ", " << rho_phi_int << std::endl;
 			//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r1,r[j],r) << std::endl;
+			//
+			rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r,ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
+			rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
 		}
+		//ingegral_simpson(double *f, int n, double dx)
+		rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, nrmesh, (rc/double(nrmesh)));
+		rho_phi_int_j[j]  = ingegral_simpson(rho_phi_int_k, nrmesh, (rc/double(nrmesh)));
 	}
+	//ingegral_simpson(double *f, int n, double dx)
+	rho_dfex_int = ingegral_simpson(rho_dfex_int_j, nstep, dr);
+	rho_phi_int  = ingegral_simpson(rho_phi_int_j, nstep, dr);
+	//
 	rho_dfex_int = rho_dfex_int / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	rho_phi_int  = rho_phi_int  / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	//
 	xi_out = k*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
+	std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
 	std::cout << xi_out << ", " << k*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
 	return xi_out;
 }
@@ -335,16 +430,14 @@ double Maxwell_construction(double *r){
 int main(){
 	int i,j,k;
 	double w = 0.3;
-	double r[nstep];
-	double rho[nstep], rho_new[nstep];
 	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
-	// check lam
-	//std::cout << lam << std::endl;
-	// check alpha
-	//std::cout << alpha << std::endl;
+	//
+	read_parameters();
+	double r[nstep];
+	double rho[nstep], rho_new[nstep];
 	// set dr
 	for (i=0; i<nstep; i++){
 		//r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
@@ -353,6 +446,7 @@ int main(){
 	}
 	// set rho_b0
 	rho_b0 = Maxwell_construction(r);
+	//std::cout << rho_b0 << std::endl;
 	// initialization
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
@@ -364,11 +458,11 @@ int main(){
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
-			std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
 			for (i=0; i<nstep; i++){
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T));
+				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << ", " << xi(rho,r[i],rho_b,r)/(k*T) << std::endl;
+				std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
+				std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
@@ -378,6 +472,7 @@ int main(){
 			if (std::abs(diff) < 0.1) {
 				break;
 			}
+			std::cout << "--------------------------------------------------" << std::endl;
 			std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
 		//
