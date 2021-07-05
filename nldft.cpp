@@ -1,6 +1,8 @@
-#include <fstream>
-#include <iostream>
-#include <cmath>
+#include <fstream>  // for outfile
+#include <iostream>  // for cout
+#include <cmath> // for log, exp
+
+#include "Maxwell_construction.h"
 
 //using namespace std;
 
@@ -63,6 +65,22 @@ double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm]
 // alpha = integal phi_att * -1.0
 double alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
+
+double ingegral_simpson(double *f, int n, double dx){
+	if( (n+1)%2 == 1 ){
+		std::cout << "Error, plase change number of data to even" << std::endl;
+	}
+	double sum;
+	sum = f[0] + f[n];
+	int i;
+	for(i=1; i<n; i+=2){
+		sum += 4.0 * f[i];
+	}
+	for(i=2; i<n; i+=2){
+		sum += 2.0 * f[i];
+	}
+	return (dx/3.0)*sum;
+}
 
 //Barker-Henderson model
 double d_bh(void){
@@ -315,7 +333,7 @@ double Maxwell_construction(double *r){
 }
 
 int main(){
-	unsigned int i,j,k;
+	int i,j,k;
 	double w = 0.3;
 	double r[nstep];
 	double rho[nstep], rho_new[nstep];
