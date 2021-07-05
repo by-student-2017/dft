@@ -464,6 +464,7 @@ int main(){
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
 	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov << "# P/P0, Vgamma" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, Vgamma" << std::endl;
 	for (k=0; k<100; k++){
