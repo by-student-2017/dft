@@ -11,6 +11,15 @@ using namespace std;
 //non-local density functional theory（NLDFT)
 //Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
 
+
+// Note
+// This routine assumes that rho, etc is same value in x-y plane.
+// Because of cut off (rc), it calculate circle and normalize circle in x-y plane.
+// Units are fundamentaly [K] and [nm] in this routine.
+
+// There are many imperfections, so I hope someone can make it better with a CC0 license. 
+// It seems that this code is the first in the world at present (2021/7/5) to be released on CC0 even in NLDFT. 
+
 // compiling: c++ nldft.cpp
 // usage: ./a.out
 
