@@ -11,7 +11,6 @@ using namespace std;
 //non-local density functional theory（NLDFT)
 //Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
 
-
 // Note
 // This routine assumes that rho, etc is same value in x-y plane.
 // Because of cut off (rc), it calculate circle and normalize circle in x-y plane.
@@ -360,8 +359,8 @@ double xi(double *rho, double r1, double rho_b, double *r){
 	rho_phi_int  = rho_phi_int  / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	//
 	xi_out = k*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
-	std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
-	std::cout << xi_out << ", " << k*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
+	//std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
+	//std::cout << xi_out << ", " << k*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
 	return xi_out;
 }
 
@@ -462,16 +461,21 @@ int main(){
 		rho_new[i] = 0.0;
 	}
 	// volume and pressure
+	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
+	ofsppov << "# w = (H-sigma_ss) = pore width = " << w << " [nm]" << std::endl;
+	ofsppov << "# P/P0, Vgamma" << std::endl;
+	std::cout << "w = (H-sigma_ss) = pore width = " << w << " [nm]" << std::endl;
+	std::cout << "P/P0, Vgamma" << std::endl;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		std::cout << "--------------------------------------------------" << std::endl;
-		std::cout << "rho_b = " << rho_b << std::endl;
+		//std::cout << "--------------------------------------------------" << std::endl;
+		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
-				std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
+				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
@@ -481,8 +485,8 @@ int main(){
 			if (std::abs(diff) < 0.1) {
 				break;
 			}
-			std::cout << "--------------------------------------------------" << std::endl;
-			std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
+			//std::cout << "--------------------------------------------------" << std::endl;
+			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
 		//
 		v_gamma = 0.0;
@@ -491,14 +495,16 @@ int main(){
 			v_gamma = v_gamma + rho[i]*dr;
 		}
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
-		std::cout << "V= " << v_gamma << std::endl;
+		//std::cout << "V= " << v_gamma << std::endl;
 		//
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
-		std::cout << "P= " << press_b << std::endl;
-		std::cout << "P0= " << press_b0 << std::endl;
+		//std::cout << "P= " << press_b << std::endl;
+		//std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
-		std::cout << "P/P0= " << pp0 << std::endl;
+		//std::cout << "P/P0= " << pp0 << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << std::endl;
 	}
 	return 0;
 }
