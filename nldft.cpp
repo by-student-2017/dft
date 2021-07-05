@@ -473,19 +473,19 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			for (i=0; i<nstep/2; i++){
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occures inf.
+			for (i=0; i<=(nstep-1)/2; i++){
+				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
 			diff = 0.0;
-			for (i=0; i<nstep/2; i++){
+			for (i=0; i<=(nstep-1)/2; i++){
 				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				diff = diff + std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/(nstep/2)*100.0) < 5.0 ) {
+			if ( (diff/nstep*100.0) < 5.0 ) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
