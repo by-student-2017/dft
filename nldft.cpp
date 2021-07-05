@@ -480,9 +480,9 @@ int main(){
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
 				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
-				diff = diff + rho_new[i]-rho[i];
+				diff = diff + std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if (std::abs(diff) < 0.1) {
+			if ( (diff/nstep*100.0) < 5.0 ) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -495,6 +495,7 @@ int main(){
 			v_gamma = v_gamma + rho[i]*dr;
 		}
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		if (v_gamma < 0) { v_gamma = 0.0; }
 		//std::cout << "V= " << v_gamma << std::endl;
 		//
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;

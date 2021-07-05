@@ -1,8 +1,8 @@
 00_H=1.00
 01_sigma_ss=0.34
-02_nstep=101
-03_nrmesh=21
-04_cycle_max=50
+02_nstep=5
+03_nrmesh=5
+04_cycle_max=1000
 05_epsilon_ff=94.45
 06_sigma_ff=0.3575
 07_d_hs=0.3575
