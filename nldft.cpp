@@ -474,7 +474,7 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			for (i=0; i<nstep/2; i++){
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occure inf.
+				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occures inf.
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
