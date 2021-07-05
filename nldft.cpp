@@ -462,9 +462,9 @@ int main(){
 	}
 	// volume and pressure
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
-	ofsppov << "# w = (H-sigma_ss) = pore width = " << w << " [nm]" << std::endl;
+	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov << "# P/P0, Vgamma" << std::endl;
-	std::cout << "w = (H-sigma_ss) = pore width = " << w << " [nm]" << std::endl;
+	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, Vgamma" << std::endl;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
