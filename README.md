@@ -1,6 +1,6 @@
-# dft
+# dft (CC0 license)
 
-## Development version. (I want someone to develop QSDFT (CC0 license).
+## Development version. (I want someone to develop QSDFT by CC0 license).
 
 ## alpha version
 	c++ nldft.cpp
