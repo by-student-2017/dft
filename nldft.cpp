@@ -483,9 +483,9 @@ int main(){
 			for (i=0; i<nstep/2; i++){
 				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0 ) {
+			if ( (diff/(nstep/2)*100.0) < 5.0 ) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
