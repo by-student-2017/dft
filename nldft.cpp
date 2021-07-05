@@ -13,7 +13,7 @@ using namespace std;
 
 // Note
 // This routine assumes that rho, etc is same value in x-y plane.
-// Because of cut off (rc), it calculate circle and normalize circle in x-y plane.
+// Because of cut off (rc), it calculate circle in x-y plane.
 // Units are fundamentaly [K] and [nm] in this routine.
 
 // There are many imperfections, so I hope someone can make it better with a CC0 license. 
@@ -250,7 +250,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	//ingegral_simpson(double *f, int n, double dx)
 	rho_si_out = ingegral_simpson(rho_si_int_j, nstep, dr);
 	//
-	rho_si_out = rho_si_out / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
+	//rho_si_out = rho_si_out / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	return rho_si_out;
 }
 
@@ -355,8 +355,8 @@ double xi(double *rho, double r1, double rho_b, double *r){
 	rho_dfex_int = ingegral_simpson(rho_dfex_int_j, nstep, dr);
 	rho_phi_int  = ingegral_simpson(rho_phi_int_j, nstep, dr);
 	//
-	rho_dfex_int = rho_dfex_int / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
-	rho_phi_int  = rho_phi_int  / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
+	//rho_dfex_int = rho_dfex_int / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
+	//rho_phi_int  = rho_phi_int  / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	//
 	xi_out = k*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
 	//std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
@@ -472,16 +472,18 @@ int main(){
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
-			for (i=0; i<nstep; i++){
+			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
+			for (i=0; i<nstep/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
 			diff = 0.0;
-			for (i=0; i<nstep; i++){
+			for (i=0; i<nstep/2; i++){
 				rho[i] = w*rho_new[i] + (1.0-w)*rho[i];
-				diff = diff + std::abs((rho_new[i]-rho[i])/rho[i]);
+				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
 			if ( (diff/nstep*100.0) < 5.0 ) {
 				break;
@@ -491,9 +493,9 @@ int main(){
 		}
 		//
 		v_gamma = 0.0;
-		for (i=0; i<nstep; i++){
+		for (i=0; i<nstep/2; i++){
 			//std::cout << r[i] << ", " << rho[i] << std::endl;
-			v_gamma = v_gamma + rho[i]*dr;
+			v_gamma = v_gamma + 2.0*rho[i]*dr;
 		}
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		if (v_gamma < 0) { v_gamma = 0.0; }
