@@ -44,6 +44,11 @@ double dr;
 // cylinder and normalization, because of cut off (rc).
 //int nrmesh = 20; //rho_si and xi function
 int nrmesh;
+//int ndmesh = d_hs*nrmesh/rc
+int ndmesh;
+
+double drc;
+double dd;
 
 // iteration of rho
 //int cycle_max = 50;
@@ -135,6 +140,12 @@ void read_parameters(void){
 	w_pw = (H-sigma_ss); // pore width [nm]
 	dr = w_pw/double(nstep);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
+	
+	ndmesh = 2*d_hs*nrmesh/rc;
+	if ( ndmesh%2 == 0) { ndmesh = ndmesh + 1; }
+	
+	dd = 2.0*d_hs/double(ndmesh);
+	drc = rc/double(nrmesh);
 	
 	// thermal de Broglie wavelength
 	lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
@@ -229,28 +240,23 @@ double wi(double r, int i){
 
 double rho_si(double *rho, double r1, double *r, int i){
 	int j,k;
-	double rho_si_out;
-	double ra;
-	rho_si_out = 0.0;
-	double rho_si_int_j[nstep];
-	double rho_si_int_k[nrmesh];
-	for (j=0; j<nstep; j++) {
-		for (k=0; k<=nrmesh; k++) {
-			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh)),2.0);
+	double rho_si_out = 0.0;
+	double ra = 0.0;
+	double rho_si_int_j[nstep+1];
+	double rho_si_int_k[ndmesh+1];
+	//double dd = 2.0*d_hs/double(ndmesh);
+	for (j=0; j<=nstep; j++) {
+		for (k=0; k<=ndmesh; k++) {
+			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
 			ra = std::pow(ra,0.5);
-			//std::cout << ra << std::endl;
-			//
-			//rho_si_out = rho_si_out + rho[j]*wi(std::abs(r1-r[j]),i)*(4.0*M_PI*r[j]*r[j])*dr;
-			//rho_si_out = rho_si_out + rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh))*(rc/double(nrmesh)))*dr;
-			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
+			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd));
+			//std::cout << rho_si_int_k[k] << ", " << ra << ", " << wi(ra,i) << std::endl;
 		}
 		//ingegral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = ingegral_simpson(rho_si_int_k, nrmesh, (rc/double(nrmesh)));
+		rho_si_int_j[j] = ingegral_simpson(rho_si_int_k, nrmesh, dd);
 	}
 	//ingegral_simpson(double *f, int n, double dx)
 	rho_si_out = ingegral_simpson(rho_si_int_j, nstep, dr);
-	//
-	//rho_si_out = rho_si_out / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	return rho_si_out;
 }
 
@@ -320,47 +326,79 @@ double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
 	return drhos_per_drho_out;
 }
 
+double calc_alpha(double *r){
+	int i,j,k;
+	double alpha_other_method = 0.0;
+	double alpha_int_j[nstep+1];
+	double alpha_int_k[nrmesh+1];
+	double ra;
+	//double drc = rc/double(nrmesh);
+	for (i=0; i<=(nstep-1)/2; i++){
+		for (j=0; j<=nstep; j++) {
+			for (k=0; k<=nrmesh; k++) {
+				ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
+				ra = std::pow(ra,0.5);
+				//std::cout << ra << std::endl;
+				alpha_int_k[k]  = -phi_att(ra)*(2.0*M_PI*(double(k)*drc));
+			}
+			//ingegral_simpson(double *f, int n, double dx)
+			alpha_int_j[j]  = ingegral_simpson(alpha_int_k, nrmesh, drc);
+		}
+		//ingegral_simpson(double *f, int n, double dx)
+		//alpha_other_method  = alpha_other_method + ingegral_simpson(alpha_int_j, nstep, dr)*2.0*dr;
+		alpha_other_method  = alpha_other_method + ingegral_simpson(alpha_int_j, nstep, dr);
+	}
+	alpha_other_method  = alpha_other_method * 2.0 * dr / (H-sigma_ss);
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
+	return alpha_other_method;
+}
+
 // xi include k*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 double xi(double *rho, double r1, double rho_b, double *r){
 	int j,k;
-	double rho_dfex_int, rho_phi_int;
-	double xi_out;
-	double ra;
+	double rho_dfex_int = 0.0;
+	double rho_phi_int = 0.0;
+	double xi_out = 0.0;
+	double ra = 0.0;
 	rho_dfex_int = 0.0;
 	rho_phi_int  = 0.0;
-	double rho_dfex_int_j[nstep], rho_phi_int_j[nstep];
-	double rho_dfex_int_k[nrmesh], rho_phi_int_k[nrmesh];
-	for (j=0; j<nstep; j++) {
-		for (k=0; k<nrmesh; k++) {
-			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh)),2.0);
+	double rho_dfex_int_j[nstep+1];
+	double rho_dfex_int_k[ndmesh+1];
+	double rho_phi_int_j[nstep+1];
+	double rho_phi_int_k[nrmesh+1];
+	//double dd = 2.0*d_hs/double(ndmesh);
+	//double drc = rc/double(nrmesh);
+	for (j=0; j<=nstep; j++) {
+		for (k=0; k<=ndmesh; k++) {
+			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
+			ra = std::pow(ra,0.5);
+			//
+			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
+			rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r,ra)*(2.0*M_PI*(double(k)*dd));
+		}
+		//ingegral_simpson(double *f, int n, double dx)
+		rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
+		//
+		for (k=0; k<=nrmesh; k++) {
+			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*drc),2.0);
 			ra = std::pow(ra,0.5);
 			//std::cout << ra << std::endl;
 			//
-			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-			rho_dfex_int = rho_dfex_int + rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r,ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh))*(rc/double(nrmesh)))*dr;
-			rho_phi_int  = rho_phi_int  + rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh))*(rc/double(nrmesh)))*dr;
-			//std::cout << rho_dfex_int << ", " << rho_phi_int << std::endl;
-			//std::cout << dfex_per_drhos(rho_s(rho,r[j],r)) << ", " << drhos_per_drho(rho,r1,r[j],r) << std::endl;
-			//
-			rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_s(rho,r[j],r))*drhos_per_drho(rho,r1,r[j],r,ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
-			rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
+			rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 		}
 		//ingegral_simpson(double *f, int n, double dx)
-		rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, nrmesh, (rc/double(nrmesh)));
-		rho_phi_int_j[j]  = ingegral_simpson(rho_phi_int_k, nrmesh, (rc/double(nrmesh)));
+		rho_phi_int_j[j]  = ingegral_simpson(rho_phi_int_k, nrmesh, drc);
 	}
 	//ingegral_simpson(double *f, int n, double dx)
 	rho_dfex_int = ingegral_simpson(rho_dfex_int_j, nstep, dr);
 	rho_phi_int  = ingegral_simpson(rho_phi_int_j, nstep, dr);
 	//
-	//rho_dfex_int = rho_dfex_int / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
-	//rho_phi_int  = rho_phi_int  / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
-	//
 	xi_out = k*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r1) - f_ex(rho_s(rho,r1,r)) - rho_dfex_int - rho_phi_int;
-	//std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
-	//std::cout << xi_out << ", " << k*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
+	std::cout << "xi, (k*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
+	std::cout << xi_out << ", " << k*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r1) << ", " << -f_ex(rho_s(rho,r1,r)) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
 	return xi_out;
 }
 
@@ -380,7 +418,7 @@ double Maxwell_construction(double *r){
 	double threshold_diff = 0.3;
 	double threshold_find = 0.3;
 	//
-	double mu_b_per_epsilon_ff[iter_max_drhob0];
+	double mu_b_per_epsilon_ff[iter_max_drhob0+1];
 	double mu_e_per_epsilon_ff;
 	double diff,diffp;
 	int flag;
@@ -389,7 +427,7 @@ double Maxwell_construction(double *r){
 	// rho_b vs. mu_b/epsilon_ff
 	std::ofstream ofs("./Maxwell_construction_data.txt");
 	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
-	for (i=0; i<iter_max_drhob0; i++){
+	for (i=0; i<=iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0)/epsilon_ff;
 		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*std::pow(d_hs,3.0) << std::endl;
@@ -400,7 +438,7 @@ double Maxwell_construction(double *r){
 		mu_e_per_epsilon_ff = dmue*double(j+1.0) - 12.0;
 		diff = 0.0;
 		flag = 0;
-		for (i=0; i<iter_max_drhob0; i++){
+		for (i=0; i<=iter_max_drhob0; i++){
 			diffp = mu_b_per_epsilon_ff[i] - mu_e_per_epsilon_ff;
 			if (diffp > 0.0 && flag != 2) {
 				diff = diff + diffp*drhob0;
@@ -428,7 +466,7 @@ double Maxwell_construction(double *r){
 		}
 	}
 	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "Maxwell equal area rule" << std::endl;
+	std::cout << "Maxwell construction (Maxwell equal area rule)" << std::endl;
 	std::cout << "chemical potential, mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << std::endl;
 	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
 	std::cout << "rho_b0 = " << rho_b0 << std::endl;
@@ -442,21 +480,28 @@ int main(){
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
-	//
+	
 	read_parameters();
-	double r[nstep];
-	double rho[nstep], rho_new[nstep];
+	
+	double r[nstep+1];
+	double rho[nstep+1], rho_new[nstep+1];
+	
 	// set dr
-	for (i=0; i<nstep; i++){
+	for (i=0; i<=nstep; i++){
 		//r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
 		r[i] = sigma_ss/2.0 + dr*double(i); // dr=(H-sigma_ss)/double(nstep)
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
+	
+	// set alpha = -1.0 * integral phi_att
+	//alpha = calc_alpha(r);
+	
 	// set rho_b0
 	rho_b0 = Maxwell_construction(r);
 	//std::cout << rho_b0 << std::endl;
+	
 	// initialization
-	for (i=0; i<nstep; i++){
+	for (i=0; i<=nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
 		rho_new[i] = 0.0;
 	}
@@ -467,8 +512,8 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, Vgamma" << std::endl;
-	for (k=0; k<100; k++){
-		rho_b = rho_b0 * std::exp(-(25.0-2.5*double(k+1.0)/10.0));
+	for (k=0; k<20; k++){
+		rho_b = rho_b0 * std::exp(-(25.0-2.5*double(k+1.0)/2.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
@@ -476,8 +521,8 @@ int main(){
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r[i],rho_b,r)/(k*T)); // xi include k*T*(std::log(rho_b)) type.
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
+				std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
 			diff = 0.0;
 			for (i=0; i<=(nstep-1)/2; i++){
@@ -485,7 +530,7 @@ int main(){
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0 ) {
+			if ( (diff/(nstep+1)*100.0) < 5.0 ) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -493,7 +538,7 @@ int main(){
 		}
 		//
 		v_gamma = 0.0;
-		for (i=0; i<nstep/2; i++){
+		for (i=0; i<=(nstep-1)/2; i++){
 			//std::cout << r[i] << ", " << rho[i] << std::endl;
 			v_gamma = v_gamma + 2.0*rho[i]*dr;
 		}
