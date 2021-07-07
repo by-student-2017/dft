@@ -198,11 +198,11 @@ void read_parameters(void){
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	ndmesh = 2*d_hs*nrmesh/rc;
-	if ( ndmesh <= 3 ) { 
-		ndmesh = 5;
+	if ( ndmesh <= 5 ) { 
+		ndmesh = 7;
 		std::cout << "autoset ndmesh = " << ndmesh << std::endl;
 	}
-	if ( ndmesh%2 == 0) { ndmesh = ndmesh + 1; }
+	if ( ndmesh%2 == 0 ) { ndmesh = ndmesh + 1; }
 	dd = 2.0*d_hs/double(ndmesh-1); // rho_si(), xi()
 	drc = rc/double(nrmesh-1); // xi()
 	
