@@ -198,7 +198,7 @@ void read_parameters(void){
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	ndmesh = 2*d_hs*nrmesh/rc;
-	if ( ndmesh <= 5 ) { 
+	if ( ndmesh < 7 ) { 
 		ndmesh = 7;
 		std::cout << "autoset ndmesh = " << ndmesh << std::endl;
 	}
