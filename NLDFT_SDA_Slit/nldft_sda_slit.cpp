@@ -137,11 +137,12 @@ void read_parameters(void){
 	H = num[0]; //distace of slit [nm]
 	sigma_ss = num[1]; // [nm]
 	nstep = int(num[2]);
-	if ( nstep == 0 ) { nstep = int((H-sigma_ss)/0.017 + 0.5); }
-	if( (nstep+1)%2 == 1 ){
-		std::cout << "Error, plase change number of data to even" << std::endl;
-		std::cout << "autoset even data" << std::endl;
-		nstep = nstep + 1;
+	if ( nstep == 0 ) {
+		nstep = int((H-sigma_ss)/0.017 + 0.5);
+		if ( (nstep+1)%2 == 1 ){
+			nstep = nstep + 1;
+		}
+		std::cout << "autoset nstep = " << nstep << std::endl;
 	}
 	cycle_max = int(num[3]);
 	wmixing = num[4];
@@ -149,14 +150,18 @@ void read_parameters(void){
 	sigma_ff = num[6]; // [nm]
 	d_hs = num[7]; // [nm]
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
-	rc = num[8]; // [nm],cut off (Ref: 5*sigma_ff)
-	if ( rc == 0.0 ) { rc = 5.0*sigma_ff; }
+	rc = num[8]; // [nm], cut off
+	if ( rc == 0.0 ) { 
+		rc = 5.0*sigma_ff;
+		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
+	}
 	nrmesh = int(num[9]);
-	if ( nrmesh == 0 ) { nrmesh = int(rc/0.017 + 0.5); }
-	if( (nrmesh+1)%2 == 1 ){
-		std::cout << "Error, plase change number of data to even" << std::endl;
-		std::cout << "autoset even data" << std::endl;
-		nrmesh = nrmesh + 1;
+	if ( nrmesh == 0 ) {
+		nrmesh = int(rc/0.017 + 0.5);
+		if ( (nrmesh+1)%2 == 1 ){
+			nrmesh = nrmesh + 1;
+		}
+		std::cout << "autoset nrmesh = 5.0*sigma_ff " << nrmesh << " [nm]" << std::endl;
 	}
 	epsilon_sf = num[10]; // [K]
 	sigma_sf = num[11]; // [nm]
@@ -184,7 +189,7 @@ void read_parameters(void){
 
 double ingegral_simpson(double *f, int n, double dx){
 	if( (n+1)%2 == 1 ){
-		std::cout << "Error, plase change number of data to even" << std::endl;
+		std::cout << "Error, plase change number of data to even ( = array[odd] )" << std::endl;
 	}
 	double sum;
 	sum = f[0] + f[n];
@@ -560,6 +565,54 @@ int main(){
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+		//std::cout << "--------------------------------------------------" << std::endl;
+		//std::cout << "rho_b = " << rho_b << std::endl;
+		for (j=0; j<cycle_max; j++){
+			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
+			for (i=0; i<=(nstep-1)/2; i++){
+				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
+				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+			}
+			diff = 0.0;
+			for (i=0; i<=(nstep-1)/2; i++){
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
+				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
+			}
+			if ( (diff/nstep*100.0) < 5.0) {
+				break;
+			}
+			//std::cout << "--------------------------------------------------" << std::endl;
+			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
+		}
+		//
+		//v_gamma = 0.0;
+		//for (i=0; i<nstep/2; i++){
+			//std::cout << r[i] << ", " << rho[i] << std::endl;
+		//	v_gamma = v_gamma + 2.0*rho[i]*dr;
+		//}
+		v_gamma = ingegral_simpson(rho, nstep, dr);
+		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		if (v_gamma < 0) { v_gamma = 0.0; }
+		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
+		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
+		//std::cout << "V= " << v_gamma << std::endl;
+		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
+		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
+		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+		//std::cout << "P= " << press_b << std::endl;
+		//std::cout << "P0= " << press_b0 << std::endl;
+		pp0 = press_b/press_b0;
+		//std::cout << "P/P0= " << pp0 << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << std::endl;
+	}
+	// reverse
+	for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
+		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
