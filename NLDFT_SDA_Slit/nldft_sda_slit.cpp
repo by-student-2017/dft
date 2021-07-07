@@ -274,7 +274,6 @@ double rho_si(double *rho, double r1, double *r, int i){
 	//ingegral_simpson(double *f, int n, double dx)
 	rho_si_out = ingegral_simpson(rho_si_int_j, nstep, dr);
 	//
-	//rho_si_out = rho_si_out / (M_PI*std::pow((rc),2.0)) / (nstep*dr);
 	return rho_si_out;
 }
 
