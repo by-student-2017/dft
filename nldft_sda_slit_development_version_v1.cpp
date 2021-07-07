@@ -198,13 +198,14 @@ void read_parameters(void){
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	ndmesh = 2*d_hs*nrmesh/rc;
-	if ( ndmesh < 7 ) { 
-		ndmesh = 7;
+	if ( ndmesh <= 3 ) { 
+		ndmesh = 5;
 		std::cout << "autoset ndmesh = " << ndmesh << std::endl;
 	}
 	if ( ndmesh%2 == 0 ) { ndmesh = ndmesh + 1; }
-	dd = 2.0*d_hs/double(ndmesh-1); // rho_si(), xi()
+	//dd = 2.0*d_hs/double(ndmesh-1); // rho_si(), xi()
 	drc = rc/double(nrmesh-1); // xi()
+	dd = drc;
 	
 	// thermal de Broglie wavelength
 	lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
