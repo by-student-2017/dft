@@ -2,7 +2,7 @@
 
 ## Development version.
 - For the first time in the world, a significant level of NLDFT code was built in C++ with a CC0 license. 
-- With only five days to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
+- With only six days to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
 - I want someone to develop QSDFT and spinodal versions by CC0 license.
 
 ## beta version (July/7/2021)
