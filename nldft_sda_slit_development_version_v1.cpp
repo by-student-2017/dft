@@ -28,6 +28,7 @@ using namespace std;
 //      (gdb) r
 //      (gdb) backtrace
 
+// ---------- ----------- ------------ ------------
 // Adsorbent 
 //double H = 1.00; //distace of slit [nm]
 //double sigma_ss = 0.34; // [nm]
@@ -39,7 +40,7 @@ double sigma_ss;
 int nstep;
 double w_pw;
 double dr;
-
+// ---------- ----------- ------------ ------------
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
 //int nrmesh = 20; //rho_si and xi function
@@ -50,13 +51,13 @@ int ndmesh;
 double drc;
 //double dd = 2.0*d_hs/double(ndmesh+1);
 double dd;
-
+// ---------- ----------- ------------ ------------
 // iteration of rho
 //int cycle_max = 50;
 int cycle_max;
 //double wmixing = 0.005;
 double wmixing;
-
+// ---------- ----------- ------------ ------------
 //Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
 //Argon          118.05 [K](epsilon), 0.3305 [nm](sigma), 0.3390 [nm](d_hs)
 //Nitrogen        94.45 [K](epsilon), 0.3575 [nm](sigma), 0.3575 [nm](d_hs)
@@ -68,24 +69,24 @@ double epsilon_ff;
 double sigma_ff;
 double d_hs;
 double rc;
-
+// ---------- ----------- ------------ ------------
 //double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
 //double rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 double rm;
-
+// ---------- ----------- ------------ ------------
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
 //double epsilon_sf = 53.72; // [K] 
 //double sigma_sf = 0.3508; // [nm]
 double epsilon_sf;
 double sigma_sf;
-
+// ---------- ----------- ------------ ------------
 // slit pore (graphite)
 //double delta = 0.335; // [nm]
 //double rho_ss = 114.0; // [nm^-3], [molecules/nm3]?, 0.114 [A^-3]
 double delta;
 double rho_ss;
-
+// ---------- ----------- ------------ ------------
 //double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
 //double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
 double m;
@@ -98,11 +99,12 @@ double h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
 //extern double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
 double lam;
 // Ref: https://www1.doshisha.ac.jp/~bukka/lecture/statistic/pdftext/std-07.pdf
-
+// ---------- ----------- ------------ ------------
 // alpha = integal phi_att * -1.0
 //extern double alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 //	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
 double alpha;
+// ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
 double d_bh_calc(double epsilon, double sigma){
@@ -197,6 +199,8 @@ void read_parameters(void){
 	dr = (H-sigma_ss*1.74)/double(nstep+1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
+	// ---------- ----------- ------------ ------------
+	
 	ndmesh = 2*d_hs*nrmesh/rc;
 	if ( ndmesh <= 3 ) { 
 		ndmesh = 5;
@@ -206,6 +210,8 @@ void read_parameters(void){
 	//dd = 2.0*d_hs/double(ndmesh-1); // rho_si(), xi()
 	drc = rc/double(nrmesh-1); // xi()
 	dd = drc;
+	
+	// ---------- ----------- ------------ ------------
 	
 	// thermal de Broglie wavelength
 	lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
