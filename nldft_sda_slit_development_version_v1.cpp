@@ -293,7 +293,9 @@ double rho_si(double *rho, double r1, double *r, int i){
 	rho_si_out = 0.0;
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nrmesh];
+	//double ndmesh = 2*d_hs*nrmesh/rc;
 	//double dd = 2.0*d_hs/double(ndmesh);
+	//dd = drc;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
 			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
@@ -441,8 +443,10 @@ double xi(double *rho, double *r, int i, double rho_b){
 	double rho_dfex_int_j[nstep], rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nrmesh], rho_phi_int_k[nrmesh];
 	double drc = rc/double(nrmesh);
+	//double ndmesh = 2*d_hs*nrmesh/rc;
 	//double dd = 2.0*d_hs/double(ndmesh);
 	//double drc = rc/double(nrmesh);
+	//dd = drc;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
 			ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
