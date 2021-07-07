@@ -3,6 +3,7 @@
 ## Development version.
 - For the first time in the world, a significant level of NLDFT code was built in C++ with a CC0 license. 
 - I want someone to develop QSDFT and spinodal versions by CC0 license.
+- It does not receive financial support from the Foundation. Because no one helped me. 
 
 ## beta version (July/7/2021)
 	cd NLDFT_SDA_Slit
