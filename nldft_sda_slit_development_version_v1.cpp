@@ -201,7 +201,7 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	ndmesh = 2*d_hs*nrmesh/rc;
+	ndmesh = int(2*d_hs*nrmesh/rc);
 	if ( ndmesh < 9 ) { 
 		ndmesh = 9;
 		std::cout << "autoset ndmesh = " << ndmesh << std::endl;
@@ -251,7 +251,7 @@ double phi_att(double r){
 	}else if (rm <= r && r <= rc){
 		// Lennard-Jones（LJ) potential
 		e = 4.0*epsilon_ff*( std::pow((sigma_ff/r),12.0) - std::pow((sigma_ff/r),6.0) );
-	}else if (rc < r){
+	}else {
 		e = 0.0;
 	}
 	//std::cout << e << std::endl;
@@ -304,10 +304,11 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nrmesh];
 	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh);
+	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//dd = drc;
+	rho_si_int_k[0] = 0.0;
 	for (j=0; j<nstep; j++) {
-		for (k=0; k<ndmesh; k++) {
+		for (k=1; k<ndmesh; k++) {
 			//ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
 			ra = (r1-r[j])*(r1-r[j]) + (double(k)*dd)*(double(k)*dd);
 			//ra = std::pow(ra,0.5);
@@ -457,7 +458,13 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		rho_den1j = (1.0 - rho_s1j[j]);
 		rho_den1j = rho_den1j * rho_den1j;
 		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
-		rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
+		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
+		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
+		if ( rho_den2j > 0 ) {
+			rho_den2j = std::sqrt(rho_den2j);
+		} else {
+			rho_den2j = 0.0;
+		}
 		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
 		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
 		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
@@ -470,12 +477,15 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
+	rho_dfex_int_k[0] = 0.0;
+	rho_phi_int_k[0] = 0.0;
 	for (j=0; j<nstep; j++) {
-		for (k=0; k<ndmesh; k++) {
+		for (k=1; k<ndmesh; k++) {
 			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
 			ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*dd)*(double(k)*dd);
 			//ra = std::pow(ra,0.5);
 			ra = std::sqrt(ra);
+			//std::cout << ra << std::endl;
 			//
 			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
 			rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_sj[j])*drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd));
@@ -483,7 +493,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		//ingegral_simpson(double *f, int n, double dx)
 		rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
 		//
-		for (k=0; k<nrmesh; k++) {
+		for (k=1; k<nrmesh; k++) {
 			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
 			ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
 			//ra = std::pow(ra,0.5);
@@ -502,8 +512,13 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	//
 	double xi_out;
 	xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int;
+	// debug
 	//std::cout << "xi, (kb1*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r1), -f_ex(rho_s(rho,r1,r)), -rho_dfex_int, -rho_phi_int" << std::endl;
 	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
+	//if ( std::isnan(rho_sj[i]) || std::isnan(f_ex(rho_sj[i])) || std::isnan(rho_dfex_int) || std::isnan(rho_phi_int) ){
+	//	std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << f_ex(rho_sj[i]) << ", " << rho_dfex_int << ", " << rho_phi_int << std::endl;
+	//	std::exit(1);
+	//}
 	return xi_out;
 }
 
@@ -656,6 +671,7 @@ int main(){
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
 			}
 			diff = 0.0;
 			for (i=0; i<=(nstep-1)/2; i++){
