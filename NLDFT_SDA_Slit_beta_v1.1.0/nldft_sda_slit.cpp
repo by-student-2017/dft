@@ -454,7 +454,8 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		rho_s1j[j] = rho_si(rho, r[i], r, 1);
 		rho_s2j[j] = rho_si(rho, r[i], r, 2);
 		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
-		rho_den1j = (1.0 - rho_s1j[j])*(1.0 - rho_s1j[j]);
+		rho_den1j = (1.0 - rho_s1j[j]);
+		rho_den1j = rho_den1j+rho_den1j;
 		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
 		rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
 		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
