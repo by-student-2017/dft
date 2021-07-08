@@ -149,7 +149,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.032 + 0.5);
+		nstep = int((H-sigma_ss)/0.02 + 0.5);
 		if ( nstep%2 == 0 ){
 			nstep = nstep + 1;
 		}
@@ -175,7 +175,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nrmesh = int(num[9]);
 	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.085 + 0.5);
+		nrmesh = int(rc/0.08 + 0.5);
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
 		}
