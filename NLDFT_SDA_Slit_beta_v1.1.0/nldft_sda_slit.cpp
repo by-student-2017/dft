@@ -402,7 +402,7 @@ double calc_alpha(double *r){
 	double alpha_int_j[nstep];
 	double alpha_int_k[nrmesh];
 	double ra;
-	double drc = rc/double(nrmesh);
+	//double drc = rc/double(nrmesh-1);
 	for (i=0; i<=(nstep-1)/2; i++){
 		for (j=0; j<nstep; j++) {
 			for (k=0; k<nrmesh; k++) {
@@ -443,10 +443,9 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double ra;
 	double rho_dfex_int_j[nstep], rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nrmesh], rho_phi_int_k[nrmesh];
-	double drc = rc/double(nrmesh);
 	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh);
-	//double drc = rc/double(nrmesh);
+	//double dd = 2.0*d_hs/double(ndmesh-1);
+	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
