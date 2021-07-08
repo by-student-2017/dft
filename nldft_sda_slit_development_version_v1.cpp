@@ -214,7 +214,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	// thermal de Broglie wavelength
-	lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
+	//lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
+	lam = h/std::sqrt(2.0*M_PI*m*kb*T)*1e9; //[nm], Maxwell_construction()
 	
 	// alpha = integal phi_att * -1.0
 	alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
@@ -263,23 +264,27 @@ double wi(double r, int i){
 	switch(i){
 		case 0:
 			if (r <= d_hs){
-				wi_out = 3.0/(4.0*M_PI*std::pow(d_hs,3.0));
+				//wi_out = 3.0/(4.0*M_PI*std::pow(d_hs,3.0));
+				wi_out = 3.0/(4.0*M_PI*(d_hs*d_hs*d_hs));
 			} else {
 				wi_out = 0.0;
 			}
 			break;
 		case 1:
 			if (r <= d_hs) {
-				wi_out = 0.475-0.648*(r/d_hs)+0.113*std::pow((r/d_hs),2.0);
+				//wi_out = 0.475-0.648*(r/d_hs)+0.113*std::pow((r/d_hs),2.0);
+				wi_out = 0.475-0.648*(r/d_hs)+0.113*((r/d_hs)*(r/d_hs));
 			} else if (d_hs < r && r <= 2.0*d_hs) {
-				wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*std::pow((r/d_hs),2.0);
+				//wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*std::pow((r/d_hs),2.0);
+				wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*((r/d_hs)*(r/d_hs));
 			} else {
 				wi_out = 0.0;
 			}
 			break;
 		case 2:
 			if (r <= d_hs) {
-				wi_out = 5.0*M_PI*std::pow(d_hs,3.0)/144.0 * (6.0-12.0*(r/d_hs)+5.0*std::pow((r/d_hs),2.0));
+				//wi_out = 5.0*M_PI*std::pow(d_hs,3.0)/144.0 * (6.0-12.0*(r/d_hs)+5.0*std::pow((r/d_hs),2.0));
+				wi_out = 5.0*M_PI*(d_hs*d_hs*d_hs)/144.0 * (6.0-12.0*(r/d_hs)+5.0*((r/d_hs)*(r/d_hs)));
 			} else {
 				wi_out = 0.0;
 			}
@@ -303,8 +308,10 @@ double rho_si(double *rho, double r1, double *r, int i){
 	//dd = drc;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
-			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
-			ra = std::pow(ra,0.5);
+			//ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
+			ra = (r1-r[j])*(r1-r[j]) + (double(k)*dd)*(double(k)*dd);
+			//ra = std::pow(ra,0.5);
+			ra = std::sqrt(ra);
 			//std::cout << ra << std::endl;
 			//
 			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd));
@@ -321,8 +328,11 @@ double rho_si(double *rho, double r1, double *r, int i){
 // smoothed density approximation (SDA)
 double rho_s(double *rho, double r1, double *r){
 	double rho_den1, rho_den2, rho_s_out;
-	rho_den1 = std::pow((1.0 - rho_si(rho,r1,r,1)),2.0);
-	rho_den2 = std::pow((rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2)),0.5);
+	//rho_den1 = std::pow((1.0 - rho_si(rho,r1,r,1)),2.0);
+	rho_den1 = (1.0 - rho_si(rho,r1,r,1));
+	rho_den1 = rho_den1 * rho_den1;
+	//rho_den2 = std::pow((rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2)),0.5);
+	rho_den2 = std::sqrt(rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2));
 	rho_s_out = 2.0*rho_si(rho,r1,r,0)/(1.0 - rho_si(rho,r1,r,1)+rho_den2);
 	return rho_s_out;
 }
@@ -347,14 +357,17 @@ double phi_ext(double z){
 // from Carnahan-Starling (CS) equation of state
 double mu_ex(double rho_b){
 	double y, mu_ex_out;
-	y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
-	mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/std::pow((1.0-y),3.0);
+	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
+	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+	//mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/std::pow((1.0-y),3.0);
+	mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
 	return mu_ex_out;
 }
 
 double mu_b(double rho_b){
 	double mu_id, mu_hs, mu_b_out;
-	mu_id = kb1*T*std::log(std::pow(lam,3.0)*rho_b);
+	//mu_id = kb1*T*std::log(std::pow(lam,3.0)*rho_b);
+	mu_id = kb1*T*std::log((lam*lam*lam)*rho_b);
 	mu_hs = mu_id + mu_ex(rho_b);
 	mu_b_out = mu_hs - rho_b*alpha;
 	return mu_b_out;
@@ -362,8 +375,10 @@ double mu_b(double rho_b){
 
 double f_ex(double rho_s){
 	double eta, f_ex_out;
-	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
+	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
+	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
+	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
+	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/((1.0-eta)*(1.0-eta));
 	return f_ex_out;
 }
 
@@ -371,8 +386,10 @@ double f_ex(double rho_s){
 double dfex_per_drhos(double rho_s){
 	double dfex_per_drhos_out;
 	double eta;
-	eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/std::pow((1.0-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
+	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
+	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
+	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/std::pow((1.0-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
+	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta))*M_PI*(d_hs*d_hs*d_hs)/6.0;
 	return dfex_per_drhos_out;
 }
 
@@ -380,7 +397,6 @@ double dfex_per_drhos(double rho_s){
 double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
 	double w, drhos_per_drho_out;
 	// Percus-Yevick approximation, Tarazona theory
-	//w = wi(std::abs(r1-r2),0) + wi(std::abs(r1-r2),1)*rho_s(rho,r1,r) + wi(std::abs(r1-r2),2)*std::pow(rho_s(rho,r1,r),2.0);
 	w = wi(ra,0) + wi(ra,1)*rho_s(rho,r1,r) + wi(ra,2)*std::pow(rho_s(rho,r1,r),2.0);
 	drhos_per_drho_out = w/(1.0-rho_si(rho,r2,r,1)-2.0*rho_si(rho,r2,r,2)*rho_s(rho,r2,r));
 	return drhos_per_drho_out;
@@ -390,8 +406,8 @@ double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
 double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
 	double w, drhos_per_drho_out;
 	// Percus-Yevick approximation, Tarazona theory
-	//w = wi(std::abs(r1-r2),0) + wi(std::abs(r1-r2),1)*rho_s(rho,r1,r) + wi(std::abs(r1-r2),2)*std::pow(rho_s(rho,r1,r),2.0);
-	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
+	//w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
+	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*(rho_sj*rho_sj);
 	drhos_per_drho_out = w/(1.0-rho_s1j-2.0*rho_s2j*rho_sj);
 	return drhos_per_drho_out;
 }
@@ -406,8 +422,10 @@ double calc_alpha(double *r){
 	for (i=0; i<=(nstep-1)/2; i++){
 		for (j=0; j<nstep; j++) {
 			for (k=0; k<nrmesh; k++) {
-				ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
-				ra = std::pow(ra,0.5);
+				//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
+				ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
+				//ra = std::pow(ra,0.5);
+				ra = std::sqrt(ra);
 				//std::cout << ra << std::endl;
 				alpha_int_k[k]  = -phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 			}
@@ -435,8 +453,10 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		rho_s0j[j] = rho_si(rho, r[i], r, 0);
 		rho_s1j[j] = rho_si(rho, r[i], r, 1);
 		rho_s2j[j] = rho_si(rho, r[i], r, 2);
-		rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
-		rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
+		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
+		rho_den1j = (1.0 - rho_s1j[j])*(1.0 - rho_s1j[j]);
+		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
+		rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
 		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
 	}
 	//
@@ -449,8 +469,10 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	//dd = drc;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
-			ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
-			ra = std::pow(ra,0.5);
+			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
+			ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*dd)*(double(k)*dd);
+			//ra = std::pow(ra,0.5);
+			ra = std::sqrt(ra);
 			//
 			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
 			rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_sj[j])*drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd));
@@ -459,8 +481,10 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
 		//
 		for (k=0; k<nrmesh; k++) {
-			ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
-			ra = std::pow(ra,0.5);
+			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
+			ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
+			//ra = std::pow(ra,0.5);
+			ra = std::sqrt(ra);
 			//std::cout << ra << std::endl;
 			rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 		}
@@ -482,8 +506,10 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 
 double press_hs(double rho_b){
 	double y, press_hs_out;
-	y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
-	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
+	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
+	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
+	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
 	return press_hs_out;
 }
 
@@ -510,7 +536,8 @@ double Maxwell_construction(double *r){
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0 = drhob0*double(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0)/epsilon_ff;
-		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*std::pow(d_hs,3.0) << std::endl;
+		//ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*std::pow(d_hs,3.0) << std::endl;
+		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*(d_hs*d_hs*d_hs) << std::endl;
 		//std::cout << "rho_b0 = "<< rho_b0 << ", mu_b/epsilon_ff = " << mu_b_per_epsilon_ff[i] << std::endl;
 	}
 	// Maxwell equal area rule
@@ -559,8 +586,10 @@ double Maxwell_construction(double *r){
 	std::cout << "Maxwell construction (Maxwell equal area rule)" << std::endl;
 	std::cout << "chemical potential, mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << std::endl;
 	rho_b0 = rho_b0_gas;
-	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
-	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	//std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
+	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*(d_hs*d_hs*d_hs) << std::endl;
+	//press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	press_b0 = press_hs(rho_b0) - 0.5*(rho_b0*rho_b0)*alpha;
 	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0 << ")" <<std::endl;
 	std::cout << std::endl;
 	std::cout << "gas phase   : rho_b0_gas        = " << rho_b0_gas        << ", rho_b0_gas*d_hs^3        = " << rho_b0_gas*std::pow(d_hs,3.0)        << std::endl;
