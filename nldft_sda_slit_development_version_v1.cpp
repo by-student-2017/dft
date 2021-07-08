@@ -428,13 +428,9 @@ double calc_alpha(double *r){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b){
+double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
 	int j,k;
 	// smoothed density approximation (SDA)
-	double rho_sj[nstep];
-	double rho_s0j[nstep];
-	double rho_s1j[nstep];
-	double rho_s2j[nstep];
 	double rho_den1j, rho_den2j;
 	for (j=0; j<nstep; j++) {
 		rho_s0j[j] = rho_si(rho, r[i], r, 0);
@@ -614,6 +610,10 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm^3]" << std::endl;
+	double rho_sj[nstep];
+	double rho_s0j[nstep];
+	double rho_s1j[nstep];
+	double rho_s2j[nstep];
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -623,7 +623,7 @@ int main(){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
@@ -671,7 +671,7 @@ int main(){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
