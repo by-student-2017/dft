@@ -296,7 +296,6 @@ double rho_si(double *rho, double r1, double *r, int i){
 	int j,k;
 	double rho_si_out;
 	double ra;
-	rho_si_out = 0.0;
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nrmesh];
 	//double ndmesh = 2*d_hs*nrmesh/rc;
