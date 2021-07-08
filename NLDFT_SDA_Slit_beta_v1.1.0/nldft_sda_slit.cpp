@@ -202,8 +202,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	ndmesh = 2*d_hs*nrmesh/rc;
-	if ( ndmesh <= 3 ) { 
-		ndmesh = 5;
+	if ( ndmesh < 9 ) { 
+		ndmesh = 9;
 		std::cout << "autoset ndmesh = " << ndmesh << std::endl;
 	}
 	if ( ndmesh%2 == 0 ) { ndmesh = ndmesh + 1; }
