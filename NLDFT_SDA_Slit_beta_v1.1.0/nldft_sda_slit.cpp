@@ -149,8 +149,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.017 + 0.5);
-		if ( (nstep+1)%2 == 1 ){
+		nstep = int((H-sigma_ss)/0.032 + 0.5);
+		if ( nstep%2 == 0 ){
 			nstep = nstep + 1;
 		}
 		std::cout << "autoset nstep = " << nstep << std::endl;
@@ -175,8 +175,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nrmesh = int(num[9]);
 	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.017 + 0.5);
-		if ( (nrmesh+1)%2 == 1 ){
+		nrmesh = int(rc/0.085 + 0.5);
+		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
 		}
 		std::cout << "autoset nrmesh = 5.0*sigma_ff " << nrmesh << std::endl;
