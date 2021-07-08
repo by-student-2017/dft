@@ -256,7 +256,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nrmesh];
 	for (j=0; j<nstep; j++) {
-		for (k=0; k<=nrmesh; k++) {
+		for (k=0; k<nrmesh; k++) {
 			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh)),2.0);
 			ra = std::pow(ra,0.5);
 			//std::cout << ra << std::endl;
