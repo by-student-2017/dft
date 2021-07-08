@@ -189,7 +189,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
-	dr = (H-sigma_ss*1.74)/double(nstep+1);
+	dr = (H-sigma_ss)/double(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
@@ -556,8 +556,8 @@ int main(){
 	for (i=0; i<nstep; i++){
 		// r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
 		// 1.72 times is escape nan, etc from positive value of wall potential
-		//r[i] = sigma_ss*1.74/2.0 + dr*double(i) + dr/2.0; // dr = (H-sigma_ss*1.74)/double(nstep+1);
-		r[i] = sigma_ss*1.74/2.0 + dr*double(i); // dr = (H-sigma_ss*1.74)/double(nstep+1);
+		//r[i] = sigma_ss*1.74/2.0 + dr*double(i) + dr/2.0; // dr = (H-sigma_ss*1.74)/double(nstep-1);
+		r[i] = sigma_ss/2.0 + dr*double(i); // dr = (H-sigma_ss)/double(nstep-1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
