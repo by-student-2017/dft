@@ -13,7 +13,7 @@
 
 
 ## alpha version (July/6/2021)
-	c++ nldft.cpp
-	./a.out
+	c++ -O2 nldft.cpp -o nldft.exe
+	./nldft.exe
 	nldft routine is not good !
 	Maxwell constraction routine is not good !
