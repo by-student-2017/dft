@@ -608,8 +608,8 @@ int main(){
 		}
 		//
 		//v_gamma = 0.0;
-		//for (i=0; i<nstep/2; i++){
-			//std::cout << r[i] << ", " << rho[i] << std::endl;
+		//for (i=0; i<=(nstep-1)/2; i++){
+			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
 		//	v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
 		v_gamma = ingegral_simpson(rho, nstep, dr);
@@ -656,8 +656,8 @@ int main(){
 		}
 		//
 		//v_gamma = 0.0;
-		//for (i=0; i<nstep/2; i++){
-			//std::cout << r[i] << ", " << rho[i] << std::endl;
+		//for (i=0; i<=(nstep-1)/2; i++){
+			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
 		//	v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
 		v_gamma = ingegral_simpson(rho, nstep, dr);
