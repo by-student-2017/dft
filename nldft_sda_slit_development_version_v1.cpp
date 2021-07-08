@@ -47,9 +47,9 @@ double dr;
 int nrmesh;
 //int ndmesh = d_hs*nrmesh/rc
 int ndmesh;
-//double drc = rc/double(nrmesh+1);
+//double drc = rc/double(nrmesh-1);
 double drc;
-//double dd = 2.0*d_hs/double(ndmesh+1);
+//double dd = 2.0*d_hs/double(ndmesh-1);
 double dd;
 // ---------- ----------- ------------ ------------
 // iteration of rho
