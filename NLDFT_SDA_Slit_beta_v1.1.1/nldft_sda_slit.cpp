@@ -250,7 +250,7 @@ double phi_att(double r){
 	double e;
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rm){
-		e = -1.0*epsilon_ff;
+		e = - epsilon_ff;
 	}else if (rm <= r && r <= rc){
 		// Lennard-Jones（LJ) potential
 		e = 4.0*epsilon_ff*( std::pow((sigma_ff/r),12.0) - std::pow((sigma_ff/r),6.0) );
