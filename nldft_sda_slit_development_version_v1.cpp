@@ -354,6 +354,7 @@ double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rh
 		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
 		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
 		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
+		// to avoide nan
 		if ( rho_den2j > 0 ) {
 			rho_den2j = std::sqrt(rho_den2j);
 		} else {
