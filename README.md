@@ -36,7 +36,7 @@
 - With only six days to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
 
 
-## alpha version (July/6/2021)
+## alpha version 0.8.0 (July/6/2021)
 	sudo apt update
 	sudo apt -y g++
 	c++ -O2 nldft.cpp -o nldft.exe
