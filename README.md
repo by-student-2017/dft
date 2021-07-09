@@ -9,7 +9,7 @@
 	gedit temp_parameters.txt
 	chmod +x run_openmp.sh
 	./run_openmp.sh 2
-- e.g., 2 CPU calculation. please, # of CPU is <= ndmesh = nrmesh.
+- e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2. Most "for" loops could not be parallelized.
 
 ## beta version (July/7/2021)
 	cd NLDFT_SDA_Slit_v1.0.0
