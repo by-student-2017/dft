@@ -6,7 +6,7 @@
 - I want someone to develop QSDFT and spinodal versions by CC0 license.
 
 
-## beta (OpenMPI parallel calculation) version (July/10/2021)
+## beta (OpenMPI parallel calculation) version 0.9.2 (July/10/2021)
 	sudo apt update
 	sudo apt -y openmpi-bin
 	cd NLDFT_SDA_Slit_v1.1.1
@@ -16,7 +16,7 @@
 - e.g., 4 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh.
 
 
-## beta (OpenMP parallel calculation) version (July/9/2021)
+## beta (OpenMP parallel calculation) version 0.9.2 (July/9/2021)
 	sudo apt update
 	sudo apt -y g++
 	cd NLDFT_SDA_Slit_v1.1.1
@@ -26,7 +26,7 @@
 - e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
 
 
-## beta version (July/7/2021)
+## beta version 0.9.0 (July/7/2021)
 	sudo apt update
 	sudo apt -y g++
 	cd NLDFT_SDA_Slit_v1.0.0
