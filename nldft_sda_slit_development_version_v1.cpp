@@ -37,6 +37,8 @@ using namespace std;
 //double dr = w_pw/double(nstep);
 double H;
 double sigma_ss;
+//#define nstep=1001;
+//constexpr int nstep = 1001;
 int nstep;
 double w_pw;
 double dr;
@@ -474,14 +476,42 @@ double calc_alpha(double *r){
 	return alpha_other_method;
 }
 
+double phi_att_int(double *r, double *phi_att_int_ij){
+	int i,j,k;
+	double ra;
+	double phi_int_k[nrmesh];
+	//double ndmesh = 2*d_hs*nrmesh/rc;
+	//double dd = 2.0*d_hs/double(ndmesh-1);
+	//double drc = rc/double(nrmesh-1);
+	//dd = drc;
+	phi_int_k[0] = 0.0;
+	for (i=0; i<nstep; i++) {
+		for (j=0; j<nstep; j++) {
+			for (k=1; k<nrmesh; k++) {
+				//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
+				ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
+				//ra = std::pow(ra,0.5);
+				ra = std::sqrt(ra);
+				//std::cout << ra << std::endl;
+				//rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
+				phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
+			}
+		}
+		phi_att_int_ij[i*nstep+j] = ingegral_simpson(phi_int_k, nrmesh, drc);
+	}
+	return 0;
+}
+
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
+double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij){
 	int j,k;
 	double ra;
-	double rho_dfex_int_j[nstep], rho_phi_int_j[nstep];
-	double rho_dfex_int_k[nrmesh], rho_phi_int_k[nrmesh];
+	double rho_dfex_int_j[nstep];
+	double rho_phi_int_j[nstep];
+	double rho_dfex_int_k[nrmesh];
+	double rho_phi_int_k[nrmesh]; // old ver.1.1.1
 	//double ndmesh = 2*d_hs*nrmesh/rc;
 	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//double drc = rc/double(nrmesh-1);
@@ -504,18 +534,19 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		//rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd); // old ver.1.1.1
 		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
 		//
-		for (k=1; k<nrmesh; k++) {
-			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
-			ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
-			//ra = std::pow(ra,0.5);
-			ra = std::sqrt(ra);
-			//std::cout << ra << std::endl;
-			//rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
-			rho_phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
-		}
+		//for (k=1; k<nrmesh; k++) { // old ver.1.1.0
+		//	//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
+		//	ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
+		//	//ra = std::pow(ra,0.5);
+		//	ra = std::sqrt(ra);
+		//	//std::cout << ra << std::endl;
+		//	//rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
+		//	rho_phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
+		//} // old ver.1.1.1
 		//ingegral_simpson(double *f, int n, double dx)
 		//rho_phi_int_j[j]  = ingegral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.0
-		rho_phi_int_j[j]  = rho[j]*ingegral_simpson(rho_phi_int_k, nrmesh, drc);
+		//rho_phi_int_j[j]  = rho[j]*ingegral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.1
+		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
 	}
 	double rho_dfex_int;
 	double rho_phi_int;
@@ -672,6 +703,8 @@ int main(){
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
 	double rho_s2j[nstep];
+	double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
+	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -682,7 +715,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
@@ -732,7 +765,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
