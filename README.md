@@ -1,8 +1,18 @@
 # dft (CC0 license)
 
+
 ## Development version.
 - For the first time in the world, a significant level of NLDFT code was built in C++ with a CC0 license. 
 - I want someone to develop QSDFT and spinodal versions by CC0 license.
+
+
+## beta (OpenMPI parallel calculation) version (July/10/2021)
+	cd NLDFT_SDA_Slit_v1.1.1
+	gedit temp_parameters.txt
+	chmod +x run_openmpi.sh
+	./run_openmpi.sh 2
+- e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
+
 
 ## beta (OpenMP parallel calculation) version (July/9/2021)
 	cd NLDFT_SDA_Slit_v1.1.1
@@ -10,6 +20,7 @@
 	chmod +x run_openmp.sh
 	./run_openmp.sh 2
 - e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
+
 
 ## beta version (July/7/2021)
 	cd NLDFT_SDA_Slit_v1.0.0
