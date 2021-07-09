@@ -480,8 +480,6 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 	int i,j,k;
 	double ra;
 	double phi_int_k[nrmesh];
-	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
 	phi_int_k[0] = 0.0;
