@@ -566,9 +566,11 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_dfex_int_k[nrmesh];
 	double rho_phi_int_k[nrmesh]; // old ver.1.1.1
 	rho_phi_int_k[0] = 0.0;
-#pragma omp parallel for private(k)
+//#pragma omp parallel for // Pair No.1, Slow speed
 	for (j=0; j<nstep; j++) {
 		raj = (r[i]-r[j]);
+//#pragma omp parallel for // Pair No.1, Slow speed
+#pragma omp parallel for private(k)
 		for (k=1; k<ndmesh; k++) {
 			rak = dd*double(k);
 			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
