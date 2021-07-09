@@ -1,10 +1,12 @@
 #!/bin/bash
 
+set OMP_NUM_THREADS=$1
+
 items=( 0.34 0.38 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
  1.02 1.18 1.35 1.61 1.93 2.31 2.90 3.63 4.75 6.51 10.0
 )
 
-if [ ! -e nldft_sda_slit.ext ]; then
+if [ ! -e nldft_sda_slit_openmp.exe ]; then
 	c++ nldft_sda_slit_openmp.cpp -fopenmp -o nldft_sda_slit_openmp.exe
 fi
 
