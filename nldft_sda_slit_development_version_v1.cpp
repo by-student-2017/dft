@@ -201,13 +201,15 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	ndmesh = int(2*d_hs*nrmesh/rc);
-	if ( ndmesh < 9 ) { 
-		ndmesh = 9;
-		std::cout << "autoset ndmesh = " << ndmesh << std::endl;
-	}
-	if ( ndmesh%2 == 0 ) { ndmesh = ndmesh + 1; }
+	
+	//ndmesh = int(2*d_hs*nrmesh/rc); // why ? this setting occures nan.
+	//if ( ndmesh < 9 ) { 
+	//	ndmesh = 9;
+	//	std::cout << "autoset ndmesh = " << ndmesh << std::endl;
+	//}
+	//if ( ndmesh%2 == 0 ) { ndmesh = ndmesh + 1; }
 	//dd = 2.0*d_hs/double(ndmesh-1); // rho_si(), xi()
+	ndmesh = nrmesh;
 	drc = rc/double(nrmesh-1); // xi()
 	dd = drc;
 	
