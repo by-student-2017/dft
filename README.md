@@ -13,7 +13,7 @@
 	gedit temp_parameters.txt
 	chmod +x run_openmpi.sh
 	./run_openmpi.sh 2
-- e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
+- e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh.
 
 
 ## beta (OpenMP parallel calculation) version (July/9/2021)
