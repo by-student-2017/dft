@@ -327,15 +327,41 @@ double rho_si(double *rho, double r1, double *r, int i){
 }
 
 // smoothed density approximation (SDA)
-double rho_s(double *rho, double r1, double *r){
-	double rho_den1, rho_den2, rho_s_out;
-	//rho_den1 = std::pow((1.0 - rho_si(rho,r1,r,1)),2.0);
-	rho_den1 = (1.0 - rho_si(rho,r1,r,1));
-	rho_den1 = rho_den1 * rho_den1;
-	//rho_den2 = std::pow((rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2)),0.5);
-	rho_den2 = std::sqrt(rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2));
-	rho_s_out = 2.0*rho_si(rho,r1,r,0)/(1.0 - rho_si(rho,r1,r,1)+rho_den2);
-	return rho_s_out;
+//double rho_s(double *rho, double r1, double *r){
+//	double rho_den1, rho_den2, rho_s_out;
+//	//rho_den1 = std::pow((1.0 - rho_si(rho,r1,r,1)),2.0);
+//	rho_den1 = (1.0 - rho_si(rho,r1,r,1));
+//	rho_den1 = rho_den1 * rho_den1;
+//	//rho_den2 = std::pow((rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2)),0.5);
+//	rho_den2 = std::sqrt(rho_den1 - 4.0*rho_si(rho,r1,r,0)*rho_si(rho,r1,r,2));
+//	rho_s_out = 2.0*rho_si(rho,r1,r,0)/(1.0 - rho_si(rho,r1,r,1)+rho_den2);
+//	return rho_s_out;
+//}
+
+// smoothed density approximation (SDA), modified version
+double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
+	int j;
+	double rho_den1j, rho_den2j;
+	for (j=0; j<nstep; j++) {
+		rho_s0j[j] = rho_si(rho, r[j], r, 0);
+		rho_s1j[j] = rho_si(rho, r[j], r, 1);
+		rho_s2j[j] = rho_si(rho, r[j], r, 2);
+		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
+		rho_den1j = (1.0 - rho_s1j[j]);
+		rho_den1j = rho_den1j * rho_den1j;
+		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
+		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
+		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
+		if ( rho_den2j > 0 ) {
+			rho_den2j = std::sqrt(rho_den2j);
+		} else {
+			rho_den2j = 0.0;
+		}
+		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
+		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
+		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
+	}
+	return 0;
 }
 
 // Steele 10-4-3 potential
@@ -395,13 +421,13 @@ double dfex_per_drhos(double rho_s){
 }
 
 // d(rho_s)/d(rho)
-double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
-	double w, drhos_per_drho_out;
-	// Percus-Yevick approximation, Tarazona theory
-	w = wi(ra,0) + wi(ra,1)*rho_s(rho,r1,r) + wi(ra,2)*std::pow(rho_s(rho,r1,r),2.0);
-	drhos_per_drho_out = w/(1.0-rho_si(rho,r2,r,1)-2.0*rho_si(rho,r2,r,2)*rho_s(rho,r2,r));
-	return drhos_per_drho_out;
-}
+//double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
+//	double w, drhos_per_drho_out;
+//	// Percus-Yevick approximation, Tarazona theory
+//	w = wi(ra,0) + wi(ra,1)*rho_s(rho,r1,r) + wi(ra,2)*std::pow(rho_s(rho,r1,r),2.0);
+//	drhos_per_drho_out = w/(1.0-rho_si(rho,r2,r,1)-2.0*rho_si(rho,r2,r,2)*rho_s(rho,r2,r));
+//	return drhos_per_drho_out;
+//}
 
 // d(rho_s)/d(rho), modified version
 double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
@@ -448,28 +474,6 @@ double calc_alpha(double *r){
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
 	int j,k;
-	// smoothed density approximation (SDA)
-	double rho_den1j, rho_den2j;
-	for (j=0; j<nstep; j++) {
-		rho_s0j[j] = rho_si(rho, r[i], r, 0);
-		rho_s1j[j] = rho_si(rho, r[i], r, 1);
-		rho_s2j[j] = rho_si(rho, r[i], r, 2);
-		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
-		rho_den1j = (1.0 - rho_s1j[j]);
-		rho_den1j = rho_den1j * rho_den1j;
-		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
-		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
-		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
-		if ( rho_den2j > 0 ) {
-			rho_den2j = std::sqrt(rho_den2j);
-		} else {
-			rho_den2j = 0.0;
-		}
-		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
-		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
-		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
-	}
-	//
 	double ra;
 	double rho_dfex_int_j[nstep], rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nrmesh], rho_phi_int_k[nrmesh];
@@ -666,6 +670,7 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
+			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
@@ -715,6 +720,7 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
+			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<=(nstep-1)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
