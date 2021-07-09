@@ -203,7 +203,6 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	
 	//ndmesh = int(2*d_hs*nrmesh/rc); // why ? this setting occures nan.
 	//if ( ndmesh < 9 ) { 
 	//	ndmesh = 9;
@@ -232,9 +231,9 @@ void read_parameters(void){
 }
 
 double ingegral_simpson(double *f, int n, double dx){
-	if( (n+1)%2 == 1 ){
-		std::cout << "Error, plase change number of data to even ( = array[odd] )" << std::endl;
-	}
+	//if( (n+1)%2 == 1 ){
+	//	std::cout << "Error, plase change number of data to even ( = array[odd] )" << std::endl;
+	//}
 	double sum;
 	sum = f[0] + f[n];
 	int i;
