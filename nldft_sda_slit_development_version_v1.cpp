@@ -315,10 +315,12 @@ double rho_si(double *rho, double r1, double *r, int i){
 			ra = std::sqrt(ra);
 			//std::cout << ra << std::endl;
 			//
-			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd));
+			//rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
+			rho_si_int_k[k] = wi(ra,i)*(2.0*M_PI*(double(k)*dd));
 		}
 		//ingegral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = ingegral_simpson(rho_si_int_k, ndmesh, dd);
+		//rho_si_int_j[j] = ingegral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
+		rho_si_int_j[j] = rho[j]*ingegral_simpson(rho_si_int_k, ndmesh, dd);
 	}
 	//ingegral_simpson(double *f, int n, double dx)
 	rho_si_out = ingegral_simpson(rho_si_int_j, nstep, dr);
@@ -492,10 +494,12 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 			//std::cout << ra << std::endl;
 			//
 			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-			rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_sj[j])*drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd));
+			//rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_sj[j])*drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
+			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd));
 		}
 		//ingegral_simpson(double *f, int n, double dx)
-		rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
+		//rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd); // old ver.1.1.1
+		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
 		//
 		for (k=1; k<nrmesh; k++) {
 			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
@@ -503,10 +507,12 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 			//ra = std::pow(ra,0.5);
 			ra = std::sqrt(ra);
 			//std::cout << ra << std::endl;
-			rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc));
+			//rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
+			rho_phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 		}
 		//ingegral_simpson(double *f, int n, double dx)
-		rho_phi_int_j[j]  = ingegral_simpson(rho_phi_int_k, nrmesh, drc);
+		//rho_phi_int_j[j]  = ingegral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.0
+		rho_phi_int_j[j]  = rho[j]*ingegral_simpson(rho_phi_int_k, nrmesh, drc);
 	}
 	double rho_dfex_int;
 	double rho_phi_int;
