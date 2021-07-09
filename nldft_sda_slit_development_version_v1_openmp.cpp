@@ -323,7 +323,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nrmesh];
 	rho_si_int_k[0] = 0.0;
-#pragma omp parallel for  private(k)
+//#pragma omp parallel for  private(k)
 	for (j=0; j<nstep; j++) {
 		raj = (r1-r[j]);
 		for (k=1; k<ndmesh; k++) {
@@ -488,7 +488,7 @@ double calc_alpha(double *r){
 	double alpha_int_j[nstep];
 	double alpha_int_k[nrmesh];
 	alpha_int_k[0] = 0.0;
-#pragma omp parallel for private(k)
+//#pragma omp parallel for private(k)
 	for (i=0; i<=(nstep-1)/2; i++){
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
@@ -526,7 +526,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 	double phi_int_k[nrmesh];
 	double tpidrc = 2.0*M_PI*drc;
 	phi_int_k[0] = 0.0;
-#pragma omp parallel for private(k)
+//#pragma omp parallel for private(k) // -nan is occurred
 	for (i=0; i<nstep; i++) {
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
@@ -546,7 +546,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 		phi_att_int_ij[i*nstep+j] = ingegral_simpson(phi_int_k, nrmesh, drc);
 	}
 	return 0;
-}a
+}
 
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
@@ -566,10 +566,9 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_dfex_int_k[nrmesh];
 	double rho_phi_int_k[nrmesh]; // old ver.1.1.1
 	rho_phi_int_k[0] = 0.0;
-//#pragma omp parallel for // Segmentation fault (core dumped)
+//#pragma omp parallel for private(k)
 	for (j=0; j<nstep; j++) {
 		raj = (r[i]-r[j]);
-#pragma omp parallel for private(k)
 		for (k=1; k<ndmesh; k++) {
 			rak = dd*double(k);
 			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
