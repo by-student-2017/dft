@@ -534,7 +534,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		//rho_dfex_int_j[j] = ingegral_simpson(rho_dfex_int_k, ndmesh, dd); // old ver.1.1.1
 		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*ingegral_simpson(rho_dfex_int_k, ndmesh, dd);
 		//
-		//for (k=1; k<nrmesh; k++) { // old ver.1.1.0
+		//for (k=1; k<nrmesh; k++) { // old ver.1.1.1
 		//	//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
 		//	ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
 		//	//ra = std::pow(ra,0.5);
