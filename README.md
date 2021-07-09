@@ -7,6 +7,8 @@
 
 
 ## beta (OpenMPI parallel calculation) version (July/10/2021)
+	sudo apt update
+	sudo apt -y openmpi-bin
 	cd NLDFT_SDA_Slit_v1.1.1
 	gedit temp_parameters.txt
 	chmod +x run_openmpi.sh
@@ -15,6 +17,8 @@
 
 
 ## beta (OpenMP parallel calculation) version (July/9/2021)
+	sudo apt update
+	sudo apt -y g++
 	cd NLDFT_SDA_Slit_v1.1.1
 	gedit temp_parameters.txt
 	chmod +x run_openmp.sh
@@ -23,6 +27,8 @@
 
 
 ## beta version (July/7/2021)
+	sudo apt update
+	sudo apt -y g++
 	cd NLDFT_SDA_Slit_v1.0.0
 	gedit temp_parameters.txt
 	chmod +x run.sh
@@ -31,6 +37,8 @@
 
 
 ## alpha version (July/6/2021)
+	sudo apt update
+	sudo apt -y g++
 	c++ -O2 nldft.cpp -o nldft.exe
 	./nldft.exe
 	nldft routine is not good !
