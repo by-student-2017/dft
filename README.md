@@ -12,8 +12,8 @@
 	cd NLDFT_SDA_Slit_v1.1.1
 	gedit temp_parameters.txt
 	chmod +x run_openmpi.sh
-	./run_openmpi.sh 2
-- e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh.
+	./run_openmpi.sh 4
+- e.g., 4 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh.
 
 
 ## beta (OpenMP parallel calculation) version (July/9/2021)
