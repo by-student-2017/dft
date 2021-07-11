@@ -485,7 +485,7 @@ double calc_alpha(double *r){
 	double alpha_int_j[nstep];
 	double alpha_int_k[nrmesh];
 	alpha_int_k[0] = 0.0;
-	for (i=0; i<=(nstep-1)/2; i++){
+	for (i=0; i<=(nstep-2)/2; i++){
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
 			for (k=1; k<nrmesh; k++) {
@@ -763,7 +763,7 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
-			for (i=0; i<=(nstep-1)/2; i++){
+			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
@@ -771,7 +771,7 @@ int main(){
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
 			}
 			diff = 0.0;
-			for (i=0; i<=(nstep-1)/2; i++){
+			for (i=0; i<=(nstep-2)/2; i++){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
@@ -784,7 +784,7 @@ int main(){
 		}
 		//
 		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-1)/2; i++){
+		//for (i=0; i<=(nstep-2)/2; i++){
 			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
 			//v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
@@ -813,14 +813,14 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
-			for (i=0; i<=(nstep-1)/2; i++){
+			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
 			diff = 0.0;
-			for (i=0; i<=(nstep-1)/2; i++){
+			for (i=0; i<=(nstep-2)/2; i++){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
