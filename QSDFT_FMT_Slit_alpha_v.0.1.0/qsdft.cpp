@@ -7,9 +7,13 @@
 
 using namespace std;
 
-//non-local smoothed density approximation：SDA
-//non-local density functional theory（NLDFT)
-//Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
+// Fundamental Measure Theory (FMT)
+// Quenched Solid Density Functional Theory (QSDFT)
+
+//This QSDFT derived from NLDFT.
+//  Smoothed Density Approximation (SDA)
+//  Non-Local Density Functional Theory（NLDFT)
+//  Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
 
 // Note
 // This routine assumes that rho, etc is same value in x-y plane.
@@ -107,9 +111,9 @@ double lam;
 //	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
 double alpha;
 // ---------- ----------- ------------ ------------
-
 // The edge position ze of the solid wall
 double ze;
+// ---------- ----------- ------------ ------------
 
 double integral_trapezoidal(double *f, int n, double dx){
 	double sum;
@@ -276,7 +280,6 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	
 	//ndmesh = int(2*d_hs*nrmesh/rc); // why ? this setting occures nan.
 	//if ( ndmesh < 9 ) { 
 	//	ndmesh = 9;
@@ -340,90 +343,91 @@ double phi_att_sf(double r){
 	return e;
 }
 
+// For NLDFT
 // Percus-Yevick (PY) two-particle direct correlation function of the homogeneous hard-sphere fluid
-double wi(double r, int i){
-	double wi_out;
-	double rpdhs;
-	switch(i){
-		case 0:
-			if (r <= d_hs){
-				//wi_out = 3.0/(4.0*M_PI*std::pow(d_hs,3.0));
-				wi_out = 3.0/(4.0*M_PI*(d_hs*d_hs*d_hs));
-			} else {
-				wi_out = 0.0;
-			}
-			break;
-		case 1:
-			rpdhs = r/d_hs;
-			if (r <= d_hs) {
-				//wi_out = 0.475-0.648*(r/d_hs)+0.113*std::pow((r/d_hs),2.0);
-				//wi_out = 0.475-0.648*(r/d_hs)+0.113*((r/d_hs)*(r/d_hs));
-				wi_out = 0.475-0.648*(rpdhs)+0.113*(rpdhs*rpdhs);
-			} else if (d_hs < r && r <= 2.0*d_hs) {
-				//wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*std::pow((r/d_hs),2.0);
-				//wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*((r/d_hs)*(r/d_hs));
-				wi_out = 0.288/rpdhs-0.924+0.764*(rpdhs)-0.187*(rpdhs*rpdhs);
-			} else {
-				wi_out = 0.0;
-			}
-			break;
-		case 2:
-			rpdhs = r/d_hs;
-			if (r <= d_hs) {
+//double wi(double r, int i){
+//	double wi_out;
+//	double rpdhs;
+//	switch(i){
+//		case 0:
+//			if (r <= d_hs){
+//				//wi_out = 3.0/(4.0*M_PI*std::pow(d_hs,3.0));
+//				wi_out = 3.0/(4.0*M_PI*(d_hs*d_hs*d_hs));
+//			} else {
+//				wi_out = 0.0;
+//			}
+//			break;
+//		case 1:
+//			rpdhs = r/d_hs;
+//			if (r <= d_hs) {
+//				//wi_out = 0.475-0.648*(r/d_hs)+0.113*std::pow((r/d_hs),2.0);
+//				//wi_out = 0.475-0.648*(r/d_hs)+0.113*((r/d_hs)*(r/d_hs));
+//				wi_out = 0.475-0.648*(rpdhs)+0.113*(rpdhs*rpdhs);
+//			} else if (d_hs < r && r <= 2.0*d_hs) {
+//				//wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*std::pow((r/d_hs),2.0);
+//				//wi_out = 0.288*(d_hs/r)-0.924+0.764*(r/d_hs)-0.187*((r/d_hs)*(r/d_hs));
+//				wi_out = 0.288/rpdhs-0.924+0.764*(rpdhs)-0.187*(rpdhs*rpdhs);
+//			} else {
+//				wi_out = 0.0;
+//			}
+//			break;
+//		case 2:
+//			rpdhs = r/d_hs;
+//			if (r <= d_hs) {
 				//wi_out = 5.0*M_PI*std::pow(d_hs,3.0)/144.0 * (6.0-12.0*(r/d_hs)+5.0*std::pow((r/d_hs),2.0));
 				//wi_out = 5.0*M_PI*(d_hs*d_hs*d_hs)/144.0 * (6.0-12.0*(r/d_hs)+5.0*((r/d_hs)*(r/d_hs)));
-				wi_out = 5.0*M_PI*(d_hs*d_hs*d_hs)/144.0 * (6.0-12.0*(rpdhs)+5.0*(rpdhs*rpdhs));
-			} else {
-				wi_out = 0.0;
-			}
-			break;
-		default:
-			std::cout << "Error: " << i << std::endl;
-			break;
-	}
-	return wi_out;
-}
+//				wi_out = 5.0*M_PI*(d_hs*d_hs*d_hs)/144.0 * (6.0-12.0*(rpdhs)+5.0*(rpdhs*rpdhs));
+//			} else {
+//				wi_out = 0.0;
+//			}
+//			break;
+//		default:
+//			std::cout << "Error: " << i << std::endl;
+//			break;
+//	}
+//	return wi_out;
+//}
 
-// Tarazona theory
-double rho_si(double *rho, double r1, double *r, int i){
-	int j,k;
-	double ra;
-	double raj;
-	double rak;
+// Tarazona theory for NLDFT
+//double rho_si(double *rho, double r1, double *r, int i){
+//	int j,k;
+//	double ra;
+//	double raj;
+//	double rak;
 	//double ndmesh = 2*d_hs*nrmesh/rc;
 	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//dd = drc;
-	double tpidd = 2.0*M_PI*dd;
-	double rho_si_out;
-	double rho_si_int_j[nstep];
-	double rho_si_int_k[nrmesh];
-	rho_si_int_k[0] = 0.0;
-	for (j=0; j<nstep; j++) {
-		raj = (r1-r[j]);
-		for (k=1; k<ndmesh; k++) {
-			rak = dd*double(k);
+//	double tpidd = 2.0*M_PI*dd;
+//	double rho_si_out;
+//	double rho_si_int_j[nstep];
+//	double rho_si_int_k[nrmesh];
+//	rho_si_int_k[0] = 0.0;
+//	for (j=0; j<nstep; j++) {
+//		raj = (r1-r[j]);
+//		for (k=1; k<ndmesh; k++) {
+//			rak = dd*double(k);
 			//ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
 			//ra = (r1-r[j])*(r1-r[j]) + (double(k)*dd)*(double(k)*dd);
-			ra = raj*raj + rak*rak;
+//			ra = raj*raj + rak*rak;
 			//ra = std::pow(ra,0.5);
-			ra = std::sqrt(ra);
+//			ra = std::sqrt(ra);
 			//std::cout << ra << std::endl;
 			//
 			//rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
 			//rho_si_int_k[k] = wi(ra,i)*(2.0*M_PI*(double(k)*dd));
-			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
-		}
+//			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
+//		}
 		//integral_simpson(double *f, int n, double dx)
 		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
-	}
+//		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
+//	}
 	//integral_simpson(double *f, int n, double dx)
-	rho_si_out = integral_simpson(rho_si_int_j, nstep, dr);
+//	rho_si_out = integral_simpson(rho_si_int_j, nstep, dr);
 	//
-	return rho_si_out;
-}
+//	return rho_si_out;
+//}
 
-// smoothed density approximation (SDA)
+// smoothed density approximation (SDA) for NLDFT
 //double rho_s(double *rho, double r1, double *r){
 //	double rho_den1, rho_den2, rho_s_out;
 //	//rho_den1 = std::pow((1.0 - rho_si(rho,r1,r,1)),2.0);
@@ -435,58 +439,58 @@ double rho_si(double *rho, double r1, double *r, int i){
 //	return rho_s_out;
 //}
 
-// smoothed density approximation (SDA), modified version
-double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
-	int j;
-	double rho_den1j, rho_den2j;
-	for (j=0; j<nstep; j++) {
-		rho_s0j[j] = rho_si(rho, r[j], r, 0);
-		rho_s1j[j] = rho_si(rho, r[j], r, 1);
-		rho_s2j[j] = rho_si(rho, r[j], r, 2);
-		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
-		rho_den1j = (1.0 - rho_s1j[j]);
-		rho_den1j = rho_den1j * rho_den1j;
-		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
-		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
-		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
-		// to avoide nan
-		if ( rho_den2j > 0 ) {
-			rho_den2j = std::sqrt(rho_den2j);
-		} else {
-			rho_den2j = 0.0;
-		}
-		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
-		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
-		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
-	}
-	return 0;
-}
+// smoothed density approximation (SDA), modified version for NLDFT
+//double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
+//	int j;
+//	double rho_den1j, rho_den2j;
+//	for (j=0; j<nstep; j++) {
+//		rho_s0j[j] = rho_si(rho, r[j], r, 0);
+//		rho_s1j[j] = rho_si(rho, r[j], r, 1);
+//		rho_s2j[j] = rho_si(rho, r[j], r, 2);
+//		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
+//		rho_den1j = (1.0 - rho_s1j[j]);
+//		rho_den1j = rho_den1j * rho_den1j;
+//		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
+//		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
+//		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
+//		// to avoide nan
+//		if ( rho_den2j > 0 ) {
+//			rho_den2j = std::sqrt(rho_den2j);
+//		} else {
+//			rho_den2j = 0.0;
+//		}
+//		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
+//		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
+//		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
+//	}
+//	return 0;
+//}
 
-// Steele 10-4-3 potential
-double phi_sf(double z){
-	double phi_sf_out;
-	double sigma_sf2 = sigma_sf*sigma_sf;
-	double sfpz = (sigma_sf/z);
-	double sfpz2 = sfpz*sfpz;
-	double dez = (0.61*delta+z);
+// Steele 10-4-3 potential for NLDFT
+//double phi_sf(double z){
+//	double phi_sf_out;
+//	double sigma_sf2 = sigma_sf*sigma_sf;
+//	double sfpz = (sigma_sf/z);
+//	double sfpz2 = sfpz*sfpz;
+//	double dez = (0.61*delta+z);
 	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
 	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
 	//			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
-	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*(sigma_sf2)*delta*
-				( (2.0/5.0)*std::pow(sfpz2,5.0)-(sfpz2*sfpz2)-(sigma_sf2*sigma_sf2)/
-				(3.0*delta*(dez*dez*dez)) );
-	return phi_sf_out;
-}
+//	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*(sigma_sf2)*delta*
+//				( (2.0/5.0)*std::pow(sfpz2,5.0)-(sfpz2*sfpz2)-(sigma_sf2*sigma_sf2)/
+//				(3.0*delta*(dez*dez*dez)) );
+//	return phi_sf_out;
+//}
 
-// e.g., wall potential (Carbon slit)
-double phi_ext(double z){
-	double phi_ext_out;
-	phi_ext_out = phi_sf(z) + phi_sf(H-z);
-	//std::cout << phi_ext_out << std::endl;
-	return phi_ext_out;
-}
+// e.g., wall potential (Carbon slit) for NLDFT
+//double phi_ext(double z){
+//	double phi_ext_out;
+//	phi_ext_out = phi_sf(z) + phi_sf(H-z);
+//	//std::cout << phi_ext_out << std::endl;
+//	return phi_ext_out;
+//}
 
-// from Carnahan-Starling (CS) equation of state
+// from Carnahan-Starling (CS) equation of state for NLDFT
 //double mu_ex(double rho_b){
 //	double y, mu_ex_out;
 //	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
@@ -497,7 +501,7 @@ double phi_ext(double z){
 //	mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/(den1y*den1y*den1y);
 //	return mu_ex_out;
 //}
-//
+
 // The excess hard sphere chemical potential (mu_ex) in the bulk fulid.
 // mu_ex is calculated by the PY equation.
 double mu_ex(double rho_b){
@@ -522,31 +526,32 @@ double mu_b(double rho_b){
 	return mu_b_out;
 }
 
-double f_ex(double rho_s){
-	double eta, f_ex_out;
+// For NLDFT
+//double f_ex(double rho_s){
+//	double eta, f_ex_out;
 	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
-	double den1e = (1.0-eta);
+//	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
+//	double den1e = (1.0-eta);
 	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
 	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/((1.0-eta)*(1.0-eta));
-	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/(den1e*den1e);
-	return f_ex_out;
-}
+//	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/(den1e*den1e);
+//	return f_ex_out;
+//}
 
-// d(f_ex)/d(rho_s)
-double dfex_per_drhos(double rho_s){
-	double dfex_per_drhos_out;
-	double eta;
+// d(f_ex)/d(rho_s) for NLDFT
+//double dfex_per_drhos(double rho_s){
+//	double dfex_per_drhos_out;
+//	double eta;
 	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
-	double den1e = (1.0-eta);
+//	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
+//	double den1e = (1.0-eta);
 	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/std::pow((1.0-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
 	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta))*M_PI*(d_hs*d_hs*d_hs)/6.0;
-	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/(den1e*den1e*den1e)*(M_PI*(d_hs*d_hs*d_hs)/6.0);
-	return dfex_per_drhos_out;
-}
+//	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/(den1e*den1e*den1e)*(M_PI*(d_hs*d_hs*d_hs)/6.0);
+//	return dfex_per_drhos_out;
+//}
 
-// d(rho_s)/d(rho)
+// d(rho_s)/d(rho) for NLDFT
 //double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
 //	double w, drhos_per_drho_out;
 //	// Percus-Yevick approximation, Tarazona theory
@@ -555,15 +560,15 @@ double dfex_per_drhos(double rho_s){
 //	return drhos_per_drho_out;
 //}
 
-// d(rho_s)/d(rho), modified version
-double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
-	double w, drhos_per_drho_out;
-	// Percus-Yevick approximation, Tarazona theory
-	//w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
-	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*(rho_sj*rho_sj);
-	drhos_per_drho_out = w/(1.0-rho_s1j-2.0*rho_s2j*rho_sj);
-	return drhos_per_drho_out;
-}
+// d(rho_s)/d(rho), modified version for NLDFT
+//double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
+//	double w, drhos_per_drho_out;
+//	// Percus-Yevick approximation, Tarazona theory
+//	//w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
+//	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*(rho_sj*rho_sj);
+//	drhos_per_drho_out = w/(1.0-rho_s1j-2.0*rho_s2j*rho_sj);
+//	return drhos_per_drho_out;
+//}
 
 double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_j, double *n3_j, double *nv1_j, double *nv2_j,
 		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
@@ -1090,7 +1095,7 @@ int main(){
 		double check_data;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
+			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); // for NLDFT
 			for (i=0; i<nstep; i++){
 				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
 			}
@@ -1126,7 +1131,7 @@ int main(){
 			//v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
 		v_gamma = integral_simpson(rho, nstep, dr);
-		//v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
 		v_gamma = v_gamma/(H-2.0*(ze+sigma_sf)) - rho_b;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
