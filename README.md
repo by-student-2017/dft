@@ -3,7 +3,7 @@
 
 ## Development version.
 - For the first time in the world, a significant level of NLDFT code was built in C++ with a CC0 license. 
-- I want someone to develop QSDFT and spinodal versions by CC0 license.
+- I want someone to develop QSDFT, spinodal, 2D-NLDFT and RSDFT versions by CC0 license.
 
 
 ## beta version 0.9.2 (NLDFT, SDA, OpenMPI parallel calculation) (July/10/2021)
