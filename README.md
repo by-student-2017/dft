@@ -6,7 +6,7 @@
 - I want someone to develop QSDFT and spinodal versions by CC0 license.
 
 
-## beta version 0.9.2 (OpenMPI parallel calculation) (July/10/2021)
+## beta version 0.9.2 (NLDFT, SDA, OpenMPI parallel calculation) (July/10/2021)
 	sudo apt update
 	sudo apt -y openmpi-bin
 	cd NLDFT_SDA_Slit_v1.1.1
@@ -16,7 +16,7 @@
 - e.g., 4 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh.
 
 
-## beta version 0.9.2 (OpenMP parallel calculation) (July/9/2021)
+## beta version 0.9.2 (NLDFT, SDA, OpenMP parallel calculation) (July/9/2021)
 	sudo apt update
 	sudo apt -y g++
 	cd NLDFT_SDA_Slit_v1.1.1
@@ -26,7 +26,7 @@
 - e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
 
 
-## beta version 0.9.0 (July/7/2021)
+## beta version 0.9.0 (NLDFT, SDA) (July/7/2021)
 	sudo apt update
 	sudo apt -y g++
 	cd NLDFT_SDA_Slit_v1.0.0
@@ -36,9 +36,10 @@
 - With only six days to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
 
 
-## alpha version 0.8.0 (July/6/2021)
+## alpha version 0.8.0 (NLDFT, SDA) (July/6/2021)
 	sudo apt update
 	sudo apt -y g++
+	cd NLDFT_SDA_Slit_alpha_v0.8.0
 	c++ -O2 nldft.cpp -o nldft.exe
 	./nldft.exe
 	nldft routine is not good !
@@ -46,9 +47,9 @@
 
 
 ## alpha version 0.1.0 (QSDFT, FMT) (July/12/2021)
-	cd QSDFT_FMT_Slit_alpha_v.0.1.0
 	sudo apt update
 	sudo apt -y g++
+	cd QSDFT_FMT_Slit_alpha_v.0.1.0
 	c++ -O2 qsdft.cpp -o qsdft.exe
 	./qsdft.exe
 	qsdft routine is not good !
