@@ -43,3 +43,16 @@
 	./nldft.exe
 	nldft routine is not good !
 	Maxwell constraction routine is not good !
+
+
+## alpha version 0.1.0 (QSDFT, FMT) (July/12/2021)
+	cd QSDFT_FMT_Slit_alpha_v.0.1.0
+	sudo apt update
+	sudo apt -y g++
+	c++ -O2 qsdft.cpp -o qsdft.exe
+	./qsdft.exe
+	qsdft routine is not good !
+	Maxwell constraction routine is not good !
+- This QSDFT just worked. The operation has not been examined in detail yet.
+- I'll leave it here as it may be an important step.
+- The parameters of carbon black BP-280 were used.
