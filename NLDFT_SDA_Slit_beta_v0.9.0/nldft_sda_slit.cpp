@@ -552,7 +552,7 @@ int main(){
 	read_parameters();
 	double r[nstep];
 	double rho[nstep], rho_new[nstep];
-	// set dr
+	//
 	for (i=0; i<nstep; i++){
 		// r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
 		// 1.72 times is escape nan, etc from positive value of wall potential

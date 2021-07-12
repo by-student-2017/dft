@@ -200,7 +200,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
-	dr = (H-sigma_ss)/double(nstep+1);
+	dr = (H-sigma_ss)/double(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
@@ -730,7 +730,7 @@ MPI::Init();
 	read_parameters();
 	double r[nstep];
 	double rho[nstep], rho_new[nstep];
-	// set dr
+	//
 #pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		// r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
