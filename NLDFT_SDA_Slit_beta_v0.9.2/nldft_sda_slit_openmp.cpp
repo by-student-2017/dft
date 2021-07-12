@@ -542,8 +542,8 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 				phi_int_k[k]  = phi_att(ra)*(tpidrc*double(k));
 			}
+			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh, drc);
 		}
-		phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh, drc);
 	}
 	return 0;
 }
