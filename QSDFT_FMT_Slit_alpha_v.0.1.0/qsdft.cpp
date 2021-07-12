@@ -439,7 +439,7 @@ double phi_att_sf(double r){
 //	return rho_s_out;
 //}
 
-// smoothed density approximation (SDA), modified version for NLDFT
+// smoothed density approximation (SDA), modified version for NLDFT v.0.9.0
 //double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
 //	int j;
 //	double rho_den1j, rho_den2j;
@@ -560,7 +560,7 @@ double mu_b(double rho_b){
 //	return drhos_per_drho_out;
 //}
 
-// d(rho_s)/d(rho), modified version for NLDFT
+// d(rho_s)/d(rho), modified version for NLDFT v.0.9.0
 //double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
 //	double w, drhos_per_drho_out;
 //	// Percus-Yevick approximation, Tarazona theory
