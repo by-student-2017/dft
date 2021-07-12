@@ -55,4 +55,4 @@
 	Maxwell constraction routine is not good !
 - This QSDFT just worked. The operation has not been examined in detail yet.
 - I'll leave it here as it may be an important step.
-- The parameters of carbon black BP-280 were used.
+- The parameters of non-graphited carbon black BP-280 were used.
