@@ -168,6 +168,7 @@ void read_parameters(void){
 	sigma_ff = num[6]; // [nm]
 	// ---------- ----------- ------------ ------------
 	d_hs = num[7]; // [nm]
+	//if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	rc = num[8]; // [nm], cut off
@@ -196,6 +197,7 @@ void read_parameters(void){
 	m = num[14]; // [kg]
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
+	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
