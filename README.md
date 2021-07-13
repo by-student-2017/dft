@@ -6,6 +6,11 @@
 - I want someone to develop QSDFT, spinodal, equilibrium, 2D-NLDFT and RSDFT code with CC0 license and publish them.
 
 
+##  NLDFT (SDA) beta version 0.9.3 (July/13/2021)
+- add "grand potential" calculation routine (alpha version)
+- The equilibrium point is obtained from the intersection of the ground potentials during adsorption and desorption.
+
+
 ##  NLDFT (SDA) beta version 0.9.2 (OpenMPI parallel calculation) (July/10/2021)
 	sudo apt update
 	sudo apt -y openmpi-bin
