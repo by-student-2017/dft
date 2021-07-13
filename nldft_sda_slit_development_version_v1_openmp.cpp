@@ -743,6 +743,7 @@ int main(){
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
+	double v_mmol_per_cm3;
 	double grand_potential;
 	//
 	read_parameters();
@@ -775,10 +776,10 @@ int main(){
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
 	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov << "# P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]" << std::endl;
+	ofsppov << "# P/P0, V[molecules/nm3], V[mmol/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]" << std::endl;
+	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	double rho_sj[nstep];
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
@@ -825,6 +826,9 @@ int main(){
 		//}
 		v_gamma = integral_simpson(rho, nstep, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
+		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
+		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -837,8 +841,8 @@ int main(){
 		pp0 = press_b/press_b0;
 		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	// reverse
 	for (k=0; k<100; k++){
@@ -878,6 +882,9 @@ int main(){
 		//}
 		v_gamma = integral_simpson(rho, nstep, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
+		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
+		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -890,8 +897,8 @@ int main(){
 		pp0 = press_b/press_b0;
 		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	return 0;
 }

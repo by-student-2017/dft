@@ -7,7 +7,7 @@ items=( 0.34 0.38 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
 )
 
 if [ ! -e nldft_sda_slit_openmpi.exe ]; then
-	mpic++ nldft_sda_slit_openmpi.cpp -o nldft_sda_slit_openmpi.exe
+	mpic++ -O2 nldft_sda_slit_openmpi.cpp -o nldft_sda_slit_openmpi.exe
 fi
 
 if [ ! -d results ]; then

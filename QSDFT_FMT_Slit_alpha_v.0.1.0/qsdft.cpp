@@ -195,6 +195,7 @@ void read_parameters(void){
 	std::ifstream ifs("parameters.txt");
 	std::string str;
 	double num[20];
+	double h0 = 2.0*0.34;
 	int i,j;
 	j = 0;
 	while(getline(ifs,str)){
@@ -218,7 +219,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-2.0*(ze+sigma_sf))/0.02 + 0.5);
+		nstep = int((H-2.0*h0)/0.02 + 0.5);
+		//nstep = int((H-2.0*(ze+sigma_sf))/0.02 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -1038,6 +1040,7 @@ int main(){
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
+	double v_mmol_per_cm3;
 	//
 	read_parameters();
 	double r[nstep];
@@ -1069,10 +1072,10 @@ int main(){
 	// volume and pressure
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
 	ofsppov << "# w = (H-2.0*(ze-sigma_sf)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov << "# P/P0, V[molecules/nm^3]" << std::endl;
+	ofsppov << "# P/P0, V[molecules/nm^3], V[mmol/cm^3]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-2.0*(ze-sigma_sf)) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm^3]" << std::endl;
+	std::cout << "P/P0, V[molecules/nm^3], V[mmol/cm^3]" << std::endl;
 	double rho_sj[nstep];
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
@@ -1135,6 +1138,9 @@ int main(){
 		v_gamma = integral_simpson(rho, nstep, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
 		v_gamma = v_gamma/(H-2.0*(ze+sigma_sf)) - rho_b;
+		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
+		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
+		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -1146,8 +1152,8 @@ int main(){
 		//std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << std::endl;
 	}
 	return 0;
 }
