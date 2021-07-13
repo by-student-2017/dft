@@ -155,6 +155,7 @@ void read_parameters(void){
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
+		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nstep = " << nstep << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
@@ -548,7 +549,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij){
+double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij, double *rho_dfex_int, double *rho_phi_int){
 	int j,k;
 	double ra;
 	double raj;
@@ -597,15 +598,13 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		//rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.1
 		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
 	}
-	double rho_dfex_int;
-	double rho_phi_int;
 	//integral_simpson(double *f, int n, double dx)
-	rho_dfex_int = integral_simpson(rho_dfex_int_j, nstep, dr);
-	rho_phi_int  = integral_simpson(rho_phi_int_j, nstep, dr);
+	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep, dr);
+	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep, dr);
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
-	xi_out = ( - rho_b*alpha - rho_dfex_int - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
+	xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
 	// debug
 	//std::cout << "xi, (kb1*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r[i]), -f_ex(rho_s(rho,r[i],r)), -rho_dfex_int, -rho_phi_int" << std::endl;
 	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
@@ -712,12 +711,32 @@ double Maxwell_construction(double *r){
 	return rho_b0;
 }
 
+// grand potential
+double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
+	double omega_out;
+	double omega1, omega2, omega3;
+	int i;
+	int omega_nstep = (nstep-2)/2;
+	double rho_x_rho_dfex_int[omega_nstep];
+	double rho_x_rho_phi_int[omega_nstep];
+	for (i=0; i<=omega_nstep; i++){
+		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
+		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
+	}
+	omega1 = -(kb1*T) * integral_simpson(rho, omega_nstep, dr);
+	omega2 = -integral_simpson(rho_x_rho_dfex_int, omega_nstep, dr);
+	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, omega_nstep, dr);
+	omega_out = (omega1 + omega2 + omega3) * 2.0 / epsilon_ff;
+	return omega_out;
+}
+
 int main(){
 	int i,j,k;
 	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b, rho_b0;
+	double grand_potential;
 	//
 	read_parameters();
 	double r[nstep];
@@ -747,16 +766,18 @@ int main(){
 	// volume and pressure
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
 	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov << "# P/P0, V[molecules/nm^3]" << std::endl;
+	ofsppov << "# P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm^3]" << std::endl;
+	std::cout << "P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]" << std::endl;
 	double rho_sj[nstep];
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
 	double rho_s2j[nstep];
 	double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
+	double rho_dfex_int[nstep];
+	double rho_phi_int[nstep];
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -767,7 +788,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
@@ -802,9 +823,10 @@ int main(){
 		//std::cout << "P= " << press_b << std::endl;
 		//std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
+		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
 	}
 	// reverse
 	for (k=0; k<100; k++){
@@ -817,7 +839,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 			}
@@ -851,9 +873,10 @@ int main(){
 		//std::cout << "P= " << press_b << std::endl;
 		//std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
+		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << grand_potential << std::endl;
 	}
 	return 0;
 }
