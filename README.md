@@ -7,7 +7,7 @@
 
 
 ##  NLDFT (SDA) beta version 0.9.3 (July/13/2021)
-- add "grand potential" calculation routine (alpha version)
+- add "grand potential" calculation routine and adsorption amount in other units (alpha version)
 - The equilibrium point is obtained from the intersection of the ground potentials during adsorption and desorption.
 
 
