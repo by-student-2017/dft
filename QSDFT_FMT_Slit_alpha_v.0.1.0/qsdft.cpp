@@ -218,8 +218,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.02 + 0.5);
-		if ( nstep%2 == 0 ){
+		nstep = int((H-2.0*(ze+sigma_sf))/0.02 + 0.5);
+		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
 		std::cout << "autoset nstep = " << nstep << std::endl;
