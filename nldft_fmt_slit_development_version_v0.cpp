@@ -560,9 +560,9 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		n2_j[j] = (rho[j])*(2.0*M_PI*xf);
 		//n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
 		n3_j[j] = (rho[j])*(M_PI*xf*xf);
-		//nv1_j[j] = (rho[j])/(4.0*M_PI)*(raj/Ri)*(2.0*M_PI*x);
-		//nv1_j[j] = (rho[j])/(2.0)*(raj/d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0)*(raj/Ri)*xs;
-		nv1_j[j] = (rho[j])/(2.0)*(raj/d_hs)*xf;
+		//nv1_j[j] = (rho[j])/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x);
+		//nv1_j[j] = (rho[j])/(2.0*Ri)*(raj/d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0)*(raj/Ri)*xs;
+		nv1_j[j] = (rho[j])/(2.0*d_hs)*(raj/d_hs)*xf;
 		//nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ri)*(2.0*M_PI*xs);
 		nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf);
 		
@@ -690,8 +690,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//)*(M_PI*x*x);
 		//
 		// dphi/dnv1
-		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI)*(raj/Ri)*(2.0*M_PI*x);
-		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0)*(raj/Ri)*x;
+		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x);
+		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Ri)*(raj/Ri)*x;
 		//
 		// dphi/dnv2
 		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
