@@ -733,7 +733,7 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
 			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-				* (1.0-6.0*sxi*(-nv2[j]/(n2[j]*n2[j]))+6.0*sxi*sxi*(-nv2[j]/(n2[j]*n2[j]))*sign)
+				* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(-nv2[j]/(n2[j]*n2[j]))
 		)*(2.0*M_PI*x);
 		//
 		// dphi/dn3
@@ -749,7 +749,7 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		// dphi/dnv2
 		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-				* (1.0-6.0*sxi*(1.0/n2[j])+6.0*sxi*sxi*(1.0/n2[j])*sign)
+				* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(1.0/n2[j])
 		)*(raj/Ri)*(2.0*M_PI*x);
 		//
 		//dphi_per_n0 = dphi_per_n0 + dphi_per_n0_j[j]*dr;
