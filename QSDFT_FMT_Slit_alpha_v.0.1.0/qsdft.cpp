@@ -716,13 +716,11 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//
 		// dphi/dn0
 		//dphi_per_n0[j] = -std::log(1.0-n3[j])/(4.0*M_PI*Ri*Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_n0_j[j] = -std::log(1.0-n3[j])/(2.0*Ri*Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_n0_j[j] = -std::log(1.0-n3[j])*(2.0*M_PI*x); // carbon 47 (2009) 161701628.
+		dphi_per_n0_j[j] = -std::log(1.0-n3[j])/(2.0*Ri*Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn1
 		//dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(2.0*Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )*Ri*(2.0*M_PI*x); // carbon 47 (2009) 161701628.
+		dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(2.0*Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn2
 		if ( nv2[j]/n2[j] >= 0.0 ){
@@ -732,16 +730,11 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			// nv2/n2 < 0  ->  -nv2/n2 = -sxi
 			sign = -1.0;
 		}
-		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
-		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(-nv2[j]/(n2[j]*n2[j]))
-		//)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
 			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 				* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(-nv2[j]/(n2[j]*n2[j]))
-		)*(4.0*M_PI*Ri*Ri)*(2.0*M_PI*x); // carbon 47 (2009) 161701628.
+		)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		// dphi/dn2 // // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 		//	+ (1.0/(8.0*M_PI))*n2[j]*n2[j]/((1.0-n3[j])*(1.0-n3[j])) 
@@ -749,14 +742,10 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//)*(2.0*M_PI*x);
 		//
 		// dphi/dn3
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
 			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
 			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
-		)*(4.0/3.0*M_PI*Ri*Ri*Ri)*(2.0*M_PI*x); // carbon 47 (2009) 161701628.
+		)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		// dphi/dn3 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
 		//	+ n1[j]*n2[j]/((1.0-n3[j])*(1.0-n3[j]))
@@ -767,15 +756,13 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//
 		// dphi/dnv1
 		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Ri)*(raj/Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_nv1_j[j] = 0.0; // carbon 47 (2009) 161701628.
+		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Ri)*(raj/Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2
-		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(1.0/n2[j])
-		//)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_nv2_j[j] = 0.0; // carbon 47 (2009) 161701628.
+		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+				* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(1.0/n2[j])
+		)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		// dphi/dnv2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	- (1.0/(4.0*M_PI))*n2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
