@@ -694,10 +694,10 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0)*(raj/Ri)*x;
 		//
 		// dphi/dnv2
-		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(1.0/n2[j])
-		//)*(raj/Ri)*(2.0*M_PI*x);
+		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+				* (1.0-6.0*sxi+6.0*sxi*sxi*sign)*(1.0/n2[j])
+		)*(raj/Ri)*(2.0*M_PI*x);
 		// dphi/dnv2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	- (1.0/(4.0*M_PI))*n2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
