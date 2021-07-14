@@ -726,8 +726,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	dphi_per_nv1 = -integral_simpson(dphi_per_nv1_j, nstep, dr);
 	dphi_per_nv2 = -integral_simpson(dphi_per_nv2_j, nstep, dr);
 	//
-	//std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
-	//std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
+	std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
+	std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
 	//
 	dfex_out = dphi_per_n0 + dphi_per_n1 + dphi_per_n2 + dphi_per_n3 + dphi_per_nv1 + dphi_per_nv2;
 	//std::cout << dfex_out << std::endl;
@@ -989,7 +989,7 @@ double Maxwell_construction(double *r){
 //}
 
 	// grand potential for FMT (now, dummy)
-double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
+double omega(double *rho, double *r, double *dfex_int, double *rho_phi_int){
 	double omega_out;
 	omega_out = 1.0;
 	return omega_out;
@@ -1079,8 +1079,6 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
-				//
-				rho_dfex_int[nstep-i] = rho_dfex_int[i];
 			}
 			if ( (diff/nstep*100.0) < 5.0) {
 				break;
@@ -1111,7 +1109,7 @@ int main(){
 		//std::cout << "P= " << press_b << std::endl;
 		//std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
-		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
+		grand_potential = omega(rho, r, dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
