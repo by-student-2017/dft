@@ -969,22 +969,29 @@ double Maxwell_construction(double *r){
 	return rho_b0;
 }
 
-// grand potential
+// grand potential for SDA
+//double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
+//	double omega_out;
+//	double omega1, omega2, omega3;
+//	int i;
+//	int omega_nstep = (nstep-2)/2;
+//	double rho_x_rho_dfex_int[omega_nstep];
+//	double rho_x_rho_phi_int[omega_nstep];
+//	for (i=0; i<=omega_nstep; i++){
+//		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
+//		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
+//	}
+//	omega1 = -(kb1*T) * integral_simpson(rho, omega_nstep, dr);
+//	omega2 = -integral_simpson(rho_x_rho_dfex_int, omega_nstep, dr);
+//	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, omega_nstep, dr);
+//	omega_out = (omega1 + omega2 + omega3) * 2.0 / epsilon_ff;
+//	return omega_out;
+//}
+
+	// grand potential for FMT (now, dummy)
 double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 	double omega_out;
-	double omega1, omega2, omega3;
-	int i;
-	int omega_nstep = (nstep-2)/2;
-	double rho_x_rho_dfex_int[omega_nstep];
-	double rho_x_rho_phi_int[omega_nstep];
-	for (i=0; i<=omega_nstep; i++){
-		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
-		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
-	}
-	omega1 = -(kb1*T) * integral_simpson(rho, omega_nstep, dr);
-	omega2 = -integral_simpson(rho_x_rho_dfex_int, omega_nstep, dr);
-	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, omega_nstep, dr);
-	omega_out = (omega1 + omega2 + omega3) * 2.0 / epsilon_ff;
+	omega_out = 1.0;
 	return omega_out;
 }
 
@@ -1026,17 +1033,18 @@ int main(){
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
 	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2] (now,dummy)" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2] (now,dummy)" << std::endl;
 	double rho_sj[nstep];
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
 	double rho_s2j[nstep];
 	double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
-	double rho_dfex_int[nstep];
+	//double rho_dfex_int[nstep];
+	double dfex_int[nstep];
 	double rho_phi_int[nstep];
 	double n0_j[nstep], n0[nstep];
 	double n1_j[nstep], n1[nstep];
@@ -1058,7 +1066,7 @@ int main(){
 			}
 			for (i=0; i<=(nstep-2)/2; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				rho_dfex_int[i] = -c1;
+				//dfex_int[i] = -c1*(kb1*T);
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
