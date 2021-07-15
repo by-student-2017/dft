@@ -550,7 +550,7 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		}
 		//n0_j[j] = (rho[j])/(4.0*M_PI*Ri*Ri)*(2.0*M_PI*x);
 		//n0_j[j] = (rho[j])/(2.0*Ri*Ri)*x;
-		//]n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri*Ri)*xs;
+		//n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri*Ri)*xs;
 		n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf;
 		//n1_j[j] = (rho[j])/(4.0*M_PI*Ri)*(2.0*M_PI*x);
 		//n1_j[j] = (rho[j])/(2.0*Ri)*x;

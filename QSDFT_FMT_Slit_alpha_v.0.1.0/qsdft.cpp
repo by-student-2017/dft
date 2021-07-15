@@ -581,8 +581,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double raj;
 	double xf, xs, xf2, xs2;
 	double Ri;
-	Ri = d_hs;
-	//Ri = 0.2217; // Ri is the hard-sphere radius
+	//Ri = d_hs;
+	Ri = 0.2217; // Ri is the hard-sphere radius
 	//
 	// Memo
 	// x = y = sqrt(Ri^2-z^2)
@@ -622,21 +622,21 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		}
 		//n0_j[j] = (rho[j])/(4.0*M_PI*Ri*Ri)*(2.0*M_PI*x);
 		//n0_j[j] = (rho[j])/(2.0*Ri*Ri)*x;
-		//]n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri*Ri)*xs;
-		n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf;
+		n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri*Ri)*xs;
+		//n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf;
 		//n1_j[j] = (rho[j])/(4.0*M_PI*Ri)*(2.0*M_PI*x);
 		//n1_j[j] = (rho[j])/(2.0*Ri)*x;
-		//n1_j[j] = (rho[j])/(2.0*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri)*xs;
-		n1_j[j] = (rho[j])/(2.0*d_hs)*xf;
-		//n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
-		n2_j[j] = (rho[j])*(2.0*M_PI*xf);
-		//n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
-		n3_j[j] = (rho[j])*(M_PI*xf*xf);
+		n1_j[j] = (rho[j])/(2.0*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri)*xs;
+		//n1_j[j] = (rho[j])/(2.0*d_hs)*xf;
+		n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
+		//n2_j[j] = (rho[j])*(2.0*M_PI*xf);
+		n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
+		//n3_j[j] = (rho[j])*(M_PI*xf*xf);
 		//nv1_j[j] = (rho[j])/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x);
-		//nv1_j[j] = (rho[j])/(2.0*Ri)*(raj/d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0)*(raj/Ri)*xs;
-		nv1_j[j] = (rho[j])/(2.0*d_hs)*(raj/d_hs)*xf;
-		//nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ri)*(2.0*M_PI*xs);
-		nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf);
+		nv1_j[j] = (rho[j])/(2.0*Ri)*(raj/d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0)*(raj/Ri)*xs;
+		//nv1_j[j] = (rho[j])/(2.0*d_hs)*(raj/d_hs)*xf;
+		nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ri)*(2.0*M_PI*xs);
+		//nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf);
 		
 		//
 		//std::cout << i << ", " << j << ", " << r[i] << ", " << r[j] << ", " << raj << ", " << x << std::endl;
