@@ -568,7 +568,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		
 		//
 		//std::cout << i << ", " << j << ", " << r[i] << ", " << r[j] << ", " << raj << ", " << x << std::endl;
-		//std::cout << rho[j] << ", " << rho_ssq(r[j]) << ", " << rho_ssq(H-r[j]) << ", " << n0_j[j] << std::endl;
+		//std::cout << "i, j, rho[j], n0_j[j], n1_j[j], n2_j[j], n3_j[j], nv1_j[j], nv2_j[j]" << std::endl;
+		//std::cout << i << ", " << j << ", " << rho[j] << ", " << n0_j[j] << ", " << n1_j[j] << ", " << n2_j[j] << ", " << n3_j[j] << ", " << nv1_j[j] << ", " << nv2_j[j] << std::endl;
 		//
 		//n0[i] = n0[i] + n0_j[j]*dr;
 		//n1[i] = n1[i] + n1_j[j]*dr;
@@ -726,8 +727,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	dphi_per_nv1 = -integral_simpson(dphi_per_nv1_j, nstep, dr);
 	dphi_per_nv2 = -integral_simpson(dphi_per_nv2_j, nstep, dr);
 	//
-	std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
-	std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
+	//std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
+	//std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
 	//
 	dfex_out = dphi_per_n0 + dphi_per_n1 + dphi_per_n2 + dphi_per_n3 + dphi_per_nv1 + dphi_per_nv2;
 	//std::cout << dfex_out << std::endl;
@@ -873,14 +874,28 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	return xi_out;
 }
 
+	// For SDA, from Carnahan-Starling (CS) equation
+//double press_hs(double rho_b){
+//	double y, press_hs_out;
+//	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
+//	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+//	double den1y = (1.0-y);
+//	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
+//	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+//	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/(den1y*den1y*den1y);
+//	return press_hs_out;
+//}
+
+// For FMT, from Percus Yevick (PY) equation
+// http://www.sklogwiki.org/SklogWiki/index.php/Exact_solution_of_the_Percus_Yevick_integral_equation_for_hard_spheres
 double press_hs(double rho_b){
-	double y, press_hs_out;
-	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
-	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
-	double den1y = (1.0-y);
-	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
-	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
-	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/(den1y*den1y*den1y);
+	double eta, press_hs_out;
+	//eta = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
+	eta = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+	double den1e = (1.0-eta);
+	//press_hs_out = rho_b*kb1*T* (1.0 + eta + eta*eta)/std::pow((1.0-eta),3.0);
+	//press_hs_out = rho_b*kb1*T* (1.0 + eta + eta*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta));
+	press_hs_out = rho_b*kb1*T* (1.0 + eta + eta*eta)/(den1e*den1e*den1e);
 	return press_hs_out;
 }
 
@@ -1064,7 +1079,8 @@ int main(){
 			for (i=0; i<nstep; i++){
 				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
 			}
-			for (i=0; i<=(nstep-2)/2; i++){
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
 				//dfex_int[i] = -c1*(kb1*T);
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
@@ -1075,9 +1091,10 @@ int main(){
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
 			}
 			diff = 0.0;
-			for (i=0; i<=(nstep-2)/2; i++){
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				//rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
 			if ( (diff/nstep*100.0) < 5.0) {
