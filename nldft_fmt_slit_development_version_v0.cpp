@@ -807,7 +807,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij, double *rho_phi_int){
+double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, double *rho_phi_int){
 	int j,k;
 	double ra;
 	double raj;
@@ -874,7 +874,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	return xi_out;
 }
 
-	// For SDA, from Carnahan-Starling (CS) equation
+// For SDA, from Carnahan-Starling (CS) equation
 //double press_hs(double rho_b){
 //	double y, press_hs_out;
 //	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
@@ -1085,7 +1085,7 @@ int main(){
 				//dfex_int[i] = -c1*(kb1*T);
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
