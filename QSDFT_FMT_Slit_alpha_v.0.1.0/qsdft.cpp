@@ -738,7 +738,7 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			// nv2/n2 < 0  ->  -nv2/n2 = -sxi
 			sign = -1.0;
 		}
-		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j]), RSLT2 version
 		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
@@ -750,33 +750,33 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//	- (1.0/(8.0*M_PI))*nv2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j])) 
 		//)*(2.0*M_PI*x);
 		//
-		// dphi/dn2, q=2 case, PHYSICAL REVIEW E 64 011602
+		// dphi/dn2, q=2 case, RSLT version, PHYSICAL REVIEW E 64 011602
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
 		//)*(2.0*M_PI*x);
 		//
-		// dphi/dn2, q=3 case, PHYSICAL REVIEW E 64 011602
+		// dphi/dn2, q=3 case, RSLT version, PHYSICAL REVIEW E 64 011602
 		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
 		)*(2.0*M_PI*x);
 		//
-		// dphi/dn3
+		// dphi/dn3, RSLT2 version
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
 		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
 		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
 		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dn3, q=2 case, PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn3, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
 		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
 		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dn3, q=3 case, PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn3, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
 			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
 			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
@@ -794,19 +794,19 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Ri)*(raj/Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dnv2
+		// dphi/dnv2, RSLT2 version
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
 		//)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dnv2, q=2 case, PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dnv2, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
 		//)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dnv2, q=2 case, PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dnv2, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
