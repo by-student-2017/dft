@@ -344,7 +344,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
 	}
 	//integral_simpson(double *f, int n, double dx)
-	rho_si_out = integral_simpson(rho_si_int_j, nstep, dr);
+	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
 	//
 	return rho_si_out;
 }
@@ -502,11 +502,11 @@ double calc_alpha(double *r){
 				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*double(k));
 			}
 			//integral_simpson(double *f, int n, double dx)
-			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh, drc);
+			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh-1, drc);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep, dr)*2.0*dr;
-		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep, dr);
+		//alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr)*2.0*dr;
+		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr);
 	}
 	alpha_other_method  = alpha_other_method * 2.0 * dr / (H-sigma_ss);
 	//std::cout << "--------------------------------------------------" << std::endl;
@@ -539,7 +539,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 				phi_int_k[k]  = phi_att(ra)*(tpidrc*double(k));
 			}
-		phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh, drc);
+		phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh-1, drc);
 		}
 	}
 	return 0;
@@ -593,15 +593,15 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		//	rho_phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 		//} // old ver.1.1.1
 		//integral_simpson(double *f, int n, double dx)
-		//rho_phi_int_j[j]  = integral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.0
-		//rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.1
+		//rho_phi_int_j[j]  = integral_simpson(rho_phi_int_k, nrmesh-1, drc); // old ver.1.1.0
+		//rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nrmesh-1, drc); // old ver.1.1.1
 		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
 	}
 	double rho_dfex_int;
 	double rho_phi_int;
 	//integral_simpson(double *f, int n, double dx)
-	rho_dfex_int = integral_simpson(rho_dfex_int_j, nstep, dr);
-	rho_phi_int  = integral_simpson(rho_phi_int_j, nstep, dr);
+	rho_dfex_int = integral_simpson(rho_dfex_int_j, nstep-1, dr);
+	rho_phi_int  = integral_simpson(rho_phi_int_j, nstep-1, dr);
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
@@ -794,7 +794,7 @@ int main(){
 			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
 			//v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
-		v_gamma = integral_simpson(rho, nstep, dr);
+		v_gamma = integral_simpson(rho, nstep-1, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
@@ -843,11 +843,11 @@ int main(){
 		//}
 		//
 		//v_gamma = 0.0;
-		//for (i=0; i<nstep/2; i++){
+		//for (i=0; i<=(nstep-2)/2; i++){
 			//std::cout << r[i] << ", " << rho[i] << std::endl;
 		//	v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
-		v_gamma = integral_simpson(rho, nstep, dr);
+		v_gamma = integral_simpson(rho, nstep-1, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;

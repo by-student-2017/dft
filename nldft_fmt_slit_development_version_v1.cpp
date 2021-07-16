@@ -572,20 +572,20 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//std::cout << i << ", " << j << ", " << rho[j] << ", " << n0_j[j] << ", " << n1_j[j] << ", " << n2_j[j] << ", " << n3_j[j] << ", " << nv1_j[j] << ", " << nv2_j[j] << std::endl;
 	}
     //integral_trapezoidal(double *f, int n, double dx)
-	//n0[i] = integral_trapezoidal(n0_j, nstep, dr);
-	//n1[i] = integral_trapezoidal(n1_j, nstep, dr);
-	//n2[i] = integral_trapezoidal(n2_j, nstep, dr);
-	//n3[i] = integral_trapezoidal(n3_j, nstep, dr);
-	//nv1[i] = integral_trapezoidal(nv1_j, nstep, dr);
-	//nv2[i] = integral_trapezoidal(nv2_j, nstep, dr);
+	//n0[i] = integral_trapezoidal(n0_j, nstep-1, dr);
+	//n1[i] = integral_trapezoidal(n1_j, nstep-1, dr);
+	//n2[i] = integral_trapezoidal(n2_j, nstep-1, dr);
+	//n3[i] = integral_trapezoidal(n3_j, nstep-1, dr);
+	//nv1[i] = integral_trapezoidal(nv1_j, nstep-1, dr);
+	//nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	n0[i] = integral_simpson(n0_j, nstep, dr);
-	n1[i] = integral_simpson(n1_j, nstep, dr);
-	n2[i] = integral_simpson(n2_j, nstep, dr);
-	n3[i] = integral_simpson(n3_j, nstep, dr);
-	nv1[i] = integral_simpson(nv1_j, nstep, dr);
-	nv2[i] = integral_simpson(nv2_j, nstep, dr);
+	n0[i] = integral_simpson(n0_j, nstep-1, dr);
+	n1[i] = integral_simpson(n1_j, nstep-1, dr);
+	n2[i] = integral_simpson(n2_j, nstep-1, dr);
+	n3[i] = integral_simpson(n3_j, nstep-1, dr);
+	nv1[i] = integral_simpson(nv1_j, nstep-1, dr);
+	nv2[i] = integral_simpson(nv2_j, nstep-1, dr);
 	//
 	//std::cout << "i, r[i], j, r[j], raj, xs, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
 	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << raj << ", " << xs << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
@@ -731,20 +731,20 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//
 	}
     //integral_trapezoidal(double *f, int n, double dx)
-	//dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep, dr);
-	//dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep, dr);
-	//dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, nstep, dr);
-	//dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, nstep, dr);
-	//dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, nstep, dr);
-	//dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, nstep, dr);
+	//dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep-1, dr);
+	//dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep-1, dr);
+	//dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, nstep-1, dr);
+	//dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, nstep-1, dr);
+	//dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, nstep-1, dr);
+	//dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, nstep-1, dr);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	dphi_per_n0 = integral_simpson(dphi_per_n0_j, nstep, dr);
-	dphi_per_n1 = integral_simpson(dphi_per_n1_j, nstep, dr);
-	dphi_per_n2 = integral_simpson(dphi_per_n2_j, nstep, dr);
-	dphi_per_n3 = integral_simpson(dphi_per_n3_j, nstep, dr);
-	dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, nstep, dr);
-	dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, nstep, dr);
+	dphi_per_n0 = integral_simpson(dphi_per_n0_j, nstep-1, dr);
+	dphi_per_n1 = integral_simpson(dphi_per_n1_j, nstep-1, dr);
+	dphi_per_n2 = integral_simpson(dphi_per_n2_j, nstep-1, dr);
+	dphi_per_n3 = integral_simpson(dphi_per_n3_j, nstep-1, dr);
+	dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, nstep-1, dr);
+	dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, nstep-1, dr);
 	//
 	//std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
 	//std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
@@ -780,11 +780,11 @@ double calc_alpha(double *r){
 				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*double(k));
 			}
 			//integral_simpson(double *f, int n, double dx)
-			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh, drc);
+			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh-1, drc);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep, dr)*2.0*dr;
-		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep, dr);
+		//alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr)*2.0*dr;
+		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr);
 	}
 	alpha_other_method  = alpha_other_method * 2.0 * dr / (H-sigma_ss);
 	//std::cout << "--------------------------------------------------" << std::endl;
@@ -817,7 +817,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 				phi_int_k[k]  = phi_att(ra)*(tpidrc*double(k));
 			}
-			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh, drc);
+			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh-1, drc);
 		}
 	}
 	return 0;
@@ -871,8 +871,8 @@ double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, d
 		//	rho_phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
 		//} // old ver.1.1.1
 		//integral_simpson(double *f, int n, double dx)
-		//rho_phi_int_j[j]  = integral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.0
-		//rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nrmesh, drc); // old ver.1.1.1
+		//rho_phi_int_j[j]  = integral_simpson(rho_phi_int_k, nrmesh-1, drc); // old ver.1.1.0
+		//rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nrmesh-1, drc); // old ver.1.1.1
 		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
 	}
 	//integral_simpson(double *f, int n, double dx)
@@ -1136,7 +1136,7 @@ int main(){
 			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
 			//v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
-		v_gamma = integral_simpson(rho, nstep, dr);
+		v_gamma = integral_simpson(rho, nstep-1, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
