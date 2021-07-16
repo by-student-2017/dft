@@ -219,8 +219,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-2.0*h0)/0.02 + 0.5);
-		//nstep = int((H-2.0*(ze+sigma_sf))/0.02 + 0.5);
+		//nstep = int((H-2.0*h0)/0.02 + 0.5);
+		nstep = int((H-(2.0*ze+sigma_sf))/0.02 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -275,9 +275,9 @@ void read_parameters(void){
 	std::cout << "ze+sigma_sf = " << ze_ssf << " [nm]" << std::endl;
 	std::cout << "2.0*(ze+sigma_sf) = " << 2.0*ze_ssf << " [nm]" << std::endl;
 	
-	w_pw = (H-2.0*(ze+sigma_sf)); // pore width [nm]
+	w_pw = (H-(2.0*ze+sigma_sf)); // pore width [nm]
 	//dr = H/double(nstep-1);
-	dr = (H-2.0*(ze+sigma_sf))/double(nstep-1);
+	dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
 	//w_pw = (H-sigma_ss); // pore width [nm]
 	//dr = (H-sigma_ss)/double(nstep+1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
@@ -1093,7 +1093,7 @@ int main(){
 		//r[i] = sigma_ss*1.74/2.0 + dr*double(i) + dr/2.0; // dr = (H-sigma_ss*1.74)/double(nstep+1);
 		//r[i] = sigma_ss/2.0 + dr*double(i); // dr = (H-sigma_ss)/double(nstep+1);
 		//r[i] = dr*double(i);
-		r[i] = (ze+sigma_sf) + dr*double(i); // dr = (H-2.0*(ze+sigma_sf))/double(nstep-1);
+		r[i] = (2.0*ze+sigma_sf) + dr*double(i); // dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1112,10 +1112,10 @@ int main(){
 	}
 	// volume and pressure
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
-	ofsppov << "# w = (H-2.0*(ze-sigma_sf)) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov << "# w = (H-(2.0*ze-sigma_sf)) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov << "# P/P0, V[molecules/nm^3], V[mmol/cm^3]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "w = (H-2.0*(ze-sigma_sf)) = pore width = " << w_pw << " [nm]" << std::endl;
+	std::cout << "w = (H-(2.0*ze-sigma_sf)) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm^3], V[mmol/cm^3]" << std::endl;
 	double rho_sj[nstep];
 	double rho_s0j[nstep];
@@ -1182,7 +1182,7 @@ int main(){
 		//}
 		v_gamma = integral_simpson(rho, nstep, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		v_gamma = v_gamma/(H-2.0*(ze+sigma_sf)) - rho_b;
+		v_gamma = v_gamma/(H-(2.0*ze+sigma_sf)) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
