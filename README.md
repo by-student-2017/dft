@@ -14,7 +14,7 @@
 ##  NLDFT (SDA) beta version 0.9.2 (OpenMPI parallel calculation) (July/10/2021)
 	sudo apt update
 	sudo apt -y openmpi-bin
-	cd NLDFT_SDA_Slit_v1.1.1
+	cd NLDFT_SDA_Slit_v0.9.2
 	gedit temp_parameters.txt
 	chmod +x run_openmpi.sh
 	./run_openmpi.sh 4
@@ -24,7 +24,7 @@
 ##  NLDFT (SDA) beta version 0.9.2 (OpenMP parallel calculation) (July/9/2021)
 	sudo apt update
 	sudo apt -y g++
-	cd NLDFT_SDA_Slit_v1.1.1
+	cd NLDFT_SDA_Slit_v0.9.2
 	gedit temp_parameters.txt
 	chmod +x run_openmp.sh
 	./run_openmp.sh 2
@@ -34,7 +34,7 @@
 ##  NLDFT (FMT) beta version 0.9.0 (July/16/2021)
 	sudo apt update
 	sudo apt -y g++
-	cd NLDFT_FMT_Slit_v1.0.0
+	cd NLDFT_FMT_Slit_v0.9.0
 	gedit temp_parameters.txt
 	chmod +x run.sh
 	./run.sh
@@ -44,7 +44,7 @@
 ##  NLDFT (SDA) beta version 0.9.0 (July/7/2021)
 	sudo apt update
 	sudo apt -y g++
-	cd NLDFT_SDA_Slit_v1.0.0
+	cd NLDFT_SDA_Slit_v0.9.0
 	gedit temp_parameters.txt
 	chmod +x run.sh
 	./run.sh
