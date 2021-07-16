@@ -1150,6 +1150,10 @@ int main(){
 			//std::cout << "--------------------------------------------------" << std::endl;
 			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
 		//
 		//v_gamma = 0.0;
 		//for (i=0; i<=(nstep-2)/2; i++){
