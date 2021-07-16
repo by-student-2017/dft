@@ -1141,7 +1141,7 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				//rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
