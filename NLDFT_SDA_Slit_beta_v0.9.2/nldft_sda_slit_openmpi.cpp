@@ -790,7 +790,7 @@ MPI::Init();
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
 			if ( (diff/nstep*100.0) < 5.0) {
@@ -799,6 +799,10 @@ MPI::Init();
 			//std::cout << "--------------------------------------------------" << std::endl;
 			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
 		//
 		//v_gamma = 0.0;
 		//for (i=0; i<=(nstep-2)/2; i++){
@@ -842,7 +846,7 @@ MPI::Init();
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
 			if ( (diff/nstep*100.0) < 5.0) {
@@ -851,6 +855,10 @@ MPI::Init();
 			//std::cout << "--------------------------------------------------" << std::endl;
 			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
 		//
 		//v_gamma = 0.0;
 		//for (i=0; i<nstep/2; i++){
