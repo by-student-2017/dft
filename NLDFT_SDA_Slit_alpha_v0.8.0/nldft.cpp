@@ -257,14 +257,14 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_int_k[nrmesh];
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nrmesh; k++) {
-			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh)),2.0);
+			ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*rc/double(nrmesh-1)),2.0);
 			ra = std::pow(ra,0.5);
 			//std::cout << ra << std::endl;
 			//
-			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh)));
+			rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*rc/double(nrmesh-1)));
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = integral_simpson(rho_si_int_k, nrmesh-1, (rc/double(nrmesh)));
+		rho_si_int_j[j] = integral_simpson(rho_si_int_k, nrmesh-1, (rc/double(nrmesh-1)));
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
