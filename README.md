@@ -38,6 +38,7 @@
 	gedit temp_parameters.txt
 	chmod +x run.sh
 	./run.sh
+- With only two weeks to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
 
 
 ##  NLDFT (SDA) beta version 0.9.0 (July/7/2021)
