@@ -509,8 +509,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double raj;
 	double xf, xs, xf2, xs2;
 	double Rif, Ris;
-	Rif = d_hs/2.0;
-	//Ris = 0.2217; // Ris is the hard-sphere radius of carbon
+	Rif = d_hs/2.0; // [nm], Rif is the hard-sphere radius of fluid
+	//Ris = 0.2217; // [nm], Ris is the hard-sphere radius of solid (for QSDFT)
 	//
 	// Memo
 	// x = y = sqrt(Ri^2-z^2)
@@ -536,33 +536,34 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		} else{
 			xf = 0.0;
 		}
-		xs2 = (Ris*Ris-raj*raj);
-		if ( xs2 >= 0.0 ){
-			xs = std::sqrt(xs2);
-		} else{
-			xs = 0.0;
-		}
+		//xs2 = (Ris*Ris-raj*raj);
+		//if ( xs2 >= 0.0 ){
+		//	xs = std::sqrt(xs2);
+		//} else{
+		//	xs = 0.0;
+		//}
+		//
 		//n0_j[j] = (rho[j])/(4.0*M_PI*Rif*Rif)*(2.0*M_PI*x);
 		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*x;
-		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs;
+		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs; // For QSDFT
 		n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf;
 		//
 		//n1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(2.0*M_PI*x);
 		//n1_j[j] = (rho[j])/(2.0*Rif)*x;
-		//n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs;
+		//n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs; // For QSDFT
 		n1_j[j] = (rho[j])/(2.0*Rif)*xf;
 		//
-		//n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
+		//n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs); // For QSDFT
 		n2_j[j] = (rho[j])*(2.0*M_PI*xf);
 		//
-		//n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
+		//n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs); // For QSDFT
 		n3_j[j] = (rho[j])*(M_PI*xf*xf);
 		//
 		//nv1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(raj/Rif)*(2.0*M_PI*x);
-		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs;
+		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs; // For QSDFT
 		nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf;
 		//
-		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs);
+		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs); // For QSDFT
 		nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf);
 		
 		//
@@ -612,8 +613,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double sxi;
 	double sign;
 	double Rif, Ris;
-	Rif = d_hs/2.0;
-	//Ris = 0.2217; // [nm] Ris is the hard-sphere radius of carbon
+	Rif = d_hs/2.0; // [nm] Rif is the hard-sphere radius of fluid
+	//Ris = 0.2217; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
 	//
 	// Memo
 	// df(x)/dx = [d/dx1,...,d/dxn]t * [f1(x),...,fn(x)]
@@ -1088,7 +1089,6 @@ int main(){
 	double nv1_j[nstep], nv1[nstep];
 	double nv2_j[nstep], nv2[nstep];
 	double c1;
-	double check_c1xi;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -1103,7 +1103,6 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//dfex_int[i] = -c1*(kb1*T);
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
@@ -1127,10 +1126,10 @@ int main(){
 			//std::cout << "--------------------------------------------------" << std::endl;
 			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
-		for (i=0; i<nstep; i++){
-			std::cout << "--------------------------------------------------" << std::endl;
-			std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
 		//
 		//v_gamma = 0.0;
 		//for (i=0; i<=(nstep-2)/2; i++){

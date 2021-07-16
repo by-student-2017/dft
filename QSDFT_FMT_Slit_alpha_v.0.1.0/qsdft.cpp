@@ -580,8 +580,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double raj;
 	double xf, xs, xf2, xs2;
 	double Rif, Ris;
-	Rif = d_hs/2.0;
-	Ris = 0.2217; // Ris is the hard-sphere radius of carbon
+	Rif = d_hs/2.0; // [nm], Rif is the hard-sphere radius of fluid
+	Ris = 0.2217;   // [nm], Ris is the hard-sphere radius of solid
 	//
 	// Memo
 	// x = y = sqrt(Ri^2-z^2)
@@ -599,12 +599,6 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	//nv2 = integral rho(r)*(Rvi/Ri) dr, r=Ri, Rvi = vector Ri
 	//nv2 = integral rho(z)*(z/Ri)*(2.0*M_PI*x) dxdr, z<Ri, x^2+z^2=Ri^2, Rvi = vector Ri
 	//
-	//n0[i] = 0.0;
-	//n1[i] = 0.0;
-	//n2[i] = 0.0;
-	//n3[i] = 0.0;
-	//nv1[i] = 0.0;
-	//nv2[i] = 0.0;
 	for (j=0; j<nstep; j++) {
 		raj = (r[j]-r[i]);
 		xf2 = (Rif*Rif-raj*raj);
@@ -646,13 +640,6 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//std::cout << i << ", " << j << ", " << r[i] << ", " << r[j] << ", " << raj << ", " << x << std::endl;
 		//std::cout << "i, j, rho[j], n0_j[j], n1_j[j], n2_j[j], n3_j[j], nv1_j[j], nv2_j[j]" << std::endl;
 		//std::cout << i << ", " << j << ", " << rho[j] << ", " << n0_j[j] << ", " << n1_j[j] << ", " << n2_j[j] << ", " << n3_j[j] << ", " << nv1_j[j] << ", " << nv2_j[j] << std::endl;
-		//
-		//n0[i] = n0[i] + n0_j[j]*dr;
-		//n1[i] = n1[i] + n1_j[j]*dr;
-		//n2[i] = n2[i] + n2_j[j]*dr;
-		//n3[i] = n3[i] + n3_j[j]*dr;
-		//nv1[i] = nv1[i] + nv1_j[j]*dr;
-		//nv2[i] = nv2[i] + nv2_j[j]*dr;
 	}
     //integral_trapezoidal(double *f, int n, double dx)
 	//n0[i] = integral_trapezoidal(n0_j, nstep, dr);
@@ -696,8 +683,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double sxi;
 	double sign;
 	double Rif, Ris;
-	Rif = d_hs/2.0;
-	Ris = 0.2217; // [nm] Ris is the hard-sphere radius of carbon
+	Rif = d_hs/2.0; // [nm], Rif is the hard-sphere radius of fluid
+	Ris = 0.2217;   // [nm], Ris is the hard-sphere radius of solid
 	//
 	// Memo
 	// df(x)/dx = [d/dx1,...,d/dxn]t * [f1(x),...,fn(x)]
@@ -733,11 +720,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			// nv2/n2 < 0  ->  -nv2/n2 = -sxi
 			sign = -1.0;
 		}
-		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j]), RSLT2 version
-		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
-		//)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn2, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+				* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
+		)*(2.0*M_PI*x);
 		//
 		// dphi/dn2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
@@ -753,17 +741,17 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//)*(2.0*M_PI*x);
 		//
 		// dphi/dn2, q=3 case, RSLT version, PHYSICAL REVIEW E 64 011602
-		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
-			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
-		)*(2.0*M_PI*x);
+		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//	* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
+		//)*(2.0*M_PI*x);
 		//
-		// dphi/dn3, RSLT2 version
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn3, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
+		)*(M_PI*x*x);
 		//
 		// dphi/dn3, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
@@ -772,10 +760,10 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn3, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		//)*(M_PI*x*x);
 		//
 		// dphi/dn3 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
@@ -789,11 +777,11 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Rif)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Rif)*(raj/Rif)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dnv2, RSLT2 version
-		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
-		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dnv2, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+				* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
+		)*(raj/Rif)*(2.0*M_PI*x);
 		//
 		// dphi/dnv2, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
@@ -802,10 +790,10 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
-		)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//	* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
+		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
