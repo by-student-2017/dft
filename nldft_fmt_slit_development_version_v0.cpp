@@ -321,44 +321,44 @@ double wi(double r, int i){
 	return wi_out;
 }
 
-// Tarazona theory
-double rho_si(double *rho, double r1, double *r, int i){
-	int j,k;
-	double ra;
-	double raj;
-	double rak;
-	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh-1);
-	//dd = drc;
-	double tpidd = 2.0*M_PI*dd;
-	double rho_si_out;
-	double rho_si_int_j[nstep];
-	double rho_si_int_k[nrmesh];
-	rho_si_int_k[0] = 0.0;
-	for (j=0; j<nstep; j++) {
-		raj = (r1-r[j]);
-		for (k=1; k<ndmesh; k++) {
-			rak = dd*double(k);
-			//ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
-			//ra = (r1-r[j])*(r1-r[j]) + (double(k)*dd)*(double(k)*dd);
-			ra = raj*raj + rak*rak;
-			//ra = std::pow(ra,0.5);
-			ra = std::sqrt(ra);
-			//std::cout << ra << std::endl;
-			//
-			//rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
-			//rho_si_int_k[k] = wi(ra,i)*(2.0*M_PI*(double(k)*dd));
-			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
-		}
-		//integral_simpson(double *f, int n, double dx)
-		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
-	}
-	//integral_simpson(double *f, int n, double dx)
-	rho_si_out = integral_simpson(rho_si_int_j, nstep, dr);
-	//
-	return rho_si_out;
-}
+// Tarazona theory, for SDA
+//double rho_si(double *rho, double r1, double *r, int i){
+//	int j,k;
+//	double ra;
+//	double raj;
+//	double rak;
+//	//double ndmesh = 2*d_hs*nrmesh/rc;
+//	//double dd = 2.0*d_hs/double(ndmesh-1);
+//	//dd = drc;
+//	double tpidd = 2.0*M_PI*dd;
+//	double rho_si_out;
+//	double rho_si_int_j[nstep];
+//	double rho_si_int_k[nrmesh];
+//	rho_si_int_k[0] = 0.0;
+//	for (j=0; j<nstep; j++) {
+//		raj = (r1-r[j]);
+//		for (k=1; k<ndmesh; k++) {
+//			rak = dd*double(k);
+//			//ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
+//			//ra = (r1-r[j])*(r1-r[j]) + (double(k)*dd)*(double(k)*dd);
+//			ra = raj*raj + rak*rak;
+//			//ra = std::pow(ra,0.5);
+//			ra = std::sqrt(ra);
+//			//std::cout << ra << std::endl;
+//			//
+//			//rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
+//			//rho_si_int_k[k] = wi(ra,i)*(2.0*M_PI*(double(k)*dd));
+//			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
+//		}
+//		//integral_simpson(double *f, int n, double dx)
+//		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
+//		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
+//	}
+//	//integral_simpson(double *f, int n, double dx)
+//	rho_si_out = integral_simpson(rho_si_int_j, nstep, dr);
+//	//
+//	return rho_si_out;
+//}
 
 // smoothed density approximation (SDA)
 //double rho_s(double *rho, double r1, double *r){
@@ -373,31 +373,31 @@ double rho_si(double *rho, double r1, double *r, int i){
 //}
 
 // smoothed density approximation (SDA), modified version
-double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
-	int j;
-	double rho_den1j, rho_den2j;
-	for (j=0; j<nstep; j++) {
-		rho_s0j[j] = rho_si(rho, r[j], r, 0);
-		rho_s1j[j] = rho_si(rho, r[j], r, 1);
-		rho_s2j[j] = rho_si(rho, r[j], r, 2);
-		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
-		rho_den1j = (1.0 - rho_s1j[j]);
-		rho_den1j = rho_den1j * rho_den1j;
-		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
-		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
-		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
-		// to avoide nan
-		if ( rho_den2j > 0 ) {
-			rho_den2j = std::sqrt(rho_den2j);
-		} else {
-			rho_den2j = 0.0;
-		}
-		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
-		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
-		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
-	}
-	return 0;
-}
+//double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
+//	int j;
+//	double rho_den1j, rho_den2j;
+//	for (j=0; j<nstep; j++) {
+//		rho_s0j[j] = rho_si(rho, r[j], r, 0);
+//		rho_s1j[j] = rho_si(rho, r[j], r, 1);
+//		rho_s2j[j] = rho_si(rho, r[j], r, 2);
+//		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
+//		rho_den1j = (1.0 - rho_s1j[j]);
+//		rho_den1j = rho_den1j * rho_den1j;
+//		//rho_den2j = std::pow((rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]),0.5);
+//		//rho_den2j = std::sqrt(rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j]);
+//		rho_den2j = rho_den1j - 4.0*rho_s0j[j]*rho_s2j[j];
+//		// to avoide nan
+//		if ( rho_den2j > 0 ) {
+//			rho_den2j = std::sqrt(rho_den2j);
+//		} else {
+//			rho_den2j = 0.0;
+//		}
+//		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
+//		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
+//		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
+//	}
+//	return 0;
+//}
 
 // Steele 10-4-3 potential
 double phi_sf(double z){
@@ -459,31 +459,32 @@ double mu_b(double rho_b){
 	return mu_b_out;
 }
 
-double f_ex(double rho_s){
-	double eta, f_ex_out;
-	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
-	double den1e = (1.0-eta);
-	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
-	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/((1.0-eta)*(1.0-eta));
-	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/(den1e*den1e);
-	return f_ex_out;
-}
+// For SDA
+//double f_ex(double rho_s){
+//	double eta, f_ex_out;
+//	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
+//	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
+//	double den1e = (1.0-eta);
+//	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
+//	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/((1.0-eta)*(1.0-eta));
+//	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/(den1e*den1e);
+//	return f_ex_out;
+//}
 
-// d(f_ex)/d(rho_s)
-double dfex_per_drhos(double rho_s){
-	double dfex_per_drhos_out;
-	double eta;
-	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
-	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
-	double den1e = (1.0-eta);
-	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/std::pow((1.0-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
-	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta))*M_PI*(d_hs*d_hs*d_hs)/6.0;
-	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/(den1e*den1e*den1e)*(M_PI*(d_hs*d_hs*d_hs)/6.0);
-	return dfex_per_drhos_out;
-}
+// d(f_ex)/d(rho_s), for SDA
+//double dfex_per_drhos(double rho_s){
+//	double dfex_per_drhos_out;
+//	double eta;
+//	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
+//	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
+//	double den1e = (1.0-eta);
+//	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/std::pow((1.0-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
+//	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta))*M_PI*(d_hs*d_hs*d_hs)/6.0;
+//	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/(den1e*den1e*den1e)*(M_PI*(d_hs*d_hs*d_hs)/6.0);
+//	return dfex_per_drhos_out;
+//}
 
-// d(rho_s)/d(rho)
+// d(rho_s)/d(rho), for SDA
 //double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
 //	double w, drhos_per_drho_out;
 //	// Percus-Yevick approximation, Tarazona theory
@@ -492,15 +493,15 @@ double dfex_per_drhos(double rho_s){
 //	return drhos_per_drho_out;
 //}
 
-// d(rho_s)/d(rho), modified version
-double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
-	double w, drhos_per_drho_out;
-	// Percus-Yevick approximation, Tarazona theory
-	//w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
-	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*(rho_sj*rho_sj);
-	drhos_per_drho_out = w/(1.0-rho_s1j-2.0*rho_s2j*rho_sj);
-	return drhos_per_drho_out;
-}
+// d(rho_s)/d(rho), modified version, for SDA
+//double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
+//	double w, drhos_per_drho_out;
+//	// Percus-Yevick approximation, Tarazona theory
+//	//w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
+//	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*(rho_sj*rho_sj);
+//	drhos_per_drho_out = w/(1.0-rho_s1j-2.0*rho_s2j*rho_sj);
+//	return drhos_per_drho_out;
+//}
 
 double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_j, double *n3_j, double *nv1_j, double *nv2_j,
 		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
@@ -1150,10 +1151,10 @@ int main(){
 			//std::cout << "--------------------------------------------------" << std::endl;
 			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
-		//for (i=0; i<nstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
+		for (i=0; i<nstep; i++){
+			std::cout << "--------------------------------------------------" << std::endl;
+			std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		}
 		//
 		//v_gamma = 0.0;
 		//for (i=0; i<=(nstep-2)/2; i++){
