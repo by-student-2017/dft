@@ -5,7 +5,7 @@
 04_wmixing=0.0001
 05_epsilon_ff=94.45
 06_sigma_ff=0.3575
-07_d_hs=0.3575
+07_d_hs=0.0
 08_rc=0.0
 09_nrmesh=20
 10_epsilon_sf=53.22
