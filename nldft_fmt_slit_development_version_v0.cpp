@@ -1096,10 +1096,10 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2] (now,dummy)" << std::endl;
-	double rho_sj[nstep];
-	double rho_s0j[nstep];
-	double rho_s1j[nstep];
-	double rho_s2j[nstep];
+	//double rho_sj[nstep];
+	//double rho_s0j[nstep];
+	//double rho_s1j[nstep];
+	//double rho_s2j[nstep];
 	double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	//double rho_dfex_int[nstep];
