@@ -576,13 +576,12 @@ double mu_b(double rho_b){
 
 double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_j, double *n3_j, double *nv1_j, double *nv2_j,
 		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
-	int j,k;
-	double ra;
+	int j;
 	double raj;
 	double xf, xs, xf2, xs2;
-	double Ri;
-	//Ri = d_hs;
-	Ri = 0.2217; // Ri is the hard-sphere radius
+	double Rif, Ris;
+	Rif = d_hs/2.0;
+	Ris = 0.2217; // Ris is the hard-sphere radius of carbon
 	//
 	// Memo
 	// x = y = sqrt(Ri^2-z^2)
@@ -608,35 +607,40 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	//nv2[i] = 0.0;
 	for (j=0; j<nstep; j++) {
 		raj = (r[j]-r[i]);
-		xf2 = (d_hs*d_hs-raj*raj);
+		xf2 = (Rif*Rif-raj*raj);
 		if ( xf2 >= 0.0 ){
 			xf = std::sqrt(xf2);
 		} else{
 			xf = 0.0;
 		}
-		xs2 = (Ri*Ri-raj*raj);
+		xs2 = (Ris*Ris-raj*raj);
 		if ( xs2 >= 0.0 ){
 			xs = std::sqrt(xs2);
 		} else{
 			xs = 0.0;
 		}
-		//n0_j[j] = (rho[j])/(4.0*M_PI*Ri*Ri)*(2.0*M_PI*x);
-		//n0_j[j] = (rho[j])/(2.0*Ri*Ri)*x;
-		n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri*Ri)*xs;
-		//n0_j[j] = (rho[j])/(2.0*d_hs*d_hs)*xf;
-		//n1_j[j] = (rho[j])/(4.0*M_PI*Ri)*(2.0*M_PI*x);
-		//n1_j[j] = (rho[j])/(2.0*Ri)*x;
-		n1_j[j] = (rho[j])/(2.0*d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ri)*xs;
-		//n1_j[j] = (rho[j])/(2.0*d_hs)*xf;
+		//n0_j[j] = (rho[j])/(4.0*M_PI*Rif*Rif)*(2.0*M_PI*x);
+		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*x;
+		n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs;
+		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf;
+		//
+		//n1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(2.0*M_PI*x);
+		//n1_j[j] = (rho[j])/(2.0*Rif)*x;
+		n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs;
+		//n1_j[j] = (rho[j])/(2.0*Rif)*xf;
+		//
 		n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
 		//n2_j[j] = (rho[j])*(2.0*M_PI*xf);
+		//
 		n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
 		//n3_j[j] = (rho[j])*(M_PI*xf*xf);
-		//nv1_j[j] = (rho[j])/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x);
-		nv1_j[j] = (rho[j])/(2.0*Ri)*(raj/d_hs)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0)*(raj/Ri)*xs;
-		//nv1_j[j] = (rho[j])/(2.0*d_hs)*(raj/d_hs)*xf;
-		nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ri)*(2.0*M_PI*xs);
-		//nv2_j[j] = (rho[j])*(raj/d_hs)*(2.0*M_PI*xf);
+		//
+		//nv1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(raj/Rif)*(2.0*M_PI*x);
+		nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs;
+		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf;
+		//
+		nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs);
+		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf);
 		
 		//
 		//std::cout << i << ", " << j << ", " << r[i] << ", " << r[j] << ", " << raj << ", " << x << std::endl;
@@ -679,10 +683,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 // phi3 = n2*n2*n2/(24*pi*(1-n3)*(1-n3)) * (1-3*|nv2/n2|*|nv2/n2|+2*|nv2/n2|*|nv2/n2|*|nv2/n2|)
 // Only the z-axis components of nv1 and nv2 (with positive and negative) are remained due to symmetry.
 double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
-	int j,k;
-	double ra;
+	int j;
 	double raj;
-	double rak;
 	double x, x2;
 	double dfex_out;
 	double dphi_per_n0, dphi_per_n0_j[nstep];
@@ -693,10 +695,9 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double dphi_per_nv2, dphi_per_nv2_j[nstep];
 	double sxi;
 	double sign;
-	double tpidrc = 2.0*M_PI*drc;
-	double Ri;
-	Ri = d_hs;
-	//Ri = 0.2217; // [nm] Ri is the hard-sphere radius of carbon
+	double Rif, Ris;
+	Rif = d_hs/2.0;
+	Ris = 0.2217; // [nm] Ris is the hard-sphere radius of carbon
 	//
 	// Memo
 	// df(x)/dx = [d/dx1,...,d/dxn]t * [f1(x),...,fn(x)]
@@ -705,15 +706,9 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	// r > 0: d|r|/dr = dr/dr = [I] = 1
 	// r < 0: d|r|/dr = d(-r)/dr = -[I] = -1
 	//
-	dphi_per_n0 = 0.0;
-	dphi_per_n1 = 0.0;
-	dphi_per_n2 = 0.0;
-	dphi_per_n3 = 0.0;
-	dphi_per_nv1 = 0.0;
-	dphi_per_nv2 = 0.0;
 	for (j=0; j<nstep; j++) {
 		raj = (r[j]-r[i]);
-		x2 = (Ri*Ri-raj*raj);
+		x2 = (Rif*Rif-raj*raj);
 		if ( x2 >= 0.0 ){
 			x = std::sqrt(x2);
 		} else {
@@ -723,12 +718,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//std::cout << j << ", sxi = " << sxi << std::endl;
 		//
 		// dphi/dn0
-		//dphi_per_n0[j] = -std::log(1.0-n3[j])/(4.0*M_PI*Ri*Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_n0_j[j] = -std::log(1.0-n3[j])/(2.0*Ri*Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n0[j] = -std::log(1.0-n3[j])/(4.0*M_PI*Rif*Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_n0_j[j] = -std::log(1.0-n3[j])/(2.0*Rif*Rif)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn1
-		//dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(2.0*Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(4.0*M_PI*Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_n1_j[j] = ( n2[j]/(1.0-n3[j]) )/(2.0*Rif)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn2
 		if ( nv2[j]/n2[j] >= 0.0 ){
@@ -791,59 +786,52 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//)*(M_PI*x*x);
 		//
 		// dphi/dnv1
-		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Ri)*(raj/Ri)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Rif)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Rif)*(raj/Rif)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2, RSLT2 version
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
-		//)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
-		//)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
-		)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	- (1.0/(4.0*M_PI))*n2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
-		//)*(raj/Ri)*(2.0*M_PI*x);
-		//
-		//dphi_per_n0 = dphi_per_n0 + dphi_per_n0_j[j]*dr;
-		//dphi_per_n1 = dphi_per_n1 + dphi_per_n1_j[j]*dr;
-		//dphi_per_n2 = dphi_per_n2 + dphi_per_n2_j[j]*dr;
-		//dphi_per_n3 = dphi_per_n3 + dphi_per_n3_j[j]*dr;
-		//dphi_per_nv1 = dphi_per_nv1 + dphi_per_nv1_j[j]*dr;
-		//dphi_per_nv2 = dphi_per_nv2 + dphi_per_nv2_j[j]*dr;
+		//)*(raj/Rif)*(2.0*M_PI*x);
 	}
     //integral_trapezoidal(double *f, int n, double dx)
-	//dphi_per_n0  = -integral_trapezoidal(dphi_per_n0_j, nstep, dr);
-	//dphi_per_n1  = -integral_trapezoidal(dphi_per_n1_j, nstep, dr);
-	//dphi_per_n2  = -integral_trapezoidal(dphi_per_n2_j, nstep, dr);
-	//dphi_per_n3  = -integral_trapezoidal(dphi_per_n3_j, nstep, dr);
-	//dphi_per_nv1 = -integral_trapezoidal(dphi_per_nv1_j, nstep, dr);
-	//dphi_per_nv2 = -integral_trapezoidal(dphi_per_nv2_j, nstep, dr);
+	//dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep, dr);
+	//dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep, dr);
+	//dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, nstep, dr);
+	//dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, nstep, dr);
+	//dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, nstep, dr);
+	//dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, nstep, dr);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	dphi_per_n0 = -integral_simpson(dphi_per_n0_j, nstep, dr);
-	dphi_per_n1 = -integral_simpson(dphi_per_n1_j, nstep, dr);
-	dphi_per_n2 = -integral_simpson(dphi_per_n2_j, nstep, dr);
-	dphi_per_n3 = -integral_simpson(dphi_per_n3_j, nstep, dr);
-	dphi_per_nv1 = -integral_simpson(dphi_per_nv1_j, nstep, dr);
-	dphi_per_nv2 = -integral_simpson(dphi_per_nv2_j, nstep, dr);
+	dphi_per_n0 = integral_simpson(dphi_per_n0_j, nstep, dr);
+	dphi_per_n1 = integral_simpson(dphi_per_n1_j, nstep, dr);
+	dphi_per_n2 = integral_simpson(dphi_per_n2_j, nstep, dr);
+	dphi_per_n3 = integral_simpson(dphi_per_n3_j, nstep, dr);
+	dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, nstep, dr);
+	dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, nstep, dr);
 	//
 	//std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
 	//std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
 	//
-	dfex_out = dphi_per_n0 + dphi_per_n1 + dphi_per_n2 + dphi_per_n3 + dphi_per_nv1 + dphi_per_nv2;
+	dfex_out = -(dphi_per_n0 + dphi_per_n1 + dphi_per_n2 + dphi_per_n3 + dphi_per_nv1 + dphi_per_nv2);
 	//std::cout << dfex_out << std::endl;
 	return dfex_out;
 }
