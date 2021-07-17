@@ -150,6 +150,19 @@ double d_bh_calc(double epsilon, double sigma){
 	return d_bh_out;
 }
 
+//Barker-Henderson (BH) perturbation theory
+//double d_bh_calc(double epsilon, double sigma){
+//	//double epsilon = 94.45;
+//	//double sigma = 0.3575;
+//	//Lstoskie et al.,
+//	double d_bh_out;
+//	double Ts = kb*T/epsilon;
+//	d_bh_out = (1.0+0.2977*Ts)/(1.0+0.331637*Ts+0.00104771*Ts*Ts)*sigma;
+//	std::cout << "--------------------------------------------------" << std::endl;
+//	std::cout << "d = d_hs = " << d_bh_out << " [nm] at " << T << " [K] from Barker-Henderson (BH) perturbation theory" << std::endl;
+//	return d_bh_out;
+//}
+
 void read_parameters(void){
 	std::ifstream ifs("parameters.txt");
 	std::string str;
@@ -650,12 +663,6 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			// nv2/n2 < 0  ->  -nv2/n2 = -sxi
 			sign = -1.0;
 		}
-		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j]), RSLT2 version
-		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
-		//)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//
 		// dphi/dn2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 		//	+ (1.0/(8.0*M_PI))*n2[j]*n2[j]/((1.0-n3[j])*(1.0-n3[j])) 
@@ -676,23 +683,20 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
 		)*(2.0*M_PI*x);
 		//
-		// dphi/dn3, RSLT2 version
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn2, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
+		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
+		//)*(2.0*M_PI*x);
 		//
-		// dphi/dn3, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//
-		// dphi/dn3, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
-		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn2, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
+		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+		//	+ 3.0*n2[j]*n2[j]*std::log(1.0-n3[j])/(36.0*M_PI*n3[j]*n3[j])
+		//	+ 3.0*n2[j]*n2[j]/(36.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//	-nv2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j])
+		//	-nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//)*(2.0*M_PI*x);
 		//
 		// dphi/dn3 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
@@ -702,15 +706,52 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//	- (1.0/(12.0*M_PI))*n2[j]*nv2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//)*(M_PI*x*x);
 		//
+		// dphi/dn3, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		//)*(M_PI*x*x);
+		//
+		// dphi/dn3, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		)*(M_PI*x*x);
+		//
+		// dphi/dn3, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
+		//)*(M_PI*x*x);
+		//
+		// dphi/dn3, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	//
+		//	+ n1[j]*n2[j]/((1.0-n3[j])*(1.0-n3[j]))
+		//	//
+		//	- n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*n3[j]*(1.0-n3[j]))
+		//	-2.0*n2[j]*n2[j]*n2[j]*std::log(1.0-n3[j])/(36.0*M_PI*n3[j]*n3[j]*n3[j])
+		//	//
+		//	-n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//	+2.0*n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//	//
+		//	-nv1[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
+		//	//
+		//	+n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*n3[j]*(1.0-n3[j]))
+		//	+2.0*n2[j]*nv2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j]*n3[j])
+		//	//
+		//	+n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//	-2.0*n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//)*(M_PI*x*x);
+		//
 		// dphi/dnv1
 		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(2.0*Rif)*(raj/Rif)*x; // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dnv2, RSLT2 version
+		// dphi/dnv2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
-		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//	- (1.0/(4.0*M_PI))*n2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
+		//)*(raj/Rif)*(2.0*M_PI*x);
 		//
 		// dphi/dnv2, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
@@ -724,11 +765,17 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
 		)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
-		// dphi/dnv2 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
+		// dphi/dnv2, RSLT2 version
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-		//	- (1.0/(4.0*M_PI))*n2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
-		//)*(raj/Rif)*(2.0*M_PI*x);
+		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
+		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
+		// dphi/dnv2, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
+		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+		//	-2.0*n2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j])
+		//	-2.0*n2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//)*(raj/Rif)*(2.0*M_PI*x);
 	}
     //integral_trapezoidal(double *f, int n, double dx)
 	//dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep-1, dr);
