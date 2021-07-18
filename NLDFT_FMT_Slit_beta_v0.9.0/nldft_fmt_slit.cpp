@@ -523,7 +523,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double xf, xs, xf2, xs2;
 	double Rif, Ris;
 	Rif = d_hs/2.0; // [nm], Rif is the hard-sphere radius of fluid
-	//Ris = 0.2217; // [nm], Ris is the hard-sphere radius of solid (for QSDFT)
+	//Ris = 0.2217/2.0; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
+	// 2.217e-1 [m], The hard sphere diameter of carbon atoms
 	//
 	// Memo
 	// x = y = sqrt(Ri^2-z^2)
@@ -627,7 +628,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double sign;
 	double Rif, Ris;
 	Rif = d_hs/2.0; // [nm] Rif is the hard-sphere radius of fluid
-	//Ris = 0.2217; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
+	//Ris = 0.2217/2.0; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
+	// 2.217e-1 [m], The hard sphere diameter of carbon atoms
 	//
 	// Memo
 	// df(x)/dx = [d/dx1,...,d/dxn]t * [f1(x),...,fn(x)]
