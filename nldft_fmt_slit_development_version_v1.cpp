@@ -1075,9 +1075,25 @@ double Maxwell_construction(double *r){
 double fex(int i, double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
 	double fex_out;
 	double sxi = std::abs(nv2[i]/n2[i]);
+	double phi1, phi2, phi3;
+	phi1 = -n0[i]*std::log(1.0-n3[i]);
+	phi2 = (n1[i]*n2[i] - nv1[i]*nv2[i])/(1.0-n3[i]);
+	//
+	//phi3 = ((1.0/3.0)*n2[i]*n2[i]*n2[i] - n2[i]*(nv2[i]*nv2[i]))/(8.0*M_PI*(1.0-n3[i])*(1.0-n3[i]));
+	//
+	// RSLT1, q=2
+	//phi3 = n2[i]*n2[i]*n2[i]/(24.0*M_PI*(1.0-n3[i])*(1.0-n3[i]))*(1.0-sxi*sxi)*(1.0-sxi*sxi);
+	//
+	// RSLT1, q=3
+	//phi3 = n2[i]*n2[i]*n2[i]/(24.0*M_PI*(1.0-n3[i])*(1.0-n3[i]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi);
+	//
 	// RSLT2 version // PHYSICAL REVIEW E 64 011602
-	fex_out = -n0[i]*std::log(1.0-n3[i]) + (n1[i]*n2[i] - nv1[i]*nv2[i])/(1.0-n3[i])
-		+ n2[i]*n2[i]*n2[i]/(24.0*M_PI*(1.0-n3[i])*(1.0-n3[i]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi);
+	if ( nv2[i]/n2[i] < 0.0 ){
+		sxi = sxi*-1.0;
+	}
+	phi3 = n2[i]*n2[i]*n2[i]/(24.0*M_PI*(1.0-n3[i])*(1.0-n3[i]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi);
+	//
+	fex_out = phi1 + phi2 + phi3;
 	return fex_out;
 }
 
@@ -1094,7 +1110,7 @@ double omega(double *rho, double *r, double *fex_i, double *rho_phi_int, double 
 	for (i=0; i<nstep; i++){
 		fid[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0);
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
-		rho_x_phi_ext_mu[i] = rho[i]*(phi_ext(r[i]) - mu);
+		rho_x_phi_ext_mu[i] = rho[i] * (phi_ext(r[i]) - mu);
 	}
 	omega1 = (kb1*T) * integral_simpson(fid, nstep-1, dr); // Fid
 	omega2 = (kb1*T) * integral_simpson(fex_i, nstep-1, dr); // Fex
@@ -1168,6 +1184,82 @@ int main(){
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+		//std::cout << "--------------------------------------------------" << std::endl;
+		//std::cout << "rho_b = " << rho_b << std::endl;
+		for (j=0; j<cycle_max; j++){
+			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
+			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
+			for (i=0; i<nstep; i++){
+				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
+			}
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
+				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
+				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
+				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
+				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
+				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
+				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
+			}
+			diff = 0.0;
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
+				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + std::abs((rho_new[i]-rho[i])/rho[i]);
+			}
+			if ( (diff/nstep*100.0) < 5.0) {
+				break;
+			}
+			//std::cout << "--------------------------------------------------" << std::endl;
+			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
+		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
+		//
+		//v_gamma = 0.0;
+		//for (i=0; i<=(nstep-2)/2; i++){
+			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
+			//v_gamma = v_gamma + 2.0*rho[i]*dr;
+		//}
+		v_gamma = integral_simpson(rho, nstep-1, dr);
+		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
+		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
+		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
+		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		if (v_gamma < 0) { v_gamma = 0.0; }
+		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
+		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
+		//std::cout << "V= " << v_gamma << std::endl;
+		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
+		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
+		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+		//std::cout << "P= " << press_b << std::endl;
+		//std::cout << "P0= " << press_b0 << std::endl;
+		pp0 = press_b/press_b0;
+		//
+		// grand ppotential, Omega
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = omega(rho, r, fex_i, rho_phi_int, rho_b);
+		//
+		//std::cout << "P/P0= " << pp0 << std::endl;
+		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+	}
+	// reverse
+	for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
+		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
