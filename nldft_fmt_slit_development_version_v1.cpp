@@ -156,7 +156,7 @@ double d_bh_calc_v2(double epsilon, double sigma){
 	//double sigma = 0.3575;
 	//Lstoskie et al.,
 	double d_bh_out;
-	double Ts = kb*T/epsilon;
+	double Ts = kb1*T/epsilon;
 	d_bh_out = (1.0+0.2977*Ts)/(1.0+0.331637*Ts+0.00104771*Ts*Ts)*sigma;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "d = d_hs = " << d_bh_out << " [nm] at " << T << " [K] from Barker-Henderson (BH) perturbation theory" << std::endl;
@@ -669,51 +669,34 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//	- (1.0/(8.0*M_PI))*nv2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j])) 
 		//)*(2.0*M_PI*x);
 		//
-		// dphi/dn2, q=2 case, RSLT version, PHYSICAL REVIEW E 64 011602
+		// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
 		//)*(2.0*M_PI*x);
 		//
-		// dphi/dn2, q=3 case, RSLT version, PHYSICAL REVIEW E 64 011602
+		// dphi/dn2, q=3 case, RSLT version // PHYSICAL REVIEW E 64 011602
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
 		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
 		//)*(2.0*M_PI*x);
 		//
-		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j]), RSLT2 version
-		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
-		//)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dn2, RSLT2 version // PHYSICAL REVIEW E 64 011602
+		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+				* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
+		)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn2, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
-		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
-			+ 3.0*n2[j]*n2[j]*std::log(1.0-n3[j])/(36.0*M_PI*n3[j]*n3[j])
-			+ 3.0*n2[j]*n2[j]/(36.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
-			-nv2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j])
-			-nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
-		)*(2.0*M_PI*x);
-		//
-		// dphi/dn3, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//
-		// dphi/dn3, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//
-		// dphi/dn3, RSLT2 version
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+		//	+ 3.0*n2[j]*n2[j]*std::log(1.0-n3[j])/(36.0*M_PI*n3[j]*n3[j])
+		//	+ 3.0*n2[j]*n2[j]/(36.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//	-nv2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j])
+		//	-nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//)*(2.0*M_PI*x);
 		//
 		// dphi/dn3 // Cite as: J. Chem. Phys. 98, 8126 (1993); https://doi.org/10.1063/1.464569
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
@@ -723,25 +706,43 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//	- (1.0/(12.0*M_PI))*n2[j]*nv2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//)*(M_PI*x*x);
 		//
-		// dphi/dn3, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
+		// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//
+		// dphi/dn3, q=3 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//
+		// dphi/dn3, RSLT2 version
 		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-			//
-			+ n1[j]*n2[j]/((1.0-n3[j])*(1.0-n3[j]))
-			//
-			- n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*n3[j]*(1.0-n3[j]))
-			-2.0*n2[j]*n2[j]*n2[j]*std::log(1.0-n3[j])/(36.0*M_PI*n3[j]*n3[j]*n3[j])
-			//
-			-n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
-			+2.0*n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-			//
-			-nv1[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
-			//
-			+n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*n3[j]*(1.0-n3[j]))
-			+2.0*n2[j]*nv2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j]*n3[j])
-			//
-			+n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
-			-2.0*n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		)*(M_PI*x*x);
+			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
+		)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//
+		// dphi/dn3, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	//
+		//	+ n1[j]*n2[j]/((1.0-n3[j])*(1.0-n3[j]))
+		//	//
+		//	- n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*n3[j]*(1.0-n3[j]))
+		//	-2.0*n2[j]*n2[j]*n2[j]*std::log(1.0-n3[j])/(36.0*M_PI*n3[j]*n3[j]*n3[j])
+		//	//
+		//	-n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//	+2.0*n2[j]*n2[j]*n2[j]/(36.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//	//
+		//	-nv1[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
+		//	//
+		//	+n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*n3[j]*(1.0-n3[j]))
+		//	+2.0*n2[j]*nv2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j]*n3[j])
+		//	//
+		//	+n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//	-2.0*n2[j]*nv2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//)*(M_PI*x*x);
 		//
 		// dphi/dnv1
 		//dphi_per_nv1_j[j] = ( -nv2[j]/(1.0-n3[j]) )/(4.0*M_PI*Ri)*(raj/Ri)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
@@ -752,30 +753,31 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//	- (1.0/(4.0*M_PI))*n2[j]*nv2[j]/((1.0-n3[j])*(1.0-n3[j]))
 		//)*(raj/Rif)*(2.0*M_PI*x);
 		//
-		// dphi/dnv2, q=2 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dnv2, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
 		//)*(raj/Rif)*(2.0*M_PI*x);
 		//
-		// dphi/dnv2, q=3 case, RSLT version, PHYSICAL REVIEW E, VOLUME 64, 011602
+		// dphi/dnv2, q=3 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
 		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
 		//	* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
 		//)*(raj/Rif)*(2.0*M_PI*x);
 		//
 		// dphi/dnv2, RSLT2 version
-		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
-		//)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+				* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(sign*1.0/n2[j])
+		)*(raj/Rif)*(2.0*M_PI*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dnv2, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
-		dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
-			-2.0*n2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j])
-			-2.0*n2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
-		)*(raj/Rif)*(2.0*M_PI*x);
+		//dphi_per_nv2_j[j] = ( -nv1[j]/(1.0-n3[j])
+		//	-2.0*n2[j]*nv2[j]*std::log(1.0-n3[j])/(12.0*M_PI*n3[j]*n3[j])
+		//	-2.0*n2[j]*nv2[j]/(12.0*M_PI*n3[j]*(1.0-n3[j])*(1.0-n3[j]))
+		//)*(raj/Rif)*(2.0*M_PI*x);
 	}
+	//
     //integral_trapezoidal(double *f, int n, double dx)
 	//dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep-1, dr);
 	//dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep-1, dr);
@@ -1070,10 +1072,37 @@ double Maxwell_construction(double *r){
 //	return omega_out;
 //}
 
-// grand potential for FMT (now, dummy)
-double omega(double *rho, double *r, double *dfex_int, double *rho_phi_int){
+double fex(int i, double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
+	double fex_out;
+	double sxi = std::abs(nv2[i]/n2[i]);
+	// RSLT2 version // PHYSICAL REVIEW E 64 011602
+	fex_out = -n0[i]*std::log(1.0-n3[i]) + (n1[i]*n2[i] - nv1[i]*nv2[i])/(1.0-n3[i])
+		+ n2[i]*n2[i]*n2[i]/(24.0*M_PI*(1.0-n3[i])*(1.0-n3[i]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi);
+	return fex_out;
+}
+
+// grand potential for FMT
+double omega(double *rho, double *r, double *fex_i, double *rho_phi_int, double rho_b){
 	double omega_out;
 	omega_out = 1.0;
+	double omega1, omega2, omega3, omega4;
+	int i;
+	double fid[nstep];
+	double rho_x_rho_phi_int[nstep];
+	double rho_x_phi_ext_mu[nstep];
+	double mu = (kb1*T)*std::log(rho_b*lam*lam*lam) + mu_ex(rho_b) - rho_b*alpha;
+	for (i=0; i<nstep; i++){
+		fid[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0);
+		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
+		rho_x_phi_ext_mu[i] = rho[i]*(phi_ext(r[i]) - mu);
+	}
+	omega1 = (kb1*T) * integral_simpson(fid, nstep-1, dr); // Fid
+	omega2 = (kb1*T) * integral_simpson(fex_i, nstep-1, dr); // Fex
+	omega3 = 0.5 * integral_simpson(rho_x_rho_phi_int, nstep-1, dr);
+	omega4 = integral_simpson(rho_x_phi_ext_mu, nstep-1, dr);
+	//
+	omega_out = (omega1 + omega2 + omega3 + omega4) / epsilon_ff;
+	//std::cout << omega1 << ", " << omega2 << ", " << omega3 << ", " << omega4 << std::endl;
 	return omega_out;
 }
 
@@ -1115,10 +1144,10 @@ int main(){
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
 	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2] (now,dummy)" << std::endl;
+	ofsppov << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2] (now,dummy)" << std::endl;
+	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	//double rho_sj[nstep];
 	//double rho_s0j[nstep];
 	//double rho_s1j[nstep];
@@ -1128,13 +1157,14 @@ int main(){
 	//double rho_dfex_int[nstep];
 	double dfex_int[nstep];
 	double rho_phi_int[nstep];
-	double n0_j[nstep], n0[nstep];
-	double n1_j[nstep], n1[nstep];
-	double n2_j[nstep], n2[nstep];
-	double n3_j[nstep], n3[nstep];
-	double nv1_j[nstep], nv1[nstep];
-	double nv2_j[nstep], nv2[nstep];
+	double n0_j[nstep], n0[nstep];   // For FMT
+	double n1_j[nstep], n1[nstep];   // For FMT
+	double n2_j[nstep], n2[nstep];   // For FMT
+	double n3_j[nstep], n3[nstep];   // For FMT
+	double nv1_j[nstep], nv1[nstep]; // For FMT
+	double nv2_j[nstep], nv2[nstep]; // For FMT
 	double c1;
+	double fex_i[nstep];  // For grand potential, Omega
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -1199,7 +1229,13 @@ int main(){
 		//std::cout << "P= " << press_b << std::endl;
 		//std::cout << "P0= " << press_b0 << std::endl;
 		pp0 = press_b/press_b0;
-		grand_potential = omega(rho, r, dfex_int, rho_phi_int);
+		//
+		// grand ppotential, Omega
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = omega(rho, r, fex_i, rho_phi_int, rho_b);
+		//
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;

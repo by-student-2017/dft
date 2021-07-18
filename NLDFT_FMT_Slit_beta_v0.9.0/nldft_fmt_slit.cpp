@@ -156,7 +156,7 @@ double d_bh_calc(double epsilon, double sigma){
 //	//double sigma = 0.3575;
 //	//Lstoskie et al.,
 //	double d_bh_out;
-//	double Ts = kb*T/epsilon;
+//	double Ts = kb1*T/epsilon;
 //	d_bh_out = (1.0+0.2977*Ts)/(1.0+0.331637*Ts+0.00104771*Ts*Ts)*sigma;
 //	std::cout << "--------------------------------------------------" << std::endl;
 //	std::cout << "d = d_hs = " << d_bh_out << " [nm] at " << T << " [K] from Barker-Henderson (BH) perturbation theory" << std::endl;
