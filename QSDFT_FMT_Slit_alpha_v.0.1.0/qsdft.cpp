@@ -1027,14 +1027,28 @@ double xi(double *rho, double *r, int i, double rho_b, double *phi_att_ff_int_ij
 	return xi_out;
 }
 
+// For SDA, from Carnahan-Starling (CS) equation
+//double press_hs(double rho_b){
+//	double y, press_hs_out;
+//	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
+//	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+//	double den1y = (1.0-y);
+//	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
+//	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+//	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/(den1y*den1y*den1y);
+//	return press_hs_out;
+//}
+
+// For FMT, from Percus Yevick (PY) equation
+// http://www.sklogwiki.org/SklogWiki/index.php/Exact_solution_of_the_Percus_Yevick_integral_equation_for_hard_spheres
 double press_hs(double rho_b){
-	double y, press_hs_out;
-	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
-	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
-	double den1y = (1.0-y);
-	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
-	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
-	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/(den1y*den1y*den1y);
+	double eta, press_hs_out;
+	//eta = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
+	eta = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+	double den1e = (1.0-eta);
+	//press_hs_out = rho_b*kb1*T* (1.0 + eta + eta*eta)/std::pow((1.0-eta),3.0);
+	//press_hs_out = rho_b*kb1*T* (1.0 + eta + eta*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta));
+	press_hs_out = rho_b*kb1*T* (1.0 + eta + eta*eta)/(den1e*den1e*den1e);
 	return press_hs_out;
 }
 
