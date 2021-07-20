@@ -1,0 +1,23 @@
+#!/usr/bin/gnuplot
+
+pore_size = "3.63"
+
+set logscale x
+
+set xrange[1e-9:1e0]
+set format x "10^{%L}"
+
+set terminal win font "Arial,12"
+set xlabel "P / P_0"
+set mxtics 5
+
+set ylabel "Adsorpition [mmol/cm^3]"
+set mytics 5
+
+plot pore_size."_data_vs.txt" u 1:3 w l t pore_size." [nm] (vapor-like spinodal)", pore_size."_data_ls.txt" u 1:3 w l t pore_size." [nm] (liquid-like spinodal)"
+
+# pause -1
+
+#set terminal postscript color enhanced lw 2
+#set out "mmol.ps"
+#replot

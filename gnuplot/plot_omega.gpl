@@ -1,0 +1,18 @@
+#!/usr/bin/gnuplot
+
+pore_size = "3.63"
+
+set terminal win font "Arial,12"
+set xlabel "P / P_0"
+set mxtics 5
+
+set ylabel "{/Symbol W} / {/Symbol e}_f_f per surface area [nm^-^3]"
+set mytics 5
+
+plot pore_size."_data_vs.txt" u 1:5 w l t pore_size." [nm] (vapor-like spinodal)", pore_size."_data_ls.txt" u 1:5 w l t pore_size." [nm] (liquid-like spinodal)"
+
+# pause -1
+
+#set terminal postscript color enhanced lw 2
+#set out "Omega.ps"
+#replot

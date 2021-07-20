@@ -1,0 +1,31 @@
+#!/usr/bin/gnuplot
+# http://www.gnuplot.info/demo_5.3/columnhead.html
+
+set logscale x
+
+set xrange[1e-9:1e0]
+set format x "10^{%L}"
+
+set terminal win font "Arial,12"
+set xlabel "P / P_0"
+set mxtics 5
+
+set ylabel "Adsorpition [mmol/cm^3]"
+set mytics 5
+
+set title "kernel.csv"
+set datafile separator ","
+set key autotitle columnheader
+
+set key nobox autotitle columnhead width 2 # samplen 0
+set key title "Pore width [nm]"
+set key right outside
+
+plot for [j=2:*] "kernel.csv" u 1:j w lp
+plot for [col=2:*] "kernel.csv" u 1:col w lp t column(col)
+
+# pause -1
+
+#set terminal postscript color enhanced lw 2
+#set out "kernel.ps"
+#replot
