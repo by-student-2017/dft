@@ -31,10 +31,10 @@
 - e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
 
 
-##  NLDFT (FMT) beta version 0.9.0 (July/16/2021)
+##  NLDFT (FMT) beta version 0.9.2 (July/20/2021)
 	sudo apt update
 	sudo apt -y g++
-	cd NLDFT_FMT_Slit_v0.9.0
+	cd NLDFT_FMT_Slit_v0.9.2
 	gedit temp_parameters.txt
 	chmod +x run.sh
 	./run.sh
