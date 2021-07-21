@@ -64,6 +64,7 @@ int cycle_max;
 //double wmixing = 0.005;
 double wmixing;
 // ---------- ----------- ------------ ------------
+// fluid-fluid
 //Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
 //Argon          118.05 [K](epsilon), 0.3305 [nm](sigma), 0.3390 [nm](d_hs)
 //Nitrogen        94.45 [K](epsilon), 0.3575 [nm](sigma), 0.3575 [nm](d_hs)
@@ -80,6 +81,7 @@ double rc;
 //double rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 double rm;
 // ---------- ----------- ------------ ------------
+// fluid-solid
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
 //double epsilon_sf = 53.72; // [K] 
@@ -93,17 +95,24 @@ double sigma_sf;
 double delta;
 double rho_ss;
 // ---------- ----------- ------------ ------------
-//double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
-//double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
-double m;
-double kb1 = 1.0;
-double kb = 1.38e-23; //[J/K] (8.61733262e-5 [eV/K])
-//extern double T = 77.347; //[K]
-double T;
-double h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
+double kb1 = 1.0;  // use all, except thermal de Broglie wavelength calculation.
+// ---------- ----------- ------------ ------------
 // thermal de Broglie wavelength
 //extern double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
-double lam;
+double kb = 1.38e-23; //[J/K] (8.61733262e-5 [eV/K])
+// ----------
+//double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
+//double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
+double m;  // for fluid
+double ms; // for solid
+//extern double T = 77.347; //[K]
+// ----------
+double T;
+// ----------
+double h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
+// ----------
+double lam;  // for fluid
+double lams; // for solid
 // Ref: https://www1.doshisha.ac.jp/~bukka/lecture/statistic/pdftext/std-07.pdf
 // ---------- ----------- ------------ ------------
 // alpha = integal phi_att_ff * -1.0
@@ -231,20 +240,15 @@ void read_parameters(void){
 		j++;
 	}
 	//
+	std::cout << "--------------------------------------------------" << std::endl;
+	//
 	// ---------- ----------- ------------ ------------
 	H = num[0]; //distace of slit [nm]
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
-	if ( nstep == 0 ) {
-		//nstep = int((H-2.0*h0)/0.02 + 0.5);
-		nstep = int((H-(2.0*ze+sigma_sf))/0.02 + 0.5);
-		if ( nstep%2 == 1 ){
-			nstep = nstep + 1;
-		}
-		std::cout << "autoset nstep = " << nstep << std::endl;
-	}
+	// move below (ze)
 	// ---------- ----------- ------------ ------------
 	cycle_max = int(num[3]);
 	// ---------- ----------- ------------ ------------
@@ -282,7 +286,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rho_ss = num[13]; // [nm^-3], [mulecules/nm3]
 	// ---------- ----------- ------------ ------------
-	m = num[14]; // [kg]
+	m = num[14]; // [kg], fluid
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
 	if ( d_hs == 0.0 ) { 
@@ -299,13 +303,26 @@ void read_parameters(void){
 	std::cout << "The hard-sphere radius of solid =" << Ris << " [nm]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
+	ms = num[19]; // [kg], solid
+	// ---------- ----------- ------------ ------------
 	
 	ze = calc_ze();
-	std::cout << "ze = " << ze << " [nm]" << std::endl;
+	std::cout << "The edge position of the solid wall (one side), ze = " << ze << " [nm]" << std::endl;
 	double ze_ssf;
 	ze_ssf = (ze+sigma_sf);
 	std::cout << "ze+sigma_sf = " << ze_ssf << " [nm]" << std::endl;
 	std::cout << "(2.0*ze+sigma_sf) = " << (2.0*ze+sigma_sf) << " [nm]" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	
+	if ( nstep == 0 ) {
+		//nstep = int((H-2.0*h0)/0.02 + 0.5);
+		nstep = int((H-(2.0*ze+sigma_sf))/0.02 + 0.5);
+		if ( nstep%2 == 1 ){
+			nstep = nstep + 1;
+		}
+		std::cout << "autoset nstep = " << nstep << std::endl;
+		std::cout << "--------------------------------------------------" << std::endl;
+	}
 	
 	// ---------- ----------- ------------ ------------
 	
@@ -331,17 +348,23 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	// thermal de Broglie wavelength
+	// thermal de Broglie wavelength of fluid
 	//lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
 	lam = h/std::sqrt(2.0*M_PI*m*kb*T)*1e9; //[nm], Maxwell_construction()
+	
+	// thermal de Broglie wavelength of solid
+	//double ms = 12.0107/(6.02214076e23)/1000; // 1.99442366e-26 [kg]
+	//double lams = h/std::pow((2.0*M_PI*ms*kb*T),0.5)*1e9;
+	lams = h/std::pow((2.0*M_PI*ms*kb*T),0.5)*1e9;
 	
 	// alpha = integal phi_att_ff * -1.0
 	alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 		( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
 	// rm = rm when the potential is split according to the WCA schem and rm = simga_ff when the LJ potential is split according to the BH decomposition.
 	
+	std::cout << "thermal de Broglie wavelength of fluid = " << lam << " [nm]" << std::endl;
+	std::cout << "thermal de Broglie wavelength of solid = " << lams << " [nm]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "thermal de Broglie wavelength = " << lam << " [nm]" << std::endl;
 	std::cout << "integal phi_att_ff * -1.0 = alpha = " << alpha << std::endl;
 }
 
@@ -1395,6 +1418,106 @@ int main(){
 		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+	}
+	// reverse
+	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
+	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
+		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+		//std::cout << "--------------------------------------------------" << std::endl;
+		//std::cout << "rho_b = " << rho_b << std::endl;
+		double check_data;
+		for (j=0; j<cycle_max; j++){
+			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
+			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); // for NLDFT
+			for (i=0; i<nstep; i++){
+				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
+			}
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
+				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
+				//std::cout << "c1*(kb1*T) = " << c1*(kb1*T) << std::endl;
+				//std::cout << "-phi_att_sf_i[i] = " << -phi_att_sf_int_i[i] << std::endl;
+				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
+				//rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_ff_int_ij)/(kb1*T)-phi_att_sf_int_i[i]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_ff_int_ij,rho_phi_ff_int_i)/(kb1*T)-rhos_phi_sf_int_i[i]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				//check_data = c1*(kb1*T)+xi(rho,r,i,rho_b, phi_att_ff_int_ij)-phi_att_sf_int_i[i];
+				//std::cout << i << ", check_data = " << check_data << std::endl;
+				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
+				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
+				//
+				// overflow about std::exp(730)
+				// to avoid overflow
+				if (rho_new[i] > 1e9){
+					rho_new[i] = 1e9;
+				}
+				// to avoid -inf or int
+				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
+					rho_new[i] = 1e-18;
+					rho[i] = 1e-18;
+				}
+			}
+			diff = 0.0;
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
+				//std::cout << i << ", " << mixing << std::endl;
+				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
+			}
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+				break;
+			}
+			//std::cout << "--------------------------------------------------" << std::endl;
+			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
+		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
+		//
+		//v_gamma = 0.0;
+		//for (i=0; i<=(nstep-2)/2; i++){
+			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
+			//v_gamma = v_gamma + 2.0*rho[i]*dr;
+		//}
+		v_gamma = integral_simpson(rho, nstep-1, dr);
+		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
+		v_gamma = v_gamma/(H-(2.0*ze+sigma_sf)) - rho_b;
+		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
+		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
+		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
+		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		if (v_gamma < 0) { v_gamma = 0.0; }
+		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
+		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
+		//std::cout << "V= " << v_gamma << std::endl;
+		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
+		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
+		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+		//std::cout << "P= " << press_b << std::endl;
+		//std::cout << "P0= " << press_b0 << std::endl;
+		pp0 = press_b/press_b0;
+		// grand ppotential, Omega(ff+sf part)
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = (rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
+		//grand_potential = 1.0;
+		//std::cout << "P/P0= " << pp0 << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
 	free(phi_att_ff_int_ij);
