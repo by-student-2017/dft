@@ -1,12 +1,12 @@
 # make
-#nldft: qsdft.o maxwell_construction.o
-#	c++ -Wall -o qsdft.o maxwell_construction.o
-nldft: nldft.o
-	c++ -Wall -o qsdft qsdft.o
-nldft.o: nldft.cpp
-	c++ -Wall -c qsdft.cpp
+#qsdft: qsdft_fmt_slit.o maxwell_construction.o
+#	c++ -O2 -Wall -o qsdft_fmt_slit.o maxwell_construction.o
+qsdft: qsdft.o
+	c++ -O2 -Wall -o qsdft_fmt_slit qsdft_fmt_slit.o
+qsdft.o: qsdft_fmt_slit.cpp
+	c++ -O2 -Wall -c qsdft_fmt_slit.cpp
 #maxwell_construction.o: maxwell_construction.cpp
-#	c++ -Wall -c maxwell_construction.cpp
+#	c++ -O2 -Wall -c maxwell_construction.cpp
 
 # make clean
 clean:
