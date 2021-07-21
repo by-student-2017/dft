@@ -316,7 +316,7 @@ void read_parameters(void){
 	
 	if ( nstep == 0 ) {
 		//nstep = int((H-2.0*h0)/0.02 + 0.5);
-		nstep = int((H-(2.0*ze+sigma_sf))/0.02 + 0.5);
+		nstep = int((H-(2.0*ze+sigma_sf))/0.005 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
