@@ -202,21 +202,21 @@ double rho_ssq(double z){
 }
 
 // The edge position ze of the solid wall
-double calc_ze(void){
+double calc_ze(int ze_nstep){
 	int i;
 	double ze_out;
 	//double h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
 	//double rho_ss = 114.0; // [molecules/nm3] (the density of bulk carbon)
 	//double delta = 0.13; // [nm] (the roughness parameter) (the half-width of the density ramp)
-	double rho_ssi[nstep];
-	double dss = (2.0*delta)/(nstep-1);
-	for (i=0; i<nstep; i++){
+	double rho_ssi[ze_nstep];
+	double dss = (2.0*delta)/(ze_nstep-1);
+	for (i=0; i<ze_nstep; i++){
 		rho_ssi[i] = rho_ssq(h0+double(i)*dss);
 	}
 	//integral_trapezoidal(double *f, int n, double dx)
-	//ze_out = integral_trapezoidal(rho_ssi, nstep-1, dss)/rho_ss + h0;
+	//ze_out = integral_trapezoidal(rho_ssi, ze_nstep-1, dss)/rho_ss + h0;
 	//integral_simpson(double *f, int n, double dx)
-	ze_out = integral_simpson(rho_ssi, nstep-1, dss)/rho_ss + h0;
+	ze_out = integral_simpson(rho_ssi, ze_nstep-1, dss)/rho_ss + h0;
 	return ze_out;
 }
 
@@ -306,7 +306,7 @@ void read_parameters(void){
 	ms = num[19]; // [kg], solid
 	// ---------- ----------- ------------ ------------
 	
-	ze = calc_ze();
+	ze = calc_ze(2000);
 	std::cout << "The edge position of the solid wall (one side), ze = " << ze << " [nm]" << std::endl;
 	double ze_ssf;
 	ze_ssf = (ze+sigma_sf);

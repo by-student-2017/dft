@@ -1,4 +1,4 @@
-00_H=2.24392
+00_H=XXX
 01_sigma_ss=0.34
 02_nstep=0
 03_cycle_max=10001
