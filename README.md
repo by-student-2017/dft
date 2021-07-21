@@ -11,6 +11,16 @@
 - The equilibrium point is obtained from the intersection of the ground potentials during adsorption and desorption.
 
 
+##  NLDFT (FMT) beta version 0.9.3 (July/20/2021)
+	sudo apt update
+	sudo apt -y g++
+	cd NLDFT_FMT_Slit_v0.9.3
+	gedit temp_parameters.txt
+	chmod +x run.sh
+	./run.sh
+- With only two weeks to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
+
+
 ##  NLDFT (SDA) beta version 0.9.2 (OpenMPI parallel calculation) (July/10/2021)
 	sudo apt update
 	sudo apt -y openmpi-bin
@@ -29,16 +39,6 @@
 	chmod +x run_openmp.sh
 	./run_openmp.sh 2
 - e.g., 2 CPU calculation. please, # of CPU is <= (nstep-1)/2 and <= ndmesh = nrmesh. Most "for" loops could not be parallelized.
-
-
-##  NLDFT (FMT) beta version 0.9.2 (July/20/2021)
-	sudo apt update
-	sudo apt -y g++
-	cd NLDFT_FMT_Slit_v0.9.2
-	gedit temp_parameters.txt
-	chmod +x run.sh
-	./run.sh
-- With only two weeks to work on it, there's still a lot of room to optimize and improve the code, but we hope that building on this achievement will improve the research environment for many people.
 
 
 ##  NLDFT (SDA) beta version 0.9.0 (July/7/2021)
