@@ -777,7 +777,7 @@ MPI::Init();
 		rho_new[i] = 0.0;
 	}
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov("./PP0_vs_Vgamma_data_vs.txt");
+	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -798,6 +798,8 @@ MPI::Init();
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	double rho_dfex_int[nstep];
 	double rho_phi_int[nstep];
+	double diff0;
+	double mixing;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -875,7 +877,7 @@ MPI::Init();
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
 	// reverse
-	std::ofstream ofsppov("./PP0_vs_Vgamma_data_ls.txt");
+	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
