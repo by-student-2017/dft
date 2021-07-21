@@ -109,6 +109,9 @@ double lam;
 //	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
 double alpha;
 // ---------- ----------- ------------ ------------
+// rho_b0 is related with P0
+double rho_b0;
+// ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
 double d_bh_calc(double epsilon, double sigma){
@@ -153,7 +156,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.005 + 0.5);
+		nstep = int((H-sigma_ss)/0.02 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -199,6 +202,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
+	// ---------- ----------- ------------ ------------
+	rho_b0 = num[16];
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -645,7 +650,7 @@ double Maxwell_construction(double *r){
 	double mu_e_per_epsilon_ff;
 	double diff,diffp;
 	int flag;
-	double rho_b0;
+	double rho_b0_out;
 	double rho_b0_gas, rho_b0_metastable, rho_b0_liquid;
 	double press_b0;
 	//
@@ -653,11 +658,11 @@ double Maxwell_construction(double *r){
 	std::ofstream ofs("./Maxwell_construction_data.txt");
 	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
-		rho_b0 = drhob0*double(i+1.0);
-		mu_b_per_epsilon_ff[i] = mu_b(rho_b0)/epsilon_ff;
-		//ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*std::pow(d_hs,3.0) << std::endl;
-		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0*(d_hs*d_hs*d_hs) << std::endl;
-		//std::cout << "rho_b0 = "<< rho_b0 << ", mu_b/epsilon_ff = " << mu_b_per_epsilon_ff[i] << std::endl;
+		rho_b0_out = drhob0*double(i+1.0);
+		mu_b_per_epsilon_ff[i] = mu_b(rho_b0_out)/epsilon_ff;
+		//ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0_out*std::pow(d_hs,3.0) << std::endl;
+		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
+		//std::cout << "rho_b0 = "<< rho_b0_out << ", mu_b/epsilon_ff = " << mu_b_per_epsilon_ff[i] << std::endl;
 	}
 	// Maxwell equal area rule
 	for (j=0; j<iter_max_dmue; j++){
@@ -676,7 +681,7 @@ double Maxwell_construction(double *r){
 			//std::cout << diffp << std::endl;
 		}
 		//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
-		rho_b0 = drhob0*double(j+1.0);
+		rho_b0_out = drhob0*double(j+1.0);
 		if (std::abs(diff) <= threshold_diff) {
 			//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
 			break;
@@ -685,36 +690,36 @@ double Maxwell_construction(double *r){
 	// find rho_b0
 	flag = 0;
 	for (i=0; i<iter_max_drhob0; i++){
-		rho_b0 = drhob0*double(i+1.0);
-		//if ( std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
-		//	 0.05 <= rho_b0*std::pow(d_hs,3.0) &&  rho_b0*std::pow(d_hs,3.0) <= 0.75) {
-		if ( std::abs(mu_b(rho_b0)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find ) {
-			//std::cout << "rho_b0 = " << rho_b0 << ", rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
+		rho_b0_out = drhob0*double(i+1.0);
+		//if ( std::abs(mu_b(rho_b0_out)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
+		//	 0.05 <= rho_b0_out*std::pow(d_hs,3.0) &&  rho_b0_out*std::pow(d_hs,3.0) <= 0.75) {
+		if ( std::abs(mu_b(rho_b0_out)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find ) {
+			//std::cout << "rho_b0 = " << rho_b0_out << ", rho_b0*d_hs^3 = " << rho_b0_out*std::pow(d_hs,3.0) << std::endl;
 			if ( flag == 0 ){
-				rho_b0_gas = rho_b0;
+				rho_b0_gas = rho_b0_out;
 				flag = 1;
-			} else if ( flag == 1 && 5.0*rho_b0_gas < rho_b0 ){
-				rho_b0_metastable = rho_b0;
+			} else if ( flag == 1 && 5.0*rho_b0_gas < rho_b0_out ){
+				rho_b0_metastable = rho_b0_out;
 				flag = 2;
-			} else if ( flag == 2 && 1.5*rho_b0_metastable < rho_b0 ){
-				rho_b0_liquid = rho_b0;
+			} else if ( flag == 2 && 1.5*rho_b0_metastable < rho_b0_out ){
+				rho_b0_liquid = rho_b0_out;
 				break;
 			}
 		}
 	}	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "Maxwell construction (Maxwell equal area rule)" << std::endl;
 	std::cout << "chemical potential, mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << std::endl;
-	rho_b0 = rho_b0_gas;
-	//std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*std::pow(d_hs,3.0) << std::endl;
-	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0*(d_hs*d_hs*d_hs) << std::endl;
+	rho_b0_out = rho_b0_gas;
+	//std::cout << "density, rho_b0*d_hs^3 = " << rho_b0_out*std::pow(d_hs,3.0) << std::endl;
+	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
 	//press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
-	press_b0 = press_hs(rho_b0) - 0.5*(rho_b0*rho_b0)*alpha;
-	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0 << ")" <<std::endl;
+	press_b0 = press_hs(rho_b0_out) - 0.5*(rho_b0_out*rho_b0_out)*alpha;
+	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0_out << ")" <<std::endl;
 	std::cout << std::endl;
 	std::cout << "gas phase   : rho_b0_gas        = " << rho_b0_gas        << ", rho_b0_gas*d_hs^3        = " << rho_b0_gas*std::pow(d_hs,3.0)        << std::endl;
 	std::cout << "metastable  : rho_b0_metastable = " << rho_b0_metastable << ", rho_b0_metastable*d_hs^3 = " << rho_b0_metastable*std::pow(d_hs,3.0) << std::endl;
 	std::cout << "liquid phase: rho_b0_liquid     = " << rho_b0_liquid     << ", rho_b0_liquid*d_hs^3     = " << rho_b0_liquid*std::pow(d_hs,3.0)     << std::endl;
-	return rho_b0;
+	return rho_b0_out;
 }
 
 // grand potential
@@ -744,7 +749,7 @@ MPI::Init();
 	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
-	double rho_b, rho_b0;
+	double rho_b;
 	double v_mmol_per_cm3;
 	double v_cm3STP_per_g;
 	double grand_potential;
@@ -767,7 +772,11 @@ MPI::Init();
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
-	rho_b0 = Maxwell_construction(r);
+	if ( rho_b0 != 0.0 ){
+		std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	} else {
+		rho_b0 = Maxwell_construction(r);
+	}
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization
