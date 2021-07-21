@@ -21,7 +21,9 @@ for w in "${items[@]}"; do
 	echo "Slit width = ${H} [nm]"
 	sed -i "s/XXX/${H}/g" parameters.txt
 	./nldft_sda_slit_openmp.exe
-	mv PP0_vs_Vgamma_data.txt ${w}_data.txt
-	cp ${w}_data.txt ./results/${w}_data.txt
+	mv PP0_vs_Vgamma_data_vs.txt ${w}_data_vs.txt
+	mv PP0_vs_Vgamma_data_ls.txt ${w}_data_ls.txt
+	cp ${w}_data_vs.txt ./results/${w}_data_vs.txt
+	cp ${w}_data_ls.txt ./results/${w}_data_ls.txt
 	rm parameters.txt
 done

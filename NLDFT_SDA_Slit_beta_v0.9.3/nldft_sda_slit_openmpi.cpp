@@ -777,9 +777,9 @@ MPI::Init();
 		rho_new[i] = 0.0;
 	}
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov("./PP0_vs_Vgamma_data.txt");
-	ofsppov << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::ofstream ofsppov("./PP0_vs_Vgamma_data_vs.txt");
+	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
@@ -787,7 +787,14 @@ MPI::Init();
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
 	double rho_s2j[nstep];
-	double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
+	//double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
+	double *phi_att_int_ij = (double *)malloc(sizeof(double)*((nstep+1)*nstep));
+	if (phi_att_int_ij == NULL) {
+		printf("Memory cannot be allocated.");
+		std::exit(1);
+	} else {
+		printf("Memory has been allocated. The address is %p\n", phi_att_int_ij);
+	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	double rho_dfex_int[nstep];
 	double rho_phi_int[nstep];
@@ -807,15 +814,29 @@ MPI::Init();
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
+				//
+				// overflow about std::exp(730)
+				// to avoid overflow
+				if (rho_new[i] > 1e9){
+					rho_new[i] = 1e9;
+				}
+				// to avoid -inf or int
+				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
+					rho_new[i] = 1e-18;
+					rho[i] = 1e-18;
+				}
 			}
 			diff = 0.0;
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
+				//std::cout << i << ", " << mixing << std::endl;
+				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0) {
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -850,10 +871,16 @@ MPI::Init();
 		pp0 = press_b/press_b0;
 		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
 	// reverse
+	std::ofstream ofsppov("./PP0_vs_Vgamma_data_ls.txt");
+	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=0; k<100; k++){
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -869,15 +896,29 @@ MPI::Init();
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
+				//
+				// overflow about std::exp(730)
+				// to avoid overflow
+				if (rho_new[i] > 1e9){
+					rho_new[i] = 1e9;
+				}
+				// to avoid -inf or int
+				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
+					rho_new[i] = 1e-18;
+					rho[i] = 1e-18;
+				}
 			}
 			diff = 0.0;
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
+				//std::cout << i << ", " << mixing << std::endl;
+				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0) {
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -912,7 +953,7 @@ MPI::Init();
 		pp0 = press_b/press_b0;
 		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
 MPI::Finalize();
