@@ -75,11 +75,13 @@ double wmixing;
 double epsilon_ff;
 double sigma_ff;
 double d_hs;
-double rc;
+double rc;  // for fluid
+double rcsf; // for solid-fluid
 // ---------- ----------- ------------ ------------
 //double rm = std::pow(2.0,1.0/6.0)*sigma_ff; //minimum position of LJ
 //double rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
-double rm;
+double rm;   // fluid
+double rmsf; // solid-fluid
 // ---------- ----------- ------------ ------------
 // fluid-solid
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
@@ -263,11 +265,7 @@ void read_parameters(void){
 	// move below (T)
 	// ---------- ----------- ------------ ------------
 	rc = num[8]; // [nm], cut off
-	if ( rc == 0.0 ) { 
-		rc = 5.0*sigma_ff;
-		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
-	}
-	std::cout << "--------------------------------------------------" << std::endl;
+	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
 	nrmesh = int(num[9]);
 	if ( nrmesh == 0 ) {
@@ -281,6 +279,15 @@ void read_parameters(void){
 	epsilon_sf = num[10]; // [K]
 	// ---------- ----------- ------------ ------------
 	sigma_sf = num[11]; // [nm]
+	if ( rc == 0.0 ) { 
+		rc = 5.0*sigma_ff;
+		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
+		rcsf = 5.0*sigma_sf;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid)" << std::endl;
+		if ( rcsf > rc ) { rc = rcsf; }
+		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
+	}
+	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	delta = num[12]; // nm, delta < 0.3*sigma_ff for QSDFT
 	// ---------- ----------- ------------ ------------
@@ -332,6 +339,7 @@ void read_parameters(void){
 	//w_pw = (H-sigma_ss); // pore width [nm]
 	//dr = (H-sigma_ss)/double(nstep+1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
+	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
 	
@@ -390,9 +398,9 @@ double phi_att_ff(double r){
 double phi_att_sf(double r){
 	double e;
 	// WCA (Weeks-Chandler-Anderson) type
-	if (r < rm){
+	if (r < rmsf){
 		e = - epsilon_sf;
-	}else if (rm <= r && r <= rc){
+	}else if (rmsf <= r && r <= rcsf){
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_sf*( std::pow((sigma_sf/r),12.0) - std::pow((sigma_sf/r),6.0) );
 		e = std::pow((sigma_sf/r),6.0);
