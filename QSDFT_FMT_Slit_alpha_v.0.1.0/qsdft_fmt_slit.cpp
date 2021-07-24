@@ -282,7 +282,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	sigma_sf = num[11]; // [nm]
 	// ---------- ----------- ------------ ------------
-	delta = num[12]; // nm
+	delta = num[12]; // nm, delta < 0.3*sigma_ff for QSDFT
 	// ---------- ----------- ------------ ------------
 	rho_ss = num[13]; // [nm^-3], [mulecules/nm3]
 	// ---------- ----------- ------------ ------------
@@ -998,27 +998,36 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 	double rak;
 	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
-	int sfmesh = 2000;
-	double dsf = H/(sfmesh-1);
-	double phi_sf_int_k[nrmesh];
+	int sfmesh = 20000;
+	double dsf = (h0+2.0*delta)/(sfmesh-1);
 	double phi_sf_int_j[sfmesh];
+	double phi_sf_int_k[nrmesh];
 	double tpi = 2.0*M_PI;
 	phi_sf_int_k[0] = 0.0;
 	for (i=0; i<nstep; i++) {
+		// left side
 		for (j=0; j<sfmesh; j++) {
 			raj = (r[i]-double(j)*dsf);
 			for (k=1; k<nrmesh; k++) {
 				rak = drc*double(k);
 				ra = raj*raj + rak*rak;
-				//ra = std::pow(ra,0.5);
 				ra = std::sqrt(ra);
-				//std::cout << ra << std::endl;
-				//rho_phi_sf_int_k[k]  = rho_ss[j]*phi_att_sf(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
-				//phi_sf_int_k[k]  = phi_att_sf(ra)*(2.0*M_PI*(double(k)*drc));
 				phi_sf_int_k[k]  = phi_att_sf(ra)*(tpi*rak);
 			}
-			phi_sf_int_j[j] = (rho_ssq(double(j)*dsf)+rho_ssq(H-double(j)*dsf))*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
+			phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
 		}
+		// right side
+		for (j=0; j<sfmesh; j++) {
+			raj = (r[i]-(H-double(j)*dsf));
+			for (k=1; k<nrmesh; k++) {
+				rak = drc*double(k);
+				ra = raj*raj + rak*rak;
+				ra = std::sqrt(ra);
+				phi_sf_int_k[k]  = phi_att_sf(ra)*(tpi*rak);
+			}
+			phi_sf_int_j[j] = phi_sf_int_j[j] + rho_ssq(H-double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
+		}
+		//
 		rhos_phi_sf_int_i[i] = integral_simpson(phi_sf_int_j, sfmesh-1, dsf);
 		//std::cout << rho_phi_sf_int << std::endl;
 	}
