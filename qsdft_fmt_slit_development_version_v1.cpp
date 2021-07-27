@@ -487,8 +487,8 @@ double phi_att_sf(double r){
 //			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
 //		}
 		//integral_simpson(double *f, int n, double dx)
-		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
-//		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
+		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh-1, dd); // old ver.1.1.0
+//		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dd);
 //	}
 	//integral_simpson(double *f, int n, double dx)
 //	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);

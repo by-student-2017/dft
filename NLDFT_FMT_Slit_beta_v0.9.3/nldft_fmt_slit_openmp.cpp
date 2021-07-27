@@ -370,11 +370,11 @@ double wi(double r, int i){
 //			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
 //		}
 //		//integral_simpson(double *f, int n, double dx)
-//		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
-//		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
+//		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh-1, dd); // old ver.1.1.0
+//		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dd);
 //	}
 //	//integral_simpson(double *f, int n, double dx)
-//	rho_si_out = integral_simpson(rho_si_int_j, nstep, dr);
+//	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
 //	//
 //	return rho_si_out;
 //}
@@ -905,8 +905,8 @@ double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, d
 		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
 	}
 	//integral_simpson(double *f, int n, double dx)
-	//rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep, dr);
-	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep, dr);
+	//rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr);
+	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep-1, dr);
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1

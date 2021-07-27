@@ -342,8 +342,8 @@ double rho_si(double *rho, double r1, double *r, int i){
 			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh, dd); // old ver.1.1.0
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh, dd);
+		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh-1, dd); // old ver.1.1.0
+		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dd);
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
@@ -588,8 +588,8 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(tpidd*double(k));
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//rho_dfex_int_j[j] = integral_simpson(rho_dfex_int_k, ndmesh, dd); // old ver.1.1.1
-		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh, dd);
+		//rho_dfex_int_j[j] = integral_simpson(rho_dfex_int_k, ndmesh-1, dd); // old ver.1.1.1
+		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh-1, dd);
 		//
 		//for (k=1; k<nrmesh; k++) { // old ver.1.1.1
 		//	//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
