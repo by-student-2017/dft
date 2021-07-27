@@ -881,7 +881,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, double *rho_phi_int){
+double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, double *rho_phi_int, double *phi_ext_i){
 	int j,k;
 	double ra;
 	double raj;
@@ -937,7 +937,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, d
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
 	//xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
-	xi_out = ( - rho_b*alpha ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
+	xi_out = ( - rho_b*alpha ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext_i[i] );
 	// debug
 	//std::cout << "i, xi_out, -rho_b*alpha, mu_ex(rho_b), -rho_phi_int[i], kb1*T*std::log(rho_b), -phi_ext(r[i])" << std::endl;
 	//std::cout << i << ", " << xi_out << ", " << -rho_b*alpha << ", " << mu_ex(rho_b) << ", " << -rho_phi_int[i] << ", " << kb1*T*std::log(rho_b) << ", " << - phi_ext(r[i]) << std::endl;
@@ -1192,6 +1192,10 @@ int main(){
 	//double rho_dfex_int[nstep];
 	double dfex_int[nstep];
 	double rho_phi_int[nstep];
+	double phi_ext_i[nstep];
+	for (i=0; i<nstep; i++){
+		phi_ext_i[i] = phi_ext(r[i]);
+	}
 	double n0_j[nstep], n0[nstep];   // For FMT
 	double n1_j[nstep], n1[nstep];   // For FMT
 	double n2_j[nstep], n2[nstep];   // For FMT
@@ -1218,7 +1222,7 @@ int main(){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
 				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
@@ -1315,7 +1319,7 @@ int main(){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
 				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;

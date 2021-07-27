@@ -2,7 +2,6 @@
 #include <iostream>  // for cout
 #include <cmath>     // for log, exp
 #include <sstream>   // for read parameters
-#include <omp.h>     // OpenMP (c++ nldft.cpp -fopenmp) (set OMP_NUM_THREADS=4)
 
 //#include "maxwell_construction.h"
 
@@ -11,6 +10,11 @@ using namespace std;
 //non-local smoothed density approximation：SDA
 //non-local density functional theory（NLDFT)
 //Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
+
+// slit -> cylinder
+// x-y plane -> nstep
+// z axis -> nhmesh
+// H = 5*sigma_ff (cut off radius)
 
 // Note
 // This routine assumes that rho, etc is same value in x-y plane.
@@ -36,7 +40,9 @@ using namespace std;
 //int nstep = 100;
 //double w_pw = (H-sigma_ss); // pore width [nm]
 //double dr = w_pw/double(nstep);
-double H;
+//double H;
+double Rcc;
+double Dcc;
 double sigma_ss;
 //#define nstep=1001;
 //constexpr int nstep = 1001;
@@ -46,14 +52,15 @@ double dr;
 // ---------- ----------- ------------ ------------
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
-//int nrmesh = 20; //rho_si and xi function
-int nrmesh;
-//int ndmesh = d_hs*nrmesh/rc
+//int nhmesh = 20; //rho_si and xi function
+int nhmesh;
+//int ndmesh = d_hs*nhmesh/rc
 int ndmesh;
-//double drc = rc/double(nrmesh-1);
+//double drc = rc/double(nhmesh-1);
 double drc;
 //double dd = 2.0*d_hs/double(ndmesh-1);
-double dd;
+//double dd;
+double dh;
 // ---------- ----------- ------------ ------------
 // iteration of rho
 //int cycle_max = 50;
@@ -149,16 +156,18 @@ void read_parameters(void){
 	}
 	//
 	// ---------- ----------- ------------ ------------
-	H = num[0]; //distace of slit [nm]
+	Dcc = num[0]; // The radial coordinate of the adsorption centers [nm]
+	Rcc = Dcc/2.0;
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.02 + 0.5);
+		nstep = int((Dcc-sigma_ss)/0.02 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
+		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nstep = " << nstep << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
@@ -180,13 +189,13 @@ void read_parameters(void){
 		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
-	nrmesh = int(num[9]);
-	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.08 + 0.5);
-		if ( nrmesh%2 == 1 ){
-			nrmesh = nrmesh + 1;
+	nhmesh = int(num[9]);
+	if ( nhmesh == 0 ) {
+		nhmesh = int(rc/0.08 + 0.5);
+		if ( nhmesh%2 == 1 ){
+			nhmesh = nhmesh + 1;
 		}
-		std::cout << "autoset nrmesh = 5.0*sigma_ff " << nrmesh << std::endl;
+		std::cout << "autoset nhmesh = 5.0*sigma_ff " << nhmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
@@ -195,7 +204,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	delta = num[12]; // nm
 	// ---------- ----------- ------------ ------------
-	rho_ss = num[13]; // [nm^-3], [mulecules/nm3]
+	rho_ss = num[13]; // The surface number density of the adsorption centers [nm^-2]
 	// ---------- ----------- ------------ ------------
 	m = num[14]; // [kg]
 	// ---------- ----------- ------------ ------------
@@ -205,23 +214,14 @@ void read_parameters(void){
 	rho_b0 = num[16];
 	// ---------- ----------- ------------ ------------
 	
-	w_pw = (H-sigma_ss); // pore width [nm]
-	dr = (H-sigma_ss)/double(nstep-1);
+	w_pw = (Dcc-sigma_ss); // pore width [nm]
+	//dr = (Dcc-sigma_ss)/2.0/double(nstep-1);
+	dr = (Dcc-sigma_ss)/2.0/double(nstep);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
 	
-	
-	//ndmesh = int(2*d_hs*nrmesh/rc); // why ? this setting occures nan.
-	//if ( ndmesh < 9 ) { 
-	//	ndmesh = 9;
-	//	std::cout << "autoset ndmesh = " << ndmesh << std::endl;
-	//}
-	//if ( ndmesh%2 == 1 ) { ndmesh = ndmesh + 1; }
-	//dd = 2.0*d_hs/double(ndmesh-1); // rho_si(), xi()
-	ndmesh = nrmesh;
-	drc = rc/double(nrmesh-1); // xi()
-	dd = drc;
+	dh = rc/double(nhmesh-1);
 	
 	// ---------- ----------- ------------ ------------
 	
@@ -322,33 +322,21 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double ra;
 	double raj;
 	double rak;
-	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh-1);
-	//dd = drc;
-	double tpidd = 2.0*M_PI*dd;
+	double tpidr = 2.0*M_PI*dr;
 	double rho_si_out;
 	double rho_si_int_j[nstep];
-	double rho_si_int_k[nrmesh];
-	rho_si_int_k[0] = 0.0;
-// #pragma omp parallel for  private(k) // Slow down (I do not recommend)
+	double rho_si_int_k[nhmesh];
 	for (j=0; j<nstep; j++) {
 		raj = (r1-r[j]);
-		for (k=1; k<ndmesh; k++) {
-			rak = dd*double(k);
-			//ra = std::pow((r1-r[j]),2.0) + std::pow((double(k)*dd),2.0);
-			//ra = (r1-r[j])*(r1-r[j]) + (double(k)*dd)*(double(k)*dd);
+		for (k=0; k<ndmesh; k++) {
+			rak = dh*double(k);
 			ra = raj*raj + rak*rak;
-			//ra = std::pow(ra,0.5);
 			ra = std::sqrt(ra);
-			//std::cout << ra << std::endl;
 			//
-			//rho_si_int_k[k] = rho[j]*wi(ra,i)*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
-			//rho_si_int_k[k] = wi(ra,i)*(2.0*M_PI*(double(k)*dd));
-			rho_si_int_k[k] = wi(ra,i)*(tpidd*double(k));
+			rho_si_int_k[k] = wi(ra,i);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//rho_si_int_j[j] = integral_simpson(rho_si_int_k, ndmesh-1, dd); // old ver.1.1.0
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dd);
+		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dh)*(tpidr*double(j));
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
@@ -372,7 +360,6 @@ double rho_si(double *rho, double r1, double *r, int i){
 double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
 	int j;
 	double rho_den1j, rho_den2j;
-//#pragma omp parallel for // An abnormal value occurred in OpenMP setting
 	for (j=0; j<nstep; j++) {
 		rho_s0j[j] = rho_si(rho, r[j], r, 0);
 		rho_s1j[j] = rho_si(rho, r[j], r, 1);
@@ -397,25 +384,88 @@ double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rh
 }
 
 // Steele 10-4-3 potential
-double phi_sf(double z){
-	double phi_sf_out;
-	double sigma_sf2 = sigma_sf*sigma_sf;
-	double sfpz = (sigma_sf/z);
-	double sfpz2 = sfpz*sfpz;
-	double dez = (0.61*delta+z);
-	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
-	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
-	//			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
-	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*(sigma_sf2)*delta*
-				( (2.0/5.0)*std::pow(sfpz2,5.0)-(sfpz2*sfpz2)-(sigma_sf2*sigma_sf2)/
-				(3.0*delta*(dez*dez*dez)) );
-	return phi_sf_out;
-}
+//double phi_sf(double z){
+//	double phi_sf_out;
+//	double sigma_sf2 = sigma_sf*sigma_sf;
+//	double sfpz = (sigma_sf/z);
+//	double sfpz2 = sfpz*sfpz;
+//	double dez = (0.61*delta+z);
+//	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
+//	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
+//	//			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
+//	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*(sigma_sf2)*delta*
+//				( (2.0/5.0)*std::pow(sfpz2,5.0)-(sfpz2*sfpz2)-(sigma_sf2*sigma_sf2)/
+//				(3.0*delta*(dez*dez*dez)) );
+//	return phi_sf_out;
+//}
 
 // e.g., wall potential (Carbon slit)
-double phi_ext(double z){
+//double phi_ext(double z){
+//	double phi_ext_out;
+//	phi_ext_out = phi_sf(z) + phi_sf(H-z);
+//	//std::cout << phi_ext_out << std::endl;
+//	return phi_ext_out;
+//}
+
+// if either a or b is a nonpositive integer
+//double F(double a, double b, double c, double z){
+//	int i;
+//	double F_out;
+//	double bi = 1.0;
+//	double ci = 1.0;
+//	double ni = 1.0; // factorial
+//	double bc = 1.0;
+//	F_out = 1.0;
+//	for (i=1; i<-a; i++){
+//		bc = bc*double((-a+1-i)/i); // binomial coefficients
+//		bi = bi*(b+double(i-1));
+//		ci = ci*(c+double(i-1));
+//		F_out = F_out + std::pow(-1.0,i)*bc*(bi/ci)*std::pow(z,i);
+//	}
+//	return F_out;
+//}
+
+// the hypergeometric function
+double Fh(double a, double b, double c, double z){
+	int i;
+	double Fh_tmp;
+	double Fh_out;
+	double ai = 1.0;
+	double bi = 1.0;
+	double ci = 1.0;
+	double ni = 1.0; // factorial
+	Fh_out = 1.0;
+	for (i=1; i<5000; i++){
+		ai = ai*(a+double(i-1));
+		bi = bi*(b+double(i-1));
+		ci = ci*(c+double(i-1));
+		ni = ni*double(i);
+		Fh_tmp = (ai*bi/ci)*(std::pow(z,i)/ni);
+		//std::cout << "F[" << i << "] = " << Fh_tmp << std::endl;
+		Fh_out = Fh_out + Fh_tmp;
+		if ( std::abs(Fh_tmp) <= 1e-6 ){ break; }
+	}
+	return Fh_out;
+}
+
+// e.g., cylindrial layer
+double phi_sf(double r){
+	//double Dcc;
+	//double Rcc = Dcc/2.0;
 	double phi_ext_out;
-	phi_ext_out = phi_sf(z) + phi_sf(H-z);
+	phi_ext_out = (M_PI*M_PI)*rho_ss*epsilon_sf*(sigma_sf*sigma_sf) * (
+		(63.0/32.0)*std::pow(((Rcc-r)/sigma_sf)*(1.0+(r/Rcc)),-10.0) * Fh(-9.0/2.0,-9.0/2.0,1.0,(r/Rcc)*(r/Rcc))
+		-3.0*std::pow(((Rcc-r)/sigma_sf)*(1.0+(r/Rcc)),-4.0) * Fh(-3.0/2.0,-3.0/2.0,1.0,(r/Rcc)*(r/Rcc)) );
+	return phi_ext_out;
+}
+
+// e.g., wall potential (carbon cylinder)
+double phi_ext(double r){
+	//double Dcc;
+	//double Rcc = Dcc/2.0;
+	double phi_ext_out;
+	//phi_ext_out = phi_sf(r) + phi_sf(Rcc-r);
+	phi_ext_out = phi_sf(r);
 	//std::cout << phi_ext_out << std::endl;
 	return phi_ext_out;
 }
@@ -489,35 +539,27 @@ double calc_alpha(double *r){
 	double ra;
 	double raj;
 	double rak;
-	//double drc = rc/double(nrmesh-1);
-	double tpidrc = 2.0*M_PI*drc;
+	double tpidr = 2.0*M_PI*dr;
 	double alpha_other_method;
 	double alpha_int_j[nstep];
-	double alpha_int_k[nrmesh];
-	alpha_int_k[0] = 0.0;
-//#pragma omp parallel for private(k)
-	for (i=0; i<=(nstep-2)/2; i++){
+	double alpha_int_k[nhmesh];
+	for (i=0; i<nstep; i++){
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
-			for (k=1; k<nrmesh; k++) {
-				rak = drc*double(k);
-				//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
-				//ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
+			for (k=0; k<nhmesh; k++) {
+				rak = dh*double(k);
 				ra = raj*raj + rak*rak;
-				//ra = std::pow(ra,0.5);
 				ra = std::sqrt(ra);
-				//std::cout << ra << std::endl;
-				//alpha_int_k[k]  = -phi_att(ra)*(2.0*M_PI*(double(k)*drc));
-				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*double(k));
+				//
+				alpha_int_k[k]  = -phi_att(ra);
 			}
 			//integral_simpson(double *f, int n, double dx)
-			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh-1, drc);
+			alpha_int_j[j]  = integral_simpson(alpha_int_k, nhmesh-1, dh)*(tpidr*double(j));
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr)*2.0*dr;
-		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr);
+		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr)*(tpidr*double(i));
 	}
-	alpha_other_method  = alpha_other_method * 2.0 * dr / (H-sigma_ss);
+	alpha_other_method  = alpha_other_method * 2.0;
 	//std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
 	return alpha_other_method;
@@ -528,28 +570,19 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 	double ra;
 	double raj;
 	double rak;
-	//double drc = rc/double(nrmesh-1);
-	//dd = drc;
-	double phi_int_k[nrmesh];
-	double tpidrc = 2.0*M_PI*drc;
-	phi_int_k[0] = 0.0;
-//#pragma omp parallel for private(k) // -nan is occurred
+	double phi_int_k[nhmesh];
+	double tpidr = 2.0*M_PI*dr;
 	for (i=0; i<nstep; i++) {
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
-			for (k=1; k<nrmesh; k++) {
-				rak = drc*double(k);
-				//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
-				//ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
+			for (k=0; k<nhmesh; k++) {
+				rak = dh*double(k);
 				ra = raj*raj + rak*rak;
-				//ra = std::pow(ra,0.5);
 				ra = std::sqrt(ra);
-				//std::cout << ra << std::endl;
-				//rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
-				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
-				phi_int_k[k]  = phi_att(ra)*(tpidrc*double(k));
+				//
+				phi_int_k[k]  = phi_att(ra);
 			}
-			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh-1, drc);
+			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nhmesh-1, dh)*(tpidr*double(j));
 		}
 	}
 	return 0;
@@ -558,57 +591,29 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij, double *rho_dfex_int, double *rho_phi_int, double *phi_ext_i){
+double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij, double *rho_dfex_int, double *rho_phi_int){
 	int j,k;
 	double ra;
 	double raj;
 	double rak;
-	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh-1);
-	//double drc = rc/double(nrmesh-1);
-	//dd = drc;
-	double tpidd = 2.0*M_PI*dd;
+	double tpidr = 2.0*M_PI*dr;
 	double rho_dfex_int_j[nstep];
 	double rho_phi_int_j[nstep];
-	double rho_dfex_int_k[nrmesh];
-	double rho_phi_int_k[nrmesh]; // old ver.1.1.1
-	rho_phi_int_k[0] = 0.0;
-//#pragma omp parallel for // Pair No.1, Slow speed
+	double rho_dfex_int_k[nhmesh];
+	//double rho_phi_int_k[nhmesh]; // old ver.1.1.1
 	for (j=0; j<nstep; j++) {
 		raj = (r[i]-r[j]);
-//#pragma omp parallel for // Pair No.1, Slow speed
-#pragma omp parallel for private(k)
-		for (k=1; k<ndmesh; k++) {
-			rak = dd*double(k);
-			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
-			//ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*dd)*(double(k)*dd);
+		for (k=0; k<ndmesh; k++) {
+			rak = dh*double(k);
 			ra = raj*raj + rak*rak;
-			//ra = std::pow(ra,0.5);
 			ra = std::sqrt(ra);
-			//std::cout << ra << std::endl;
 			//
-			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-			//rho_dfex_int_k[k] = rho[j]*dfex_per_drhos(rho_sj[j])*drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd)); // old ver.1.1.0
-			//rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(2.0*M_PI*(double(k)*dd));
-			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(tpidd*double(k));
+			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j]);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		//rho_dfex_int_j[j] = integral_simpson(rho_dfex_int_k, ndmesh-1, dd); // old ver.1.1.1
-		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh-1, dd);
+		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh, dh)*(tpidr*double(j));
 		//
-		//for (k=1; k<nrmesh; k++) { // old ver.1.1.1
-		//	//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*drc),2.0);
-		//	ra = (r[i]-r[j])*(r[i]-r[j]) + (double(k)*drc)*(double(k)*drc);
-		//	//ra = std::pow(ra,0.5);
-		//	ra = std::sqrt(ra);
-		//	//std::cout << ra << std::endl;
-		//	//rho_phi_int_k[k]  = rho[j]*phi_att(ra)*(2.0*M_PI*(double(k)*drc)); // old ver.1.1.0
-		//	rho_phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
-		//} // old ver.1.1.1
-		//integral_simpson(double *f, int n, double dx)
-		//rho_phi_int_j[j]  = integral_simpson(rho_phi_int_k, nrmesh-1, drc); // old ver.1.1.0
-		//rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nrmesh-1, drc); // old ver.1.1.1
-		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
+		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j]*(tpidr*double(j));
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr);
@@ -616,10 +621,10 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
-	xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext_i[i] );
+	xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
 	// debug
 	//std::cout << "xi, (kb1*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r[i]), -f_ex(rho_s(rho,r[i],r)), -rho_dfex_int, -rho_phi_int" << std::endl;
-	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
+	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int[i] << ", " << -rho_phi_int[i] << std::endl;
 	//if ( std::isnan(rho_sj[i]) || std::isnan(f_ex(rho_sj[i])) || std::isnan(rho_dfex_int) || std::isnan(rho_phi_int) ){
 	//	std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << f_ex(rho_sj[i]) << ", " << rho_dfex_int << ", " << rho_phi_int << std::endl;
 	//	std::exit(1);
@@ -728,16 +733,16 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 	double omega_out;
 	double omega1, omega2, omega3;
 	int i;
-	int omega_nstep = (nstep-2)/2;
-	double rho_x_rho_dfex_int[omega_nstep];
-	double rho_x_rho_phi_int[omega_nstep];
-	for (i=0; i<=omega_nstep; i++){
-		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
-		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
+	double rho_x_rho_dfex_int[nstep];
+	double rho_x_rho_phi_int[nstep];
+	double tpidr = 2.0*M_PI*dr;
+	for (i=0; i<nstep; i++){
+		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i] * tpidr*double(i);
+		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i] * tpidr*double(i);
 	}
-	omega1 = -(kb1*T) * integral_simpson(rho, omega_nstep, dr);
-	omega2 = -integral_simpson(rho_x_rho_dfex_int, omega_nstep, dr);
-	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, omega_nstep, dr);
+	omega1 = -(kb1*T) * integral_simpson(rho, nstep, dr);
+	omega2 = -integral_simpson(rho_x_rho_dfex_int, nstep, dr);
+	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, nstep, dr);
 	omega_out = (omega1 + omega2 + omega3) * 2.0 / epsilon_ff;
 	return omega_out;
 }
@@ -752,16 +757,14 @@ int main(){
 	double v_cm3STP_per_g;
 	double grand_potential;
 	//
+	double Dref=(Dcc-sigma_ss);
+	//
 	read_parameters();
 	double r[nstep];
 	double rho[nstep], rho_new[nstep];
 	//
-#pragma omp parallel for
 	for (i=0; i<nstep; i++){
-		// r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
-		// 1.72 times is escape nan, etc from positive value of wall potential
-		//r[i] = sigma_ss*1.74/2.0 + dr*double(i) + dr/2.0; // dr = (H-sigma_ss*1.74)/double(nstep+1);
-		r[i] = sigma_ss/2.0 + dr*double(i); // dr = (H-sigma_ss)/double(nstep+1);
+		r[i] = dr*(0.5+double(i)); // dr = (Dcc-sigma_ss)/double(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -778,17 +781,16 @@ int main(){
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization
-#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
 		rho_new[i] = 0.0;
 	}
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
-	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_vs << "# w = (2.0*Rcc-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	std::cout << "w = (2.0*Rcc-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	double rho_sj[nstep];
 	double rho_s0j[nstep];
@@ -805,12 +807,10 @@ int main(){
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	double rho_dfex_int[nstep];
 	double rho_phi_int[nstep];
-	double phi_ext_i[nstep];
-	for (i=0; i<nstep; i++){
-		phi_ext_i[i] = phi_ext(r[i]);
-	}
 	double diff0;
 	double mixing;
+	//
+	double rho_r[nstep];
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -818,12 +818,10 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); 
-//Since the function contains many variables specified by "private", the setting of "OpenMP" in this loop is not suitable.
-//#pragma omp parallel for // An abnormal value occurred in OpenMP setting
-			for (i=0; i<=(nstep-2)/2; i++){
+			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
+			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
@@ -840,33 +838,29 @@ int main(){
 				}
 			}
 			diff = 0.0;
-#pragma omp parallel for
-			for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
 				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
-				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
-			//std::cout << "--------------------------------------------------" << std::endl;
-			//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nstep/2]=" << rho[nstep/2] << std::endl;
 		}
 		//for (i=0; i<nstep; i++){
 		//	std::cout << "--------------------------------------------------" << std::endl;
 		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
 		//}
 		//
-		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-2)/2; i++){
-			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
-			//v_gamma = v_gamma + 2.0*rho[i]*dr;
-		//}
-		v_gamma = integral_simpson(rho, nstep-1, dr);
-		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		for (i=0; i<nstep; i++){
+			//rho_r[i] = rho[i]*2.0*M_PI*r[i];
+			rho_r[i] = rho[i]*M_PI*r[i];
+		}
+		v_gamma = integral_simpson(rho_r, nstep-1, dr);
+		v_gamma = 2.0*v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
+		//v_gamma = 2.0*v_gamma/(Dcc-sigma_ss) - rho_b*(Dref*Dref)/(4.0*(Dcc-sigma_ss));
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
@@ -902,11 +896,9 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
-//Since the function contains many variables specified by "private", the setting of "OpenMP" in this loop is not suitable.
-//#pragma omp parallel for // An abnormal value occurred in OpenMP setting
-			for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//
@@ -922,14 +914,12 @@ int main(){
 				}
 			}
 			diff = 0.0;
-#pragma omp parallel for
-			for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
 				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
-				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
@@ -947,8 +937,12 @@ int main(){
 			//std::cout << r[i] << ", " << rho[i] << std::endl;
 		//	v_gamma = v_gamma + 2.0*rho[i]*dr;
 		//}
-		v_gamma = integral_simpson(rho, nstep-1, dr);
-		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		for (i=0; i<nstep; i++){
+			//rho_r[i] = rho[i]*2.0*M_PI*r[i];
+			rho_r[i] = rho[i]*M_PI*r[i];
+		}
+		v_gamma = integral_simpson(rho_r, nstep-1, dr);
+		v_gamma = 2.0*v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
