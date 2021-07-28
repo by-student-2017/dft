@@ -246,9 +246,11 @@ double integral_simpson(double *f, int n, double dx){
 	double sum;
 	sum = f[0] + f[n];
 	int i;
+#pragma omp parallel for
 	for(i=1; i<n; i+=2){
 		sum += 4.0 * f[i];
 	}
+#pragma omp parallel for
 	for(i=2; i<n; i+=2){
 		sum += 2.0 * f[i];
 	}
@@ -577,7 +579,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	for (j=0; j<nstep; j++) {
 		raj = (r[i]-r[j]);
 //#pragma omp parallel for // Pair No.1, Slow speed
-#pragma omp parallel for private(k)
+//#pragma omp parallel for private(k)
 		for (k=1; k<ndmesh; k++) {
 			rak = dd*double(k);
 			//ra = std::pow((r[i]-r[j]),2.0) + std::pow((double(k)*dd),2.0);
@@ -729,8 +731,9 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 	double omega1, omega2, omega3;
 	int i;
 	int omega_nstep = (nstep-2)/2;
-	double rho_x_rho_dfex_int[omega_nstep];
-	double rho_x_rho_phi_int[omega_nstep];
+	double rho_x_rho_dfex_int[omega_nstep+1];
+	double rho_x_rho_phi_int[omega_nstep+1];
+#pragma omp parallel for
 	for (i=0; i<=omega_nstep; i++){
 		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
@@ -806,6 +809,7 @@ int main(){
 	double rho_dfex_int[nstep];
 	double rho_phi_int[nstep];
 	double phi_ext_i[nstep];
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		phi_ext_i[i] = phi_ext(r[i]);
 	}
@@ -847,6 +851,8 @@ int main(){
 				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+			}
+			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
@@ -929,6 +935,8 @@ int main(){
 				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+			}
+			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {

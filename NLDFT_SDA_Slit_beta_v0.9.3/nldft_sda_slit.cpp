@@ -722,8 +722,8 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 	double omega1, omega2, omega3;
 	int i;
 	int omega_nstep = (nstep-2)/2;
-	double rho_x_rho_dfex_int[omega_nstep];
-	double rho_x_rho_phi_int[omega_nstep];
+	double rho_x_rho_dfex_int[omega_nstep+1];
+	double rho_x_rho_phi_int[omega_nstep+1];
 	for (i=0; i<=omega_nstep; i++){
 		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
