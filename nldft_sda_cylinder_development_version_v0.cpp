@@ -318,7 +318,7 @@ double wi(double r, int i){
 
 // Tarazona theory
 double rho_si(double *rho, double r1, double *r, int i){
-	int j,k;
+	int j,k,t;
 	double ra;
 	double raj;
 	double rak;
@@ -326,17 +326,24 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_out;
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nhmesh];
+	double x,y;
+	double nrmesh = 180;
+	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
-		raj = (r1-r[j]);
 		for (k=0; k<ndmesh; k++) {
 			rak = dh*(0.5+double(k));
-			ra = raj*raj + rak*rak;
-			ra = std::sqrt(ra);
-			//
-			rho_si_int_k[k] = wi(ra,i);
+			rho_si_int_k[k] = 0.0;
+			for (t=1; t<nrmesh; t++) {
+				x = r[j]*std::cos(drad*double(t));
+				y = r[j]*std::sin(drad*double(t));
+				raj = x - r1;
+				ra = raj*raj + y*y + rak*rak;
+				ra = std::sqrt(ra);
+				rho_si_int_k[k] += wi(ra,i)*2.0*drad*r[j];
+			}
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dh)*2.0 * tpidr*(0.5+double(j));
+		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
@@ -535,7 +542,7 @@ double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j
 }
 
 double calc_alpha(double *r){
-	int i,j,k;
+	int i,j,k,t;
 	double ra;
 	double raj;
 	double rak;
@@ -543,56 +550,37 @@ double calc_alpha(double *r){
 	double alpha_other_method;
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
-	for (i=0; i<nstep; i++){
-		for (j=0; j<nstep; j++) {
-			raj = (r[i]-r[j]);
-			for (k=0; k<nhmesh; k++) {
-				rak = dh*(0.5+double(k));
-				ra = raj*raj + rak*rak;
+	double x,y;
+	double nrmesh = 180;
+	double drad = M_PI/nrmesh;
+	for (j=0; j<nstep; j++) {
+		for (k=0; k<nhmesh; k++) {
+			rak = dh*(0.5+double(k));
+			alpha_int_k[k] = 0.0;
+			for (t=1; t<nrmesh; t++) {
+				x = r[j]*std::cos(drad*double(t));
+				y = r[j]*std::sin(drad*double(t));
+				raj = x - r[i];
+				ra = raj*raj + y*y + rak*rak;
 				ra = std::sqrt(ra);
-				//
-				alpha_int_k[k]  = -phi_att(ra);
+				alpha_int_k[k] += -phi_att(ra)*2.0*drad*r[j];
 			}
-			//integral_simpson(double *f, int n, double dx)
-			alpha_int_j[j]  = integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0 * tpidr*(0.5+double(j));
 		}
 		//integral_simpson(double *f, int n, double dx)
-		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr) * tpidr*(0.5+double(j));
+		alpha_int_j[j]  = integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
 	}
-	alpha_other_method  = alpha_other_method * 2.0;
+	//integral_simpson(double *f, int n, double dx)
+	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr);
 	//std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
 	return alpha_other_method;
 }
 
-double phi_att_int(double *r, double *phi_att_int_ij){
-	int i,j,k;
-	double ra;
-	double raj;
-	double rak;
-	double phi_int_k[nhmesh];
-	double tpidr = 2.0*M_PI*dr;
-	for (i=0; i<nstep; i++) {
-		for (j=0; j<nstep; j++) {
-			raj = (r[i]-r[j]);
-			for (k=0; k<nhmesh; k++) {
-				rak = dh*(0.5+double(k));
-				ra = raj*raj + rak*rak;
-				ra = std::sqrt(ra);
-				//
-				phi_int_k[k]  = phi_att(ra);
-			}
-			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nhmesh-1, dh)*2.0 * tpidr*(0.5+double(j));
-		}
-	}
-	return 0;
-}
-
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij, double *rho_dfex_int, double *rho_phi_int, double *phi_ext_i){
-	int j,k;
+double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *rho_dfex_int, double *rho_phi_int, double *phi_ext_i){
+	int j,k,t;
 	double ra;
 	double raj;
 	double rak;
@@ -600,20 +588,28 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_dfex_int_j[nstep];
 	double rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nhmesh];
-	//double rho_phi_int_k[nhmesh]; // old ver.1.1.1
+	double rho_phi_int_k[nhmesh];
+	double x,y;
+	double nrmesh = 180;
+	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
-		raj = (r[i]-r[j]);
 		for (k=0; k<ndmesh; k++) {
 			rak = dh*(0.5+double(k));
-			ra = raj*raj + rak*rak;
-			ra = std::sqrt(ra);
-			//
-			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j]);
+			rho_dfex_int_k[k] = 0.0;
+			rho_phi_int_k[k] = 0.0;
+			for (t=1; t<nrmesh; t++) {
+				x = r[j]*std::cos(drad*double(t));
+				y = r[j]*std::sin(drad*double(t));
+				raj = x - r[i];
+				ra = raj*raj + y*y + rak*rak;
+				ra = std::sqrt(ra);
+				rho_dfex_int_k[k] += drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*2.0*drad*r[j];
+				rho_phi_int_k[k] += phi_att(ra)*2.0*drad*r[j];
+			}
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh, dh)*2.0 * tpidr*(0.5+double(j));
-		//
-		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j] * tpidr*(0.5+double(j));
+		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh-1, dh)*2.0;
+		rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, ndmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr);
@@ -624,7 +620,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext_i[i] );
 	// debug
 	//std::cout << "xi, (kb1*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r[i]), -f_ex(rho_s(rho,r[i],r)), -rho_dfex_int, -rho_phi_int" << std::endl;
-	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int[i] << ", " << -rho_phi_int[i] << std::endl;
+	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext_i[i] << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int[i] << ", " << -rho_phi_int[i] << std::endl;
 	//if ( std::isnan(rho_sj[i]) || std::isnan(f_ex(rho_sj[i])) || std::isnan(rho_dfex_int) || std::isnan(rho_phi_int) ){
 	//	std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << f_ex(rho_sj[i]) << ", " << rho_dfex_int << ", " << rho_phi_int << std::endl;
 	//	std::exit(1);
@@ -796,15 +792,6 @@ int main(){
 	double rho_s0j[nstep];
 	double rho_s1j[nstep];
 	double rho_s2j[nstep];
-	//double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
-	double *phi_att_int_ij = (double *)malloc(sizeof(double)*((nstep+1)*nstep));
-	if (phi_att_int_ij == NULL) {
-		printf("Memory cannot be allocated.");
-		std::exit(1);
-	} else {
-		printf("Memory has been allocated. The address is %p\n", phi_att_int_ij);
-	}
-	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	double rho_dfex_int[nstep];
 	double rho_phi_int[nstep];
 	double phi_ext_i[nstep];
@@ -826,7 +813,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
@@ -860,11 +847,10 @@ int main(){
 		//}
 		//
 		for (i=0; i<nstep; i++){
-			//rho_r[i] = rho[i]*2.0*M_PI*r[i];
-			rho_r[i] = rho[i]*M_PI*r[i];
+			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
 		v_gamma = integral_simpson(rho_r, nstep-1, dr);
-		v_gamma = 2.0*v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
+		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
 		//v_gamma = 2.0*v_gamma/(Dcc-sigma_ss) - rho_b*(Dref*Dref)/(4.0*(Dcc-sigma_ss));
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
@@ -903,7 +889,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
 				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
 				//
@@ -937,17 +923,11 @@ int main(){
 		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
 		//}
 		//
-		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-2)/2; i++){
-			//std::cout << r[i] << ", " << rho[i] << std::endl;
-		//	v_gamma = v_gamma + 2.0*rho[i]*dr;
-		//}
 		for (i=0; i<nstep; i++){
-			//rho_r[i] = rho[i]*2.0*M_PI*r[i];
-			rho_r[i] = rho[i]*M_PI*r[i];
+			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
 		v_gamma = integral_simpson(rho_r, nstep-1, dr);
-		v_gamma = 2.0*v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
+		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
