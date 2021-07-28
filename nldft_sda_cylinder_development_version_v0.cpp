@@ -56,6 +56,7 @@ double dr;
 int nhmesh;
 //int ndmesh = d_hs*nhmesh/rc
 int ndmesh;
+int nrmesh;
 //double drc = rc/double(nhmesh-1);
 double drc;
 //double dd = 2.0*d_hs/double(ndmesh-1);
@@ -158,6 +159,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	Dcc = num[0]; // The radial coordinate of the adsorption centers [nm]
 	Rcc = Dcc/2.0;
+	nrmesh = 180;
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
@@ -327,11 +329,11 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nhmesh];
 	double x,y;
-	double nrmesh = 180;
+	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
-			rak = dh*(0.5+double(k));
+			rak = dh*double(k);
 			rho_si_int_k[k] = 0.0;
 			for (t=1; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
@@ -346,7 +348,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
-	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
+	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr) + rho_si_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//
 	return rho_si_out;
 }
@@ -551,11 +553,11 @@ double calc_alpha(double *r){
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
 	double x,y;
-	double nrmesh = 180;
+	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nhmesh; k++) {
-			rak = dh*(0.5+double(k));
+			rak = dh*double(k);
 			alpha_int_k[k] = 0.0;
 			for (t=1; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
@@ -570,7 +572,7 @@ double calc_alpha(double *r){
 		alpha_int_j[j]  = integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
-	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr);
+	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
 	return alpha_other_method;
@@ -590,11 +592,11 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_dfex_int_k[nhmesh];
 	double rho_phi_int_k[nhmesh];
 	double x,y;
-	double nrmesh = 180;
+	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<ndmesh; k++) {
-			rak = dh*(0.5+double(k));
+			rak = dh*double(k);
 			rho_dfex_int_k[k] = 0.0;
 			rho_phi_int_k[k] = 0.0;
 			for (t=1; t<nrmesh; t++) {
@@ -612,8 +614,8 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 		rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, ndmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
-	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr);
-	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep-1, dr);
+	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr) + rho_dfex_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep-1, dr) + rho_phi_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
@@ -841,11 +843,11 @@ int main(){
 				break;
 			}
 		}
-		//for (i=0; i<nstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -rho_phi_int " << - rho_phi_int[i] << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
-		//
+		for (i=0; i<nstep; i++){
+			std::cout << "--------------------------------------------------" << std::endl;
+			std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , xi " << xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		}
+		
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
