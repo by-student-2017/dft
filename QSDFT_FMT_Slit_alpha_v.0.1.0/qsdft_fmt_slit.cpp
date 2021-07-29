@@ -273,7 +273,7 @@ void read_parameters(void){
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
 		}
-		std::cout << "autoset nrmesh = 5.0*sigma_ff " << nrmesh << std::endl;
+		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
