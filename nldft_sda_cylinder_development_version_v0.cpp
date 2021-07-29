@@ -335,7 +335,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 		for (k=0; k<ndmesh; k++) {
 			rak = dh*double(k);
 			rho_si_int_k[k] = 0.0;
-			for (t=1; t<nrmesh; t++) {
+			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
 				y = r[j]*std::sin(drad*double(t));
 				raj = x - r1;
@@ -559,7 +559,7 @@ double calc_alpha(double *r){
 		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
 			alpha_int_k[k] = 0.0;
-			for (t=1; t<nrmesh; t++) {
+			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
 				y = r[j]*std::sin(drad*double(t));
 				raj = x - r[i];
@@ -599,7 +599,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 			rak = dh*double(k);
 			rho_dfex_int_k[k] = 0.0;
 			rho_phi_int_k[k] = 0.0;
-			for (t=1; t<nrmesh; t++) {
+			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
 				y = r[j]*std::sin(drad*double(t));
 				raj = x - r[i];
