@@ -61,6 +61,16 @@
 	Maxwell constraction routine is not good !
 
 
+## NLDFT (SDA) (cylinder type) alpha version 0.1.0 (July/29/2021)
+	sudo apt update
+	sudo apt -y g++
+	cd NLDFT_SDA_Cylinder_alpha_v.0.1.0
+	c++ -O2 nldft_sda_cylinder.cpp -o nldft_sda_cylinder.exe
+	./nldft_sda_cylinder.exe
+	nldft routine is not good !
+	Maxwell constraction routine is not good !
+
+
 ## QSDFT (FMT) alpha version 0.1.0 (July/12/2021)
 	sudo apt update
 	sudo apt -y g++
