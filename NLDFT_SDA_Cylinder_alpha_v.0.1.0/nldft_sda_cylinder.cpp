@@ -55,7 +55,7 @@ double dr;
 //int nhmesh = 20; //rho_si and xi function
 int nhmesh;
 //int ndmesh = d_hs*nhmesh/rc
-int ndmesh;
+// nrmesh is on theta range.
 int nrmesh;
 //double drc = rc/double(nhmesh-1);
 double drc;
@@ -223,7 +223,7 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	dh = rc/double(nhmesh);
+	dh = rc/double(nhmesh-1);
 	
 	// ---------- ----------- ------------ ------------
 	
@@ -239,6 +239,16 @@ void read_parameters(void){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "thermal de Broglie wavelength = " << lam << " [nm]" << std::endl;
 	std::cout << "integal phi_att * -1.0 = alpha = " << alpha << std::endl;
+}
+
+double integral_trapezoidal(double *f, int n, double dx){
+	double sum;
+	sum = 0.0;
+	int i;
+	for(i=1; i<n; i++){
+		sum += (f[i-1]+f[i])/2.0*dx;
+	}
+	return sum;
 }
 
 double integral_simpson(double *f, int n, double dx){
@@ -324,7 +334,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double ra;
 	double raj;
 	double rak;
-	double tpidr = 2.0*M_PI*dr;
+	//double tpidr = 2.0*M_PI*dr;
 	double rho_si_out;
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nhmesh];
@@ -332,7 +342,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
-		for (k=0; k<ndmesh; k++) {
+		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
 			rho_si_int_k[k] = 0.0;
 			for (t=0; t<nrmesh; t++) {
@@ -345,10 +355,14 @@ double rho_si(double *rho, double r1, double *r, int i){
 			}
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, ndmesh-1, dh)*2.0;
+		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, nhmesh-1, dh)*2.0;
+		//integral_trapezoidal(double *f, int n, double dx)
+		//rho_si_int_j[j] = rho[j]*integral_trapezoidal(rho_si_int_k, nhmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr) + rho_si_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	//integral_trapezoidal(double *f, int n, double dx)
+	//rho_si_out = integral_trapezoidal(rho_si_int_j, nstep-1, dr) + rho_si_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//
 	return rho_si_out;
 }
@@ -570,9 +584,13 @@ double calc_alpha(double *r){
 		}
 		//integral_simpson(double *f, int n, double dx)
 		alpha_int_j[j]  = integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+		//integral_trapezoidal(double *f, int n, double dx)
+		//alpha_int_j[j]  = integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	//integral_trapezoidal(double *f, int n, double dx)
+	//alpha_other_method  = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
 	return alpha_other_method;
@@ -586,7 +604,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double ra;
 	double raj;
 	double rak;
-	double tpidr = 2.0*M_PI*dr;
+	//double tpidr = 2.0*M_PI*dr;
 	double rho_dfex_int_j[nstep];
 	double rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nhmesh];
@@ -595,7 +613,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
-		for (k=0; k<ndmesh; k++) {
+		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
 			rho_dfex_int_k[k] = 0.0;
 			rho_phi_int_k[k] = 0.0;
@@ -610,12 +628,18 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 			}
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, ndmesh-1, dh)*2.0;
-		rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, ndmesh-1, dh)*2.0;
+		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, nhmesh-1, dh)*2.0;
+		rho_phi_int_j[j]  = rho[j]*integral_simpson(rho_phi_int_k, nhmesh-1, dh)*2.0;
+		//integral_trapezoidal(double *f, int n, double dx)
+		//rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_trapezoidal(rho_dfex_int_k, nhmesh-1, dh)*2.0;
+		//rho_phi_int_j[j]  = rho[j]*integral_trapezoidal(rho_phi_int_k, nhmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr) + rho_dfex_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep-1, dr) + rho_phi_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	//integral_trapezoidal(double *f, int n, double dx)
+	//rho_dfex_int[i] = integral_trapezoidal(rho_dfex_int_j, nstep-1, dr) + rho_dfex_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	//rho_phi_int[i]  = integral_trapezoidal(rho_phi_int_j, nstep-1, dr) + rho_phi_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
@@ -738,9 +762,14 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i] * tpidr*(0.5+double(i));
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i] * tpidr*(0.5+double(i));
 	}
+	//integral_simpson(double *f, int n, double dx)
 	omega1 = -(kb1*T) * integral_simpson(rho, nstep, dr);
 	omega2 = -integral_simpson(rho_x_rho_dfex_int, nstep, dr);
 	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, nstep, dr);
+	//integral_trapezoidal(double *f, int n, double dx)
+	//omega1 = -(kb1*T) * integral_trapezoidal(rho, nstep, dr);
+	//omega2 = -integral_trapezoidal(rho_x_rho_dfex_int, nstep, dr);
+	//omega3 = -0.5 * integral_trapezoidal(rho_x_rho_phi_int, nstep, dr);
 	omega_out = (omega1 + omega2 + omega3) * 2.0 / epsilon_ff;
 	return omega_out;
 }
@@ -811,7 +840,6 @@ int main(){
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
-			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
 			for (i=0; i<nstep; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
@@ -843,15 +871,18 @@ int main(){
 				break;
 			}
 		}
-		for (i=0; i<nstep; i++){
-			std::cout << "--------------------------------------------------" << std::endl;
-			std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , xi " << xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , xi " << xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
 		
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
-		v_gamma = integral_simpson(rho_r, nstep-1, dr);
+		//integral_simpson(double *f, int n, double dx)
+		v_gamma = integral_simpson(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
+		//integral_trapezoidal(double *f, int n, double dx)
+		//v_gamma = integral_trapezoidal(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
 		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
 		//v_gamma = 2.0*v_gamma/(Dcc-sigma_ss) - rho_b*(Dref*Dref)/(4.0*(Dcc-sigma_ss));
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
@@ -928,7 +959,10 @@ int main(){
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
-		v_gamma = integral_simpson(rho_r, nstep-1, dr);
+		//integral_simpson(double *f, int n, double dx)
+		v_gamma = integral_simpson(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
+		//integral_trapezoidal(double *f, int n, double dx)
+		//v_gamma = integral_trapezoidal(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
 		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
