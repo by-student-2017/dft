@@ -562,7 +562,7 @@ double calc_alpha(double *r){
 	double ra;
 	double raj;
 	double rak;
-	double tpidr = 2.0*M_PI*dr;
+	//double tpidr = 2.0*M_PI*dr;
 	double alpha_other_method;
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
