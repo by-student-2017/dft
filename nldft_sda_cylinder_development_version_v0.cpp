@@ -159,7 +159,6 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	Dcc = num[0]; // The radial coordinate of the adsorption centers [nm]
 	Rcc = Dcc/2.0;
-	nrmesh = 180;
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
@@ -214,6 +213,9 @@ void read_parameters(void){
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	rho_b0 = num[16];
+	// ---------- ----------- ------------ ------------
+	nrmesh = num[17];
+	//nrmesh = 180/9;
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (Dcc-sigma_ss); // pore width [nm]
@@ -904,10 +906,10 @@ int main(){
 				break;
 			}
 		}
-		for (i=0; i<nstep; i++){
-			std::cout << "--------------------------------------------------" << std::endl;
-			std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , xi " << xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , xi " << xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
 		
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
@@ -916,7 +918,7 @@ int main(){
 		v_gamma = integral_simpson(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
 		//integral_trapezoidal(double *f, int n, double dx)
 		//v_gamma = integral_trapezoidal(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
-		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
+		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0) - rho_b;
 		//v_gamma = 2.0*v_gamma/(Dcc-sigma_ss) - rho_b*(Dref*Dref)/(4.0*(Dcc-sigma_ss));
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
@@ -996,7 +998,7 @@ int main(){
 		v_gamma = integral_simpson(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
 		//integral_trapezoidal(double *f, int n, double dx)
 		//v_gamma = integral_trapezoidal(rho_r, nstep-1, dr) + rho[0]*M_PI*(dr/2.0)*(dr/2.0);
-		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)*(Dcc-sigma_ss)) - rho_b;
+		v_gamma = v_gamma/(M_PI*(Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
