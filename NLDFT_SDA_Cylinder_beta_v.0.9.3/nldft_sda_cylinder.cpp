@@ -339,6 +339,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_out;
 	double rho_si_int_j[nstep];
 	double rho_si_int_k[nhmesh];
+	double rho_si_int_t[nrmesh];
 	double x,y;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
@@ -351,12 +352,19 @@ double rho_si(double *rho, double r1, double *r, int i){
 				raj = x - r1;
 				ra = raj*raj + y*y + rak*rak;
 				ra = std::sqrt(ra);
-				rho_si_int_k[k] += wi(ra,i);
+				rho_si_int_t[t] = wi(ra,i);
+				//rho_si_int_k[k] += wi(ra,i);
 			}
+			//integral_simpson(double *f, int n, double dx)
+			rho_si_int_k[k] = integral_simpson(rho_si_int_t, nrmesh-1, drad);
+			//integral_trapezoidal(double *f, int n, double dx)
+			//rho_si_int_k[k] = integral_trapezoidal(rho_si_int_t, nrmesh-1, drad);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = 2.0*drad*r[j]*rho[j]*integral_simpson(rho_si_int_k, nhmesh-1, dh)*2.0;
+		rho_si_int_j[j] = 2.0*r[j]*rho[j]*integral_simpson(rho_si_int_k, nhmesh-1, dh)*2.0;
+		//rho_si_int_j[j] = 2.0*drad*r[j]*rho[j]*integral_simpson(rho_si_int_k, nhmesh-1, dh)*2.0;
 		//integral_trapezoidal(double *f, int n, double dx)
+		//rho_si_int_j[j] = 2.0*r[j]*rho[j]*integral_trapezoidal(rho_si_int_k, nhmesh-1, dh)*2.0;
 		//rho_si_int_j[j] = 2.0*drad*r[j]*rho[j]*integral_trapezoidal(rho_si_int_k, nhmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
@@ -562,12 +570,11 @@ double calc_alpha(double *r){
 	double ra;
 	double raj;
 	double rak;
-	//double tpidr = 2.0*M_PI*dr;
 	double alpha_other_method;
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
+	double alpha_int_t[nrmesh];
 	double x,y;
-	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nhmesh; k++) {
@@ -579,12 +586,19 @@ double calc_alpha(double *r){
 				raj = x - r[i];
 				ra = raj*raj + y*y + rak*rak;
 				ra = std::sqrt(ra);
-				alpha_int_k[k] += -phi_att(ra);
+				alpha_int_t[t] = -phi_att(ra);
+				//alpha_int_k[k] += -phi_att(ra);
 			}
+			//integral_simpson(double *f, int n, double dx)
+			alpha_int_k[k] = integral_simpson(alpha_int_t, nrmesh-1, drad);
+			//integral_trapezoidal(double *f, int n, double dx)
+			//alpha_int_k[k] = integral_trapezoidal(alpha_int_t, nrmesh-1, drad);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+		alpha_int_j[j]  = 2.0*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
 		//integral_trapezoidal(double *f, int n, double dx)
+		//alpha_int_j[j]  = 2.0*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
 		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
 	}
 	//integral_simpson(double *f, int n, double dx)
@@ -602,6 +616,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 	double raj;
 	double rak;
 	double rho_phi_int_k[nhmesh];
+	double rho_phi_int_t[nrmesh];
 	double x,y;
 	double drad = M_PI/nrmesh;
 	for (i=0; i<nstep; i++) {
@@ -615,10 +630,18 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 					raj = x - r[i];
 					ra = raj*raj + y*y + rak*rak;
 					ra = std::sqrt(ra);
-					rho_phi_int_k[k] += phi_att(ra);
+					rho_phi_int_t[t] = phi_att(ra);
+					//rho_phi_int_k[k] += phi_att(ra);
 				}
+				//integral_simpson(double *f, int n, double dx)
+				rho_phi_int_k[k] = integral_simpson(rho_phi_int_t, nrmesh-1, drad);
+				//integral_trapezoidal(double *f, int n, double dx)
+				//rho_phi_int_k[k] = integral_trapezoidal(rho_phi_int_t, nrmesh-1, drad);
 			}
+			//integral_simpson(double *f, int n, double dx)
 			phi_att_int_ij[i*nstep+j] = integral_simpson(rho_phi_int_k, nhmesh-1, dh)*2.0;
+			//integral_trapezoidal(double *f, int n, double dx)
+			//phi_att_int_ij[i*nstep+j] = integral_trapezoidal(rho_phi_int_k, nhmesh-1, dh)*2.0;
 		}
 	}
 	return 0;
@@ -636,6 +659,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nhmesh];
 	double rho_phi_int_k[nhmesh];
+	double rho_dfex_int_t[nrmesh];
 	double x,y;
 	double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
@@ -649,17 +673,26 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 				raj = x - r[i];
 				ra = raj*raj + y*y + rak*rak;
 				ra = std::sqrt(ra);
-				rho_dfex_int_k[k] += drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j]);
+				rho_dfex_int_t[t] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j]);
+				//rho_dfex_int_k[k] += drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j]);
 				//rho_phi_int_k[k] += phi_att(ra);
 			}
+			//integral_simpson(double *f, int n, double dx)
+			rho_dfex_int_k[k] = integral_simpson(rho_dfex_int_t, nrmesh-1, drad);
+			//integral_trapezoidal(double *f, int n, double dx)
+			//rho_dfex_int_k[k] = integral_trapezoidal(rho_dfex_int_t, nrmesh-1, drad);
 		}
 		//integral_simpson(double *f, int n, double dx)
-		rho_dfex_int_j[j] = 2.0*drad*r[j]*rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, nhmesh-1, dh)*2.0;
+		rho_dfex_int_j[j] = 2.0*r[j]*rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, nhmesh-1, dh)*2.0;
+		//rho_dfex_int_j[j] = 2.0*drad*r[j]*rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, nhmesh-1, dh)*2.0;
 		//rho_phi_int_j[j]  = 2.0*drad*r[j]*rho[j]*integral_simpson(rho_phi_int_k, nhmesh-1, dh)*2.0;
 		//integral_trapezoidal(double *f, int n, double dx)
+		//rho_dfex_int_j[j] = 2.0*r[j]*rho[j]*dfex_per_drhos(rho_sj[j])*integral_trapezoidal(rho_dfex_int_k, nhmesh-1, dh)*2.0;
 		//rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_trapezoidal(rho_dfex_int_k, nhmesh-1, dh)*2.0;
 		//rho_phi_int_j[j]  = rho[j]*integral_trapezoidal(rho_phi_int_k, nhmesh-1, dh)*2.0;
-		rho_phi_int_j[j]  = 2.0*drad*r[j]*rho[j]*phi_att_int_ij[i*nstep+j];
+		// other method
+		rho_phi_int_j[j]  = 2.0*r[j]*rho[j]*phi_att_int_ij[i*nstep+j];
+		//rho_phi_int_j[j]  = 2.0*drad*r[j]*rho[j]*phi_att_int_ij[i*nstep+j];
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr) + rho_dfex_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
