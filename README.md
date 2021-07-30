@@ -11,6 +11,11 @@
 - The equilibrium point is obtained from the intersection of the ground potentials during adsorption and desorption.
 
 
+##  NLDFT (SDA) (cylinder type) beta version 0.9.3 (July/30/2021)
+- add "grand potential" calculation routine and adsorption amount in other units (alpha version)
+- The equilibrium point is obtained from the intersection of the ground potentials during adsorption and desorption.
+
+
 ##  NLDFT (FMT) beta version 0.9.3 (July/20/2021)
 	sudo apt update
 	sudo apt -y g++
