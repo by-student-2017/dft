@@ -2,6 +2,7 @@
 #include <iostream>  // for cout
 #include <cmath>     // for log, exp
 #include <sstream>   // for read parameters
+#include <omp.h>     // OpenMP (c++ nldft.cpp -fopenmp) (set OMP_NUM_THREADS=4)
 
 //#include "maxwell_construction.h"
 
@@ -247,6 +248,7 @@ double integral_trapezoidal(double *f, int n, double dx){
 	double sum;
 	sum = 0.0;
 	int i;
+#pragma omp parallel for
 	for(i=1; i<n; i++){
 		sum += (f[i-1]+f[i])/2.0*dx;
 	}
@@ -260,9 +262,11 @@ double integral_simpson(double *f, int n, double dx){
 	double sum;
 	sum = f[0] + f[n];
 	int i;
+#pragma omp parallel for
 	for(i=1; i<n; i+=2){
 		sum += 4.0 * f[i];
 	}
+#pragma omp parallel for
 	for(i=2; i<n; i+=2){
 		sum += 2.0 * f[i];
 	}
@@ -346,6 +350,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
 			//rho_si_int_k[k] = 0.0;
+#pragma omp parallel for
 			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
 				y = r[j]*std::sin(drad*double(t));
@@ -580,6 +585,7 @@ double calc_alpha(double *r){
 		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
 			//alpha_int_k[k] = 0.0;
+#pragma omp parallel for
 			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
 				y = r[j]*std::sin(drad*double(t));
@@ -624,6 +630,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 			for (k=0; k<nhmesh; k++) {
 				rak = dh*double(k);
 				//rho_phi_int_k[k] = 0.0;
+#pragma omp parallel for
 				for (t=0; t<nrmesh; t++) {
 					x = r[j]*std::cos(drad*double(t));
 					y = r[j]*std::sin(drad*double(t));
@@ -667,6 +674,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 			rak = dh*double(k);
 			//rho_dfex_int_k[k] = 0.0;
 			//rho_phi_int_k[k] = 0.0;
+#pragma omp parallel for
 			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*double(t));
 				y = r[j]*std::sin(drad*double(t));
@@ -819,6 +827,7 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 	double rho_x_rho_dfex_int[nstep];
 	double rho_x_rho_phi_int[nstep];
 	double tpidr = 2.0*M_PI*dr;
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		rhor[i] = rho[i] * tpidr*r[i];
 		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i] * tpidr*r[i];
@@ -852,6 +861,7 @@ int main(){
 	double r[nstep];
 	double rho[nstep], rho_new[nstep];
 	//
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		r[i] = dr*(0.5+double(i)); // dr = (Dcc-sigma_ss)/double(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
@@ -870,6 +880,7 @@ int main(){
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
 		rho_new[i] = 0.0;
@@ -888,6 +899,7 @@ int main(){
 	double rho_dfex_int[nstep];
 	double rho_phi_int[nstep];
 	double phi_ext_i[nstep];
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		phi_ext_i[i] = phi_ext(r[i]);
 		//std::cout << "phi_ext_i[" << i << "] = " << phi_ext_i[i] << std::endl;
@@ -930,6 +942,7 @@ int main(){
 				}
 			}
 			diff = 0.0;
+#pragma omp parallel for
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
@@ -945,7 +958,7 @@ int main(){
 		//	std::cout << "--------------------------------------------------" << std::endl;
 		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , xi " << xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T) << ", rho[" << i << "]=" << rho[i] << std::endl;
 		//}
-		
+#pragma omp parallel for
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
@@ -1008,6 +1021,7 @@ int main(){
 				}
 			}
 			diff = 0.0;
+#pragma omp parallel for
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
@@ -1026,6 +1040,7 @@ int main(){
 		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
 		//}
 		//
+#pragma omp parallel for
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
