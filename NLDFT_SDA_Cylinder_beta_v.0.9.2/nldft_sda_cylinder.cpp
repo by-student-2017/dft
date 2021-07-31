@@ -157,8 +157,8 @@ void read_parameters(void){
 	}
 	//
 	// ---------- ----------- ------------ ------------
-	Dcc = num[0]; // The radial coordinate of the adsorption centers [nm]
-	Rcc = Dcc/2.0;
+	Dcc = num[0];
+	Rcc = Dcc/2.0; // The radial coordinate of the adsorption centers [nm]
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
