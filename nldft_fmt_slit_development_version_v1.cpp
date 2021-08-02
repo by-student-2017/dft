@@ -932,7 +932,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, d
 	}
 	//integral_simpson(double *f, int n, double dx)
 	//rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep, dr);
-	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep, dr);
+	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep-1, dr);
 	//
 	double xi_out;
 	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
