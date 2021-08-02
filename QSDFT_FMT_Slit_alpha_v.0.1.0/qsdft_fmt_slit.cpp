@@ -765,12 +765,18 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	for (j=0; j<nstep; j++) {
 		raj = (r[j]-r[i]);
 		x2 = (Rif*Rif-raj*raj);
+		//
 		if ( x2 >= 0.0 ){
 			x = std::sqrt(x2);
 		} else {
 			x = 0.0;
 		}
+		//
+		if ( n2[j] > 0.0 ) {
 		sxi = std::abs(nv2[j]/n2[j]);
+		} else {
+			sxi = 0.0;
+		}
 		//std::cout << j << ", sxi = " << sxi << std::endl;
 		//
 		// dphi/dn0
