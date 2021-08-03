@@ -474,7 +474,7 @@ double Fh(double a, double b, double c, double z){
 		Fh_tmp = (ai*bi/ci)*(std::pow(z,i)/ni);
 		//std::cout << "F[" << i << "] = " << Fh_tmp << std::endl;
 		Fh_out = Fh_out + Fh_tmp;
-		if ( std::abs(Fh_tmp) <= 1e-27 ){ break; }
+		if ( std::abs(Fh_tmp) <= 1e-12 ){ break; }
 	}
 	return Fh_out;
 }
