@@ -609,24 +609,23 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	//nv2 = integral rho(z)*(z/Ri)*(2.0*M_PI*x) dxdr, z<Ri, x^2+z^2=Ri^2, Rvi = vector Ri
 	//
 	int j;
-	int na = nstep*2;
-	double nrho[na];
-	double nr[na];
-	for (j=0; j<nstep; j++) {
-		nrho[j] = rho[(nstep-1)-j];
-		nrho[nstep+j] = rho[j];
-		nr[j] = -r[(nstep-1)-j];
-		nr[nstep+j] = r[j];
-	}
 	int t;
-	double tr, tr2;
-	double new_rad, old_rad, drad;
-	double prho, old_rho;
-	double raj;
-	double xf, xs, xf2, xs2;
-	double y, y2, old_y, dy;
-	// na = nstep*2;
-	for (j=0; j<na; j++) {
+	//
+	double nraj;
+	double nxf, nxf2;
+	double ntr, ntr2;
+	double new_nrad, old_nrad, dnrad;
+	double nrho, old_nrho;
+	double ny, ny2, old_ny, dny;
+	//
+	double praj;
+	double pxf, pxf2;
+	double ptr, ptr2;
+	double new_prad, old_prad, dprad;
+	double prho, old_prho;
+	double py, py2, old_py, dpy;
+	//
+	for (j=0; j<nstep; j++) {
 		//std::cout << j << " " << nr[j] << std::endl;
 		n0_j[j] = 0.0;
 		n1_j[j] = 0.0;
@@ -635,28 +634,78 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		nv1_j[j] = 0.0;
 		nv2_j[j] = 0.0;
 		//
-		raj = (nr[j]-r[i]);
-		xf2 = (Rif*Rif-raj*raj);
-		tr2 = xf2 + nr[j]*nr[j];
-		tr = (Dcc-sigma_ss)/2.0;
-		if ( tr2 >= 0.0 ) {
-			tr = std::sqrt(tr2);
+		// negative
+		//
+		nraj = (-r[j]-r[i]);
+		nxf2 = (Rif*Rif-nraj*nraj);
+		ntr2 = nxf2 + -r[j]*-r[j];
+		ntr = (Dcc-sigma_ss)/2.0;
+		if ( ntr2 >= 0.0 ) {
+			ntr = std::sqrt(ntr2);
 		}
 		//
-		if ( xf2 >= 0.0 && tr < (Dcc-sigma_ss)/2.0 ){
-			old_rad = 0.0;
-			old_rho = nrho[j];
-			old_y = 0.0;
+		if ( nxf2 >= 0.0 && ntr < (Dcc-sigma_ss)/2.0 ){
+			old_nrad = 0.0;
+			old_nrho = rho[j];
+			old_ny = 0.0;
+			nxf = std::sqrt(nxf2);
 			//
-			xf = std::sqrt(xf2);
-			for (t=j+1; t<na; t++){
-				y2 = std::abs(nr[t]*nr[t] - nr[j]*nr[j]);
-				y = std::sqrt(y2);
-				dy = y - old_y;
-				if ( y <= xf ){
-					new_rad = std::asin(y/xf); // radian
-					drad = new_rad - old_rad;
-					prho = 4.0*xf*(old_rho*drad/2.0 + nrho[t]*drad/2.0);
+			for (t=j+1; t<nstep; t++){
+				ny2 = -r[t]*-r[t] - -r[j]*-r[j];
+				ny = std::sqrt(ny2);
+				dny = ny - old_ny;
+				if ( ny <= nxf ){
+					new_nrad = std::asin(ny/nxf); // radian
+					dnrad = new_nrad - old_nrad;
+					nrho = 4.0*nxf*(old_nrho*dnrad/2.0 + rho[t]*dnrad/2.0);
+					//
+					//n0_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif*Rif);
+					n0_j[j] += nrho/(4.0*M_PI*Rif*Rif);
+					//
+					//n1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif);
+					n1_j[j] += nrho/(4.0*M_PI*Rif);
+					//
+					//n2_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0);
+					n2_j[j] += nrho;
+					//
+					n3_j[j] += 4.0*(old_nrho*dny/2.0*std::cos(old_nrad) + rho[t]*dny/2.0*std::cos(new_nrad));
+					//
+					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
+					nv1_j[j] += nrho/(4.0*M_PI*Rif)*(nraj/Rif); // total is 0.0 on x-y plane.
+					//
+					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)*(raj/Rif);
+					nv2_j[j] += nrho*(nraj/Rif); // total is 0.0 on x-y plane.
+				}
+				old_ny = ny;
+				old_nrad = new_nrad;
+				old_nrho = rho[t];
+			}
+		}
+		//
+		// positive
+		//
+		praj = (r[j]-r[i]);
+		pxf2 = (Rif*Rif-praj*praj);
+		ptr2 = pxf2 + r[j]*r[j];
+		ptr = (Dcc-sigma_ss)/2.0;
+		if ( ptr2 >= 0.0 ) {
+			ptr = std::sqrt(ptr2);
+		}
+		//
+		if ( pxf2 >= 0.0 && ptr < (Dcc-sigma_ss)/2.0 ){
+			old_prad = 0.0;
+			old_prho = rho[j];
+			old_py = 0.0;
+			pxf = std::sqrt(pxf2);
+			//
+			for (t=j+1; t<nstep; t++){
+				py2 = r[t]*r[t] - r[j]*r[j];
+				py = std::sqrt(py2);
+				dpy = py - old_py;
+				if ( py <= pxf ){
+					new_prad = std::asin(py/pxf); // radian
+					dprad = new_prad - old_prad;
+					prho = 4.0*pxf*(old_prho*dprad/2.0 + rho[t]*dprad/2.0);
 					//
 					//n0_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif*Rif);
 					n0_j[j] += prho/(4.0*M_PI*Rif*Rif);
@@ -667,17 +716,17 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 					//n2_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0);
 					n2_j[j] += prho;
 					//
-					n3_j[j] += 4.0*(old_rho*dy/2.0*std::cos(old_rad) + nrho[t]*dy/2.0*std::cos(new_rad));
+					n3_j[j] += 4.0*(old_prho*dpy/2.0*std::cos(old_prad) + rho[t]*dpy/2.0*std::cos(new_prad));
 					//
 					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
-					nv1_j[j] += prho/(4.0*M_PI*Rif)*(raj/Rif); // total is 0.0 on x-y plane.
+					nv1_j[j] += prho/(4.0*M_PI*Rif)*(praj/Rif); // total is 0.0 on x-y plane.
 					//
 					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)*(raj/Rif);
-					nv2_j[j] += prho*(raj/Rif); // total is 0.0 on x-y plane.
+					nv2_j[j] += prho*(praj/Rif); // total is 0.0 on x-y plane.
 				}
-				old_y = y;
-				old_rad = new_rad;
-				old_rho = nrho[t];
+				old_py = py;
+				old_prad = new_prad;
+				old_prho = rho[t];
 			}
 		}
 		//
@@ -709,20 +758,20 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//std::cout << i << ", " << j << ", " << rho[j] << ", " << n0_j[j] << ", " << n1_j[j] << ", " << n2_j[j] << ", " << n3_j[j] << ", " << nv1_j[j] << ", " << nv2_j[j] << std::endl;
 	}
     //integral_trapezoidal(double *f, int n, double dx)
-	n0[i] = integral_trapezoidal(n0_j, na-1, dr);
-	n1[i] = integral_trapezoidal(n1_j, na-1, dr);
-	n2[i] = integral_trapezoidal(n2_j, na-1, dr);
-	n3[i] = integral_trapezoidal(n3_j, na-1, dr);
-	nv1[i] = integral_trapezoidal(nv1_j, na-1, dr);
-	nv2[i] = integral_trapezoidal(nv2_j, na-1, dr);
+	n0[i] = integral_trapezoidal(n0_j, nstep-1, dr);
+	n1[i] = integral_trapezoidal(n1_j, nstep-1, dr);
+	n2[i] = integral_trapezoidal(n2_j, nstep-1, dr);
+	n3[i] = integral_trapezoidal(n3_j, nstep-1, dr);
+	nv1[i] = integral_trapezoidal(nv1_j, nstep-1, dr);
+	nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	//n0[i] = integral_simpson(n0_j, na-1, dr);
-	//n1[i] = integral_simpson(n1_j, na-1, dr);
-	//n2[i] = integral_simpson(n2_j, na-1, dr);
-	//n3[i] = integral_simpson(n3_j, na-1, dr);
-	//nv1[i] = integral_simpson(nv1_j, na-1, dr);
-	//nv2[i] = integral_simpson(nv2_j, na-1, dr);
+	//n0[i] = integral_simpson(n0_j, nstep-1, dr);
+	//n1[i] = integral_simpson(n1_j, nstep-1, dr);
+	//n2[i] = integral_simpson(n2_j, nstep-1, dr);
+	//n3[i] = integral_simpson(n3_j, nstep-1, dr);
+	//nv1[i] = integral_simpson(nv1_j, nstep-1, dr);
+	//nv2[i] = integral_simpson(nv2_j, nstep-1, dr);
 	//
 	//std::cout << "i, r[i], j, r[j], raj, xf, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
 	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << raj << ", " << xf << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
@@ -753,54 +802,38 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	// r < 0: d|r|/dr = d(-r)/dr = -[I] = -1
 	//
 	int j;
-	int na = nstep*2;
-	double nr[na];
-	double nn0[na], nn1[na], nn2[na], nn3[na];
-	double nnv1[na], nnv2[na];
-	double dphi_per_n0, dphi_per_n0_j[na];
-	double dphi_per_n1, dphi_per_n1_j[na];
-	double dphi_per_n2, dphi_per_n2_j[na];
-	double dphi_per_n3, dphi_per_n3_j[na];
-	double dphi_per_nv1, dphi_per_nv1_j[na];
-	double dphi_per_nv2, dphi_per_nv2_j[na];
-	for (j=0; j<nstep; j++) {
-		nr[j] = -r[(nstep-1)-j];
-		nr[nstep+j] = r[j];
-		//
-		nn0[j] = n0[(nstep-1)-j];
-		nn0[nstep+j] = n0[j];
-		//
-		nn1[j] = n1[(nstep-1)-j];
-		nn1[nstep+j] = n1[j];
-		//
-		nn2[j] = n2[(nstep-1)-j];
-		nn2[nstep+j] = n2[j];
-		//
-		nn3[j] = n3[(nstep-1)-j];
-		nn3[nstep+j] = n3[j];
-		//
-		nnv1[j] = -nv1[(nstep-1)-j];
-		nnv1[nstep+j] = nv1[j];
-		//
-		nnv2[j] = -nv2[(nstep-1)-j];
-		nnv2[nstep+j] = nv2[j];
-		//
-	}
-	//for (j=0; j<na; j++) {
-	//	std::cout << "j = " << j << ", nn0[j] = " << nn0[j] << ", nn1[j] = " << nn1[j] << ", nn2[j] = " << nn2[j] << ", nn3[j] = " << nn3[j] << std::endl;
-	//	std::cout << "        nnv1[j] = " << nnv1[j] << ", nnv2[j] = " << nnv2[j] << std::endl;
-	//}
 	int t;
-	double tr, tr2;
-	double drad, new_rad, old_rad;
-	double raj;
-	double x, x2;
-	double y, y2, dy, old_y;
-	double old_dpn0, old_dpn1, old_dpn2, old_dpn3;
-	double old_dpnv1, old_dpnv2;
-	double new_dpn0, new_dpn1, new_dpn2, new_dpn3;
-	double new_dpnv1, new_dpnv2;
-	for (j=0; j<na; j++) {
+	//
+	double nraj;
+	double nx, nx2;
+	double ntr, ntr2;
+	double new_nrad, old_nrad, dnrad;
+	double nrho, old_nrho;
+	double ny, ny2, old_ny, dny;
+	double old_ndpn0, old_ndpn1, old_ndpn2, old_ndpn3;
+	double old_ndpnv1, old_ndpnv2;
+	double new_ndpn0, new_ndpn1, new_ndpn2, new_ndpn3;
+	double new_ndpnv1, new_ndpnv2;
+	//
+	double praj;
+	double px, px2;
+	double ptr, ptr2;
+	double new_prad, old_prad, dprad;
+	double prho, old_prho;
+	double py, py2, old_py, dpy;
+	double old_pdpn0, old_pdpn1, old_pdpn2, old_pdpn3;
+	double old_pdpnv1, old_pdpnv2;
+	double new_pdpn0, new_pdpn1, new_pdpn2, new_pdpn3;
+	double new_pdpnv1, new_pdpnv2;
+	//
+	double dphi_per_n0, dphi_per_n0_j[nstep];
+	double dphi_per_n1, dphi_per_n1_j[nstep];
+	double dphi_per_n2, dphi_per_n2_j[nstep];
+	double dphi_per_n3, dphi_per_n3_j[nstep];
+	double dphi_per_nv1, dphi_per_nv1_j[nstep];
+	double dphi_per_nv2, dphi_per_nv2_j[nstep];
+	//
+	for (j=0; j<nstep; j++) {
 		dphi_per_n0_j[j] = 0.0;
 		dphi_per_n1_j[j] = 0.0;
 		dphi_per_n2_j[j] = 0.0;
@@ -808,12 +841,14 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		dphi_per_nv1_j[j] = 0.0;
 		dphi_per_nv2_j[j] = 0.0;
 		//
-		if ( nn2[j] > 0.0 ){
-			sxi = std::abs(nnv2[j]/nn2[j]);
-			if ( nnv2[j]/nn2[j] >= 0.0 ){
+		// negative
+		//
+		if ( n2[j] > 0.0 ){
+			sxi = std::abs(-nv2[j]/n2[j]);
+			if ( -nv2[j]/n2[j] >= 0.0 ){
 				// nv2/n2 > 0  ->  nv2/n2 = sxi
 				sign = 1.0;
-			} else if ( nnv2[j]/nn2[j] < 0.0 ) {
+			} else if ( -nv2[j]/n2[j] < 0.0 ) {
 				// nv2/n2 < 0  ->  -nv2/n2 = -sxi
 				sign = -1.0;
 			}
@@ -821,91 +856,194 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			sxi = 0.0;
 		}
 		//
-		raj = (nr[j]-r[i]);
-		x2 = (Rif*Rif-raj*raj);
-		tr2 = x2 + nr[j]*nr[j];
-		tr = (Dcc-sigma_ss)/2.0;
-		if ( tr2 >= 0.0 ) {
-			tr = std::sqrt(tr2);
+		nraj = (-r[j]-r[i]);
+		nx2 = (Rif*Rif-nraj*nraj);
+		ntr2 = nx2 + -r[j]*-r[j];
+		ntr = (Dcc-sigma_ss)/2.0;
+		if ( ntr2 >= 0.0 ) {
+			ntr = std::sqrt(ntr2);
 		}
 		//
-		if ( x2 >= 0.0 && tr < (Dcc-sigma_ss)/2.0 ){
-			old_rad = 0.0;
-			old_dpn0 = -std::log(1.0-nn3[j]);
+		if ( nx2 >= 0.0 && ntr < (Dcc-sigma_ss)/2.0 ){
+			old_nrad = 0.0;
+			old_ndpn0 = -std::log(1.0-n3[j]);
 			//std::cout << old_dpn0 << std::endl;
-			old_dpn1 = nn2[j]/(1.0-nn3[j]);
+			old_ndpn1 = n2[j]/(1.0-n3[j]);
 			//std::cout << old_dpn1 << std::endl;
-			old_dpn2 = ( nn1[j]/(1.0-nn3[j])
-						+ 3.0*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-						+ nn2[j]*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nnv2[j]/(nn2[j]*nn2[j])*sign)
+			old_ndpn2 = ( n1[j]/(1.0-n3[j])
+						+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(nv2[j]/(n2[j]*n2[j])*sign)
 					   );
 			//std::cout << old_dpn2 << std::endl;
-			old_dpn3 = ( nn0[j]/(1.0-nn3[j])
-						+ (nn1[j]*nn2[j] - nnv1[j]*nnv2[j])/((1.0-nn3[j])*(1.0-nn3[j])) 
-						+ 2.0*nn2[j]*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+			old_ndpn3 = ( n0[j]/(1.0-n3[j])
+						+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+						+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 					   );
 			//std::cout << old_dpn3 << std::endl;
-			old_dpnv1 = -nnv2[j]/(1.0-nn3[j]);
+			old_ndpnv1 = nv2[j]/(1.0-n3[j]);
 			//std::cout << old_dpnv1 << std::endl;
-			old_dpnv2 = ( -nnv1[j]/(1.0-nn3[j])
-						+ nn2[j]*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/nn2[j])
+			old_ndpnv2 = ( nv1[j]/(1.0-n3[j])
+						+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
 					   );
 			//std::cout << old_dpnv2 << std::endl;
 			//
-			x = std::sqrt(x2);
+			nx = std::sqrt(nx2);
 			//
-			for (t=j+1; t<na; t++){
-				y2 = std::abs(nr[t]*nr[t] - nr[j]*nr[j]);
-				y = std::sqrt(y2);
-				dy = y - old_y;
-				if ( y <= x ){
-					new_rad = std::asin(y/x); // radian
-					drad = new_rad - old_rad;
+			for (t=j+1; t<nstep; t++){
+				ny2 = -r[t]*-r[t] - -r[j]*-r[j];
+				ny = std::sqrt(ny2);
+				dny = ny - old_ny;
+				if ( ny <= nx ){
+					new_nrad = std::asin(ny/nx); // radian
+					dnrad = new_nrad - old_nrad;
 					//
 					// dphi/dn0
-					new_dpn0 = -std::log(1.0-nn3[t]);
-					dphi_per_n0_j[j] += 4.0*x*(old_dpn0*drad/2.0 + new_dpn0*drad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					new_ndpn0 = -std::log(1.0-n3[t]);
+					dphi_per_n0_j[j] += 4.0*nx*(old_ndpn0*dnrad/2.0 + new_ndpn0*dnrad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
 					//
 					// dphi/dn1
-					new_dpn1 = nn2[t]/(1.0-nn3[t]);
-					dphi_per_n1_j[j] += 4.0*x*(old_dpn0*drad/2.0 + new_dpn0*drad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					new_ndpn1 = n2[t]/(1.0-n3[t]);
+					dphi_per_n1_j[j] += 4.0*nx*(old_ndpn0*dnrad/2.0 + new_ndpn0*dnrad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
 					//
 					// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
-					new_dpn2 = ( nn1[t]/(1.0-nn3[t])
-						+ 3.0*nn2[t]*nn2[t]/(24.0*M_PI*(1.0-nn3[t])*(1.0-nn3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-						+ nn2[t]*nn2[t]*nn2[t]/(24.0*M_PI*(1.0-nn3[t])*(1.0-nn3[t])*(1.0-nn3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nnv2[t]/(nn2[t]*nn2[t])*sign)
+					new_ndpn2 = ( n1[t]/(1.0-n3[t])
+						+ 3.0*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(nv2[t]/(n2[t]*n2[t])*sign)
 					);
-					dphi_per_n2_j[j] += 4.0*x*(old_dpn2*drad/2.0 + new_dpn2*drad/2.0);
+					dphi_per_n2_j[j] += 4.0*nx*(old_ndpn2*dnrad/2.0 + new_ndpn2*dnrad/2.0);
 					//
 					// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
-					new_dpn3 = ( nn0[t]/(1.0-nn3[t])
-						+ (nn1[t]*nn2[t] - nnv1[t]*nnv2[t])/((1.0-nn3[t])*(1.0-nn3[t])) 
-						+ 2.0*nn2[t]*nn2[t]*nn2[t]/(24.0*M_PI*(1.0-nn3[t])*(1.0-nn3[t])*(1.0-nn3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+					new_ndpn3 = ( n0[t]/(1.0-n3[t])
+						+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
+						+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 					); // PHYSICAL REVIEW E, VOLUME 64, 011602
-					dphi_per_n3_j[j] += 4.0*(old_dpn3*dy/2.0*std::cos(old_rad) + new_dpn3*dy/2.0*std::cos(new_rad));
+					dphi_per_n3_j[j] += 4.0*(old_ndpn3*dny/2.0*std::cos(old_nrad) + new_ndpn3*dny/2.0*std::cos(new_nrad));
 					//
 					// dphi/dnv1, total is 0.0 on x-y plane.
-					new_dpnv1 = -nnv2[t]/(1.0-nn3[t]);
-					dphi_per_nv1_j[j] += 4.0*(M_PI/180.0*x)*(old_dpnv1*drad/2.0 + new_dpnv1*drad/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
+					new_ndpnv1 = nv2[t]/(1.0-n3[t]);
+					dphi_per_nv1_j[j] += 4.0*nx*(old_ndpnv1*dnrad/2.0 + new_ndpnv1*dnrad/2.0)/(4.0*M_PI*Rif)*(nraj/Rif);
 					//
 					// dphi/dnv2, total is 0.0 on x-y plane.
-					new_dpnv2 = ( -nnv1[t]/(1.0-nn3[t])
-						+ nn2[t]*nn2[t]*nn2[t]/(24.0*M_PI*(1.0-nn3[t])*(1.0-nn3[t])*(1.0-nn3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/nn2[t])
+					new_ndpnv2 = ( nv1[t]/(1.0-n3[t])
+						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[t])
 					);
-					dphi_per_nv2_j[j] += 4.0*(M_PI/180.0*x)*(old_dpnv2*drad/2.0 + new_dpnv2*drad/2.0)*(raj/Rif);
+					dphi_per_nv2_j[j] += 4.0*nx*(old_ndpnv2*dnrad/2.0 + new_ndpnv2*dnrad/2.0)*(nraj/Rif);
 				}
-				old_y = y;
-				old_rad = new_rad;
-				old_dpn0 = new_dpn0;
-				old_dpn1 = new_dpn1;
-				old_dpn2 = new_dpn2;
-				old_dpn3 = new_dpn3;
-				old_dpnv1 = new_dpnv1;
-				old_dpnv2 = new_dpnv2;
+				old_ny = ny;
+				old_nrad = new_nrad;
+				old_ndpn0 = new_ndpn0;
+				old_ndpn1 = new_ndpn1;
+				old_ndpn2 = new_ndpn2;
+				old_ndpn3 = new_ndpn3;
+				old_ndpnv1 = new_ndpnv1;
+				old_ndpnv2 = new_ndpnv2;
+			}
+		}
+		//
+		// positive
+		//
+		if ( n2[j] > 0.0 ){
+			sxi = std::abs(nv2[j]/n2[j]);
+			if ( nv2[j]/n2[j] >= 0.0 ){
+				// nv2/n2 > 0  ->  nv2/n2 = sxi
+				sign = 1.0;
+			} else if ( nv2[j]/n2[j] < 0.0 ) {
+				// nv2/n2 < 0  ->  -nv2/n2 = -sxi
+				sign = -1.0;
+			}
+		} else {
+			sxi = 0.0;
+		}
+		//
+		praj = (r[j]-r[i]);
+		px2 = (Rif*Rif-praj*praj);
+		ptr2 = px2 + r[j]*r[j];
+		ptr = (Dcc-sigma_ss)/2.0;
+		if ( ptr2 >= 0.0 ) {
+			ptr = std::sqrt(ptr2);
+		}
+		//
+		if ( px2 >= 0.0 && ptr < (Dcc-sigma_ss)/2.0 ){
+			old_prad = 0.0;
+			old_pdpn0 = -std::log(1.0-n3[j]);
+			//std::cout << old_dpn0 << std::endl;
+			old_pdpn1 = n2[j]/(1.0-n3[j]);
+			//std::cout << old_dpn1 << std::endl;
+			old_pdpn2 = ( n1[j]/(1.0-n3[j])
+						+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
+					   );
+			//std::cout << old_dpn2 << std::endl;
+			old_pdpn3 = ( n0[j]/(1.0-n3[j])
+						+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+						+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+					   );
+			//std::cout << old_dpn3 << std::endl;
+			old_pdpnv1 = -nv2[j]/(1.0-n3[j]);
+			//std::cout << old_dpnv1 << std::endl;
+			old_pdpnv2 = ( -nv1[j]/(1.0-n3[j])
+						+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[j])
+					   );
+			//std::cout << old_dpnv2 << std::endl;
+			//
+			px = std::sqrt(px2);
+			//
+			for (t=j+1; t<nstep; t++){
+				py2 = r[t]*r[t] - r[j]*r[j];
+				py = std::sqrt(py2);
+				dpy = py - old_py;
+				if ( py <= px ){
+					new_prad = std::asin(py/px); // radian
+					dprad = new_prad - old_prad;
+					//
+					// dphi/dn0
+					new_pdpn0 = -std::log(1.0-n3[t]);
+					dphi_per_n0_j[j] += 4.0*px*(old_pdpn0*dprad/2.0 + new_pdpn0*dprad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					//
+					// dphi/dn1
+					new_pdpn1 = n2[t]/(1.0-n3[t]);
+					dphi_per_n1_j[j] += 4.0*px*(old_pdpn0*dprad/2.0 + new_pdpn0*dprad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					//
+					// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
+					new_pdpn2 = ( n1[t]/(1.0-n3[t])
+						+ 3.0*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[t]/(n2[t]*n2[t])*sign)
+					);
+					dphi_per_n2_j[j] += 4.0*px*(old_pdpn2*dprad/2.0 + new_pdpn2*dprad/2.0);
+					//
+					// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+					new_pdpn3 = ( n0[t]/(1.0-n3[t])
+						+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
+						+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+					); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					dphi_per_n3_j[j] += 4.0*(old_pdpn3*dpy/2.0*std::cos(old_prad) + new_pdpn3*dpy/2.0*std::cos(new_prad));
+					//
+					// dphi/dnv1, total is 0.0 on x-y plane.
+					new_pdpnv1 = -nv2[t]/(1.0-n3[t]);
+					dphi_per_nv1_j[j] += 4.0*px*(old_pdpnv1*dprad/2.0 + new_pdpnv1*dprad/2.0)/(4.0*M_PI*Rif)*(praj/Rif);
+					//
+					// dphi/dnv2, total is 0.0 on x-y plane.
+					new_pdpnv2 = ( -nv1[t]/(1.0-n3[t])
+						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[t])
+					);
+					dphi_per_nv2_j[j] += 4.0*px*(old_pdpnv2*dprad/2.0 + new_pdpnv2*dprad/2.0)*(praj/Rif);
+				}
+				old_py = py;
+				old_prad = new_prad;
+				old_pdpn0 = new_pdpn0;
+				old_pdpn1 = new_pdpn1;
+				old_pdpn2 = new_pdpn2;
+				old_pdpn3 = new_pdpn3;
+				old_pdpnv1 = new_pdpnv1;
+				old_pdpnv2 = new_pdpnv2;
 			}
 		}
 		//
@@ -1055,20 +1193,20 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	}
 	//
     //integral_trapezoidal(double *f, int n, double dx)
-	dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, na-1, dr);
-	dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, na-1, dr);
-	dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, na-1, dr);
-	dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, na-1, dr);
-	dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, na-1, dr);
-	dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, na-1, dr);
+	dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep-1, dr);
+	dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep-1, dr);
+	dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, nstep-1, dr);
+	dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, nstep-1, dr);
+	dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, nstep-1, dr);
+	dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, nstep-1, dr);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	//dphi_per_n0 = integral_simpson(dphi_per_n0_j, na-1, dr);
-	//dphi_per_n1 = integral_simpson(dphi_per_n1_j, na-1, dr);
-	//dphi_per_n2 = integral_simpson(dphi_per_n2_j, na-1, dr);
-	//dphi_per_n3 = integral_simpson(dphi_per_n3_j, na-1, dr);
-	//dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, na-1, dr);
-	//dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, na-1, dr);
+	//dphi_per_n0 = integral_simpson(dphi_per_n0_j, nstep-1, dr);
+	//dphi_per_n1 = integral_simpson(dphi_per_n1_j, nstep-1, dr);
+	//dphi_per_n2 = integral_simpson(dphi_per_n2_j, nstep-1, dr);
+	//dphi_per_n3 = integral_simpson(dphi_per_n3_j, nstep-1, dr);
+	//dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, nstep-1, dr);
+	//dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, nstep-1, dr);
 	//
 	//std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
 	//std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
@@ -1183,8 +1321,8 @@ double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, d
 	//xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
 	xi_out = ( - rho_b*alpha ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext_i[i] );
 	// debug
-	std::cout << "i, xi_out, -rho_b*alpha, mu_ex(rho_b), -rho_phi_int[i], kb1*T*std::log(rho_b), -phi_ext_i[i]" << std::endl;
-	std::cout << i << ", " << xi_out << ", " << -rho_b*alpha << ", " << mu_ex(rho_b) << ", " << -rho_phi_int[i] << ", " << kb1*T*std::log(rho_b) << ", " << - phi_ext_i[i] << std::endl;
+	//std::cout << "i, xi_out, -rho_b*alpha, mu_ex(rho_b), -rho_phi_int[i], kb1*T*std::log(rho_b), -phi_ext_i[i]" << std::endl;
+	//std::cout << i << ", " << xi_out << ", " << -rho_b*alpha << ", " << mu_ex(rho_b) << ", " << -rho_phi_int[i] << ", " << kb1*T*std::log(rho_b) << ", " << - phi_ext_i[i] << std::endl;
 	//std::cout << "xi, (kb1*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r[i]), -f_ex(rho_s(rho,r[i],r)), -rho_dfex_int, -rho_phi_int" << std::endl;
 	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
 	//if ( std::isnan(rho_sj[i]) || std::isnan(f_ex(rho_sj[i])) || std::isnan(rho_dfex_int) || std::isnan(rho_phi_int) ){
@@ -1421,13 +1559,12 @@ int main(){
 	//double rho_s0j[nstep];
 	//double rho_s1j[nstep];
 	//double rho_s2j[nstep];
-	int na = nstep*2;
-	double n0_j[na], n0[nstep];   // For FMT
-	double n1_j[na], n1[nstep];   // For FMT
-	double n2_j[na], n2[nstep];   // For FMT
-	double n3_j[na], n3[nstep];   // For FMT
-	double nv1_j[na], nv1[nstep]; // For FMT
-	double nv2_j[na], nv2[nstep]; // For FMT
+	double n0_j[nstep], n0[nstep];   // For FMT
+	double n1_j[nstep], n1[nstep];   // For FMT
+	double n2_j[nstep], n2[nstep];   // For FMT
+	double n3_j[nstep], n3[nstep];   // For FMT
+	double nv1_j[nstep], nv1[nstep]; // For FMT
+	double nv2_j[nstep], nv2[nstep]; // For FMT
 	//double rho_dfex_int[nstep];
 	//double dfex_int[nstep];
 	double rho_phi_int[nstep];
@@ -1464,6 +1601,7 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
+				//std::cout << c1 << std::endl;
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
@@ -1563,6 +1701,7 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
+				//std::cout << c1 << std::endl;
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
