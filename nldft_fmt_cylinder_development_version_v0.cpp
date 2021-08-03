@@ -478,7 +478,7 @@ double Fh(double a, double b, double c, double z){
 		Fh_tmp = (ai*bi/ci)*(std::pow(z,i)/ni);
 		//std::cout << "F[" << i << "] = " << Fh_tmp << std::endl;
 		Fh_out = Fh_out + Fh_tmp;
-		if ( std::abs(Fh_tmp) <= 1e-27 ){ break; }
+		if ( std::abs(Fh_tmp) <= 1e-12 ){ break; }
 	}
 	return Fh_out;
 }
@@ -628,27 +628,32 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	// na = nstep*2;
 	for (j=0; j<na; j++) {
 		//std::cout << j << " " << nr[j] << std::endl;
-		raj = (nr[j]-r[i]);
-		xf2 = (Rif*Rif-raj*raj);
-		tr2 = xf2 + nr[j]*nr[j];
-		tr = std::sqrt(tr2);
 		n0_j[j] = 0.0;
 		n1_j[j] = 0.0;
 		n2_j[j] = 0.0;
 		n3_j[j] = 0.0;
 		nv1_j[j] = 0.0;
 		nv2_j[j] = 0.0;
+		//
+		raj = (nr[j]-r[i]);
+		xf2 = (Rif*Rif-raj*raj);
+		tr2 = xf2 + nr[j]*nr[j];
+		tr = (Dcc-sigma_ss)/2.0;
+		if ( tr2 >= 0.0 ) {
+			tr = std::sqrt(tr2);
+		}
+		//
 		if ( xf2 >= 0.0 && tr < (Dcc-sigma_ss)/2.0 ){
-			xf = std::sqrt(xf2);
-			//
 			old_rad = 0.0;
 			old_rho = nrho[j];
 			old_y = 0.0;
+			//
+			xf = std::sqrt(xf2);
 			for (t=j+1; t<na; t++){
 				y2 = std::abs(nr[t]*nr[t] - nr[j]*nr[j]);
 				y = std::sqrt(y2);
 				dy = y - old_y;
-				if ( y < xf ){
+				if ( y <= xf ){
 					new_rad = std::asin(y/xf); // radian
 					drad = new_rad - old_rad;
 					prho = 4.0*xf*(old_rho*drad/2.0 + nrho[t]*drad/2.0);
@@ -779,8 +784,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//
 		nnv2[j] = -nv2[(nstep-1)-j];
 		nnv2[nstep+j] = nv2[j];
+		//
 	}
-	// na = (nstep*2-1);
+	//for (j=0; j<na; j++) {
+	//	std::cout << "j = " << j << ", nn0[j] = " << nn0[j] << ", nn1[j] = " << nn1[j] << ", nn2[j] = " << nn2[j] << ", nn3[j] = " << nn3[j] << std::endl;
+	//	std::cout << "        nnv1[j] = " << nnv1[j] << ", nnv2[j] = " << nnv2[j] << std::endl;
+	//}
 	int t;
 	double tr, tr2;
 	double drad, new_rad, old_rad;
@@ -792,10 +801,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double new_dpn0, new_dpn1, new_dpn2, new_dpn3;
 	double new_dpnv1, new_dpnv2;
 	for (j=0; j<na; j++) {
-		raj = (nr[j]-r[i]);
-		x2 = (Rif*Rif-raj*raj);
-		tr2 = x2 + nr[j]*nr[j];
-		tr = std::sqrt(tr2);
+		dphi_per_n0_j[j] = 0.0;
+		dphi_per_n1_j[j] = 0.0;
+		dphi_per_n2_j[j] = 0.0;
+		dphi_per_n3_j[j] = 0.0;
+		dphi_per_nv1_j[j] = 0.0;
+		dphi_per_nv2_j[j] = 0.0;
 		//
 		if ( nn2[j] > 0.0 ){
 			sxi = std::abs(nnv2[j]/nn2[j]);
@@ -810,45 +821,52 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 			sxi = 0.0;
 		}
 		//
-		dphi_per_n0_j[j] = 0.0;
-		dphi_per_n1_j[j] = 0.0;
-		dphi_per_n2_j[j] = 0.0;
-		dphi_per_n3_j[j] = 0.0;
-		dphi_per_nv1_j[j] = 0.0;
-		dphi_per_nv2_j[j] = 0.0;
+		raj = (nr[j]-r[i]);
+		x2 = (Rif*Rif-raj*raj);
+		tr2 = x2 + nr[j]*nr[j];
+		tr = (Dcc-sigma_ss)/2.0;
+		if ( tr2 >= 0.0 ) {
+			tr = std::sqrt(tr2);
+		}
 		//
 		if ( x2 >= 0.0 && tr < (Dcc-sigma_ss)/2.0 ){
-			x = std::sqrt(x2);
-			//
 			old_rad = 0.0;
 			old_dpn0 = -std::log(1.0-nn3[j]);
+			//std::cout << old_dpn0 << std::endl;
 			old_dpn1 = nn2[j]/(1.0-nn3[j]);
+			//std::cout << old_dpn1 << std::endl;
 			old_dpn2 = ( nn1[j]/(1.0-nn3[j])
 						+ 3.0*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-						+ nn2[j]*nn2[j]*n2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))
+						+ nn2[j]*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))
 						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nnv2[j]/(nn2[j]*nn2[j])*sign)
 					   );
+			//std::cout << old_dpn2 << std::endl;
 			old_dpn3 = ( nn0[j]/(1.0-nn3[j])
 						+ (nn1[j]*nn2[j] - nnv1[j]*nnv2[j])/((1.0-nn3[j])*(1.0-nn3[j])) 
 						+ 2.0*nn2[j]*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
 					   );
-			old_dpnv1 = -nnv2[t]/(1.0-nn3[t]);
-			old_dpnv2 = ( -nnv1[t]/(1.0-nn3[t])
-						+ nn2[t]*nn2[t]*nn2[t]/(24.0*M_PI*(1.0-nn3[t])*(1.0-nn3[t])*(1.0-nn3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/nn2[t])
+			//std::cout << old_dpn3 << std::endl;
+			old_dpnv1 = -nnv2[j]/(1.0-nn3[j]);
+			//std::cout << old_dpnv1 << std::endl;
+			old_dpnv2 = ( -nnv1[j]/(1.0-nn3[j])
+						+ nn2[j]*nn2[j]*nn2[j]/(24.0*M_PI*(1.0-nn3[j])*(1.0-nn3[j])*(1.0-nn3[j]))
+						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/nn2[j])
 					   );
+			//std::cout << old_dpnv2 << std::endl;
+			//
+			x = std::sqrt(x2);
 			//
 			for (t=j+1; t<na; t++){
 				y2 = std::abs(nr[t]*nr[t] - nr[j]*nr[j]);
 				y = std::sqrt(y2);
 				dy = y - old_y;
-				if ( y < x ){
+				if ( y <= x ){
 					new_rad = std::asin(y/x); // radian
 					drad = new_rad - old_rad;
 					//
 					// dphi/dn0
 					new_dpn0 = -std::log(1.0-nn3[t]);
-					dphi_per_n0_j[j] += 4.0*x*(old_dpn0*drad/2.0 + new_dpn0*drad/2.0)/(4.0*M_PI*Rif*Rif);; // PHYSICAL REVIEW E, VOLUME 64, 011602
+					dphi_per_n0_j[j] += 4.0*x*(old_dpn0*drad/2.0 + new_dpn0*drad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
 					//
 					// dphi/dn1
 					new_dpn1 = nn2[t]/(1.0-nn3[t]);
@@ -878,7 +896,7 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 						+ nn2[t]*nn2[t]*nn2[t]/(24.0*M_PI*(1.0-nn3[t])*(1.0-nn3[t])*(1.0-nn3[t]))
 						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/nn2[t])
 					);
-					dphi_per_nv2_j[j] += 4.0*(M_PI/180.0*x)*(old_dpnv1*drad/2.0 + new_dpnv1*drad/2.0)*(raj/Rif);
+					dphi_per_nv2_j[j] += 4.0*(M_PI/180.0*x)*(old_dpnv2*drad/2.0 + new_dpnv2*drad/2.0)*(raj/Rif);
 				}
 				old_y = y;
 				old_rad = new_rad;
@@ -1201,7 +1219,7 @@ double press_hs(double rho_b){
 	return press_hs_out;
 }
 
-double Maxwell_construction(double *r){
+double Maxwell_construction(void){
 	int i,j;
 	int iter_max_drhob0 = 250000;
 	int iter_max_dmue = 1500;
@@ -1371,10 +1389,7 @@ int main(){
 	double rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		// r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
-		// 1.72 times is escape nan, etc from positive value of wall potential
-		//r[i] = sigma_ss*1.74/2.0 + dr*double(i) + dr/2.0; // dr = (H-sigma_ss*1.74)/double(nstep+1);
-		r[i] = sigma_ss/2.0 + dr*double(i); // dr = (Dcc-sigma_ss)/double(nstep+1);
+		r[i] = dr*(0.5+double(i)); // dr = (Dcc-sigma_ss)/double(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1386,7 +1401,7 @@ int main(){
 	if ( rho_b0 != 0.0 ){
 		std::cout << "rho_b0 = " << rho_b0 << std::endl;
 	} else {
-		rho_b0 = Maxwell_construction(r);
+		rho_b0 = Maxwell_construction();
 	}
 	
 	//std::cout << rho_b0 << std::endl;
@@ -1406,7 +1421,21 @@ int main(){
 	//double rho_s0j[nstep];
 	//double rho_s1j[nstep];
 	//double rho_s2j[nstep];
-	//double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
+	int na = nstep*2;
+	double n0_j[na], n0[nstep];   // For FMT
+	double n1_j[na], n1[nstep];   // For FMT
+	double n2_j[na], n2[nstep];   // For FMT
+	double n3_j[na], n3[nstep];   // For FMT
+	double nv1_j[na], nv1[nstep]; // For FMT
+	double nv2_j[na], nv2[nstep]; // For FMT
+	//double rho_dfex_int[nstep];
+	//double dfex_int[nstep];
+	double rho_phi_int[nstep];
+	double phi_ext_i[nstep];
+	for (i=0; i<nstep; i++){
+		phi_ext_i[i] = phi_ext(r[i]);
+		//std::cout << "phi_ext_i[" << i << "] = " << phi_ext_i[i] << std::endl;
+	}
 	double *phi_att_int_ij = (double *)malloc(sizeof(double)*((nstep+1)*nstep));
 	if (phi_att_int_ij == NULL) {
 		printf("Memory cannot be allocated.");
@@ -1415,24 +1444,11 @@ int main(){
 		printf("Memory has been allocated. The address is %p\n", phi_att_int_ij);
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
-	//double rho_dfex_int[nstep];
-	//double dfex_int[nstep];
-	double rho_phi_int[nstep];
-	double phi_ext_i[nstep];
-	for (i=0; i<nstep; i++){
-		phi_ext_i[i] = phi_ext(r[i]);
-	}
-	int na = nstep*2;
-	double n0_j[na], n0[nstep];   // For FMT
-	double n1_j[na], n1[nstep];   // For FMT
-	double n2_j[na], n2[nstep];   // For FMT
-	double n3_j[na], n3[nstep];   // For FMT
-	double nv1_j[na], nv1[nstep]; // For FMT
-	double nv2_j[na], nv2[nstep]; // For FMT
-	double c1;
-	double fex_i[nstep];  // For grand potential, Omega
 	double diff0;
 	double mixing;
+	//
+	double c1;
+	double fex_i[nstep];  // For grand potential, Omega
 	double rho_r[nstep];
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
@@ -1448,7 +1464,6 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//std::cout << c1 << std::endl;
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
