@@ -1,20 +1,23 @@
 #!/usr/bin/gnuplot
 
 set terminal win font "Arial,12"
-set xlabel "Chemical potential (mu_b/epsilon_f_f)"
+set xlabel "Chemical potential, {/Symbol m}_b/{/Symbol e}_f_f"
 set mxtics 5
-set ylabel "Density (rho_b*d_h_s^3)"
+
+set ylabel "Density, {/Symbol r}_b*d_h_s^3"
 set mytics 5
 
-plot "Maxwell_construction_data.txt" u 1:2 w l
+plot "Maxwell_construction_data.txt" u 1:2 w l t "N_2, 77.347 K"
+
+set xrange[-12:-7]
 
 set parametric
-set yrange[0:1.2]
-replot -9.93,t w l dt (10,5) t "test data: x=-9.93"
+set yrange[-0.1:1.0]
+replot -10.03,t w l dt (10,5) t "test data: x=-10.03"
 
-y=0.0034131 
+y=0.00300645
 set trange[-20:5]
-replot t,y w l dt (10,5) t "test data: y=0.0034131"
+replot t,y w l dt (10,5) t "gas phase: y=0.00300645"
 
 # pause -1
 
