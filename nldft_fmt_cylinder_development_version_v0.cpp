@@ -758,20 +758,20 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//std::cout << i << ", " << j << ", " << rho[j] << ", " << n0_j[j] << ", " << n1_j[j] << ", " << n2_j[j] << ", " << n3_j[j] << ", " << nv1_j[j] << ", " << nv2_j[j] << std::endl;
 	}
     //integral_trapezoidal(double *f, int n, double dx)
-	n0[i] = integral_trapezoidal(n0_j, nstep-1, dr);
-	n1[i] = integral_trapezoidal(n1_j, nstep-1, dr);
-	n2[i] = integral_trapezoidal(n2_j, nstep-1, dr);
-	n3[i] = integral_trapezoidal(n3_j, nstep-1, dr);
-	nv1[i] = integral_trapezoidal(nv1_j, nstep-1, dr);
-	nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr);
+	n0[i] = integral_trapezoidal(n0_j, nstep-1, dr) + 2.0*n0_j[0]*(dr/2.0);
+	n1[i] = integral_trapezoidal(n1_j, nstep-1, dr) + 2.0*n1_j[0]*(dr/2.0);
+	n2[i] = integral_trapezoidal(n2_j, nstep-1, dr) + 2.0*n2_j[0]*(dr/2.0);
+	n3[i] = integral_trapezoidal(n3_j, nstep-1, dr) + 2.0*n3_j[0]*(dr/2.0);
+	nv1[i] = integral_trapezoidal(nv1_j, nstep-1, dr) + 2.0*nv1_j[0]*(dr/2.0);
+	nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr) + 2.0*nv2_j[0]*(dr/2.0);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	//n0[i] = integral_simpson(n0_j, nstep-1, dr);
-	//n1[i] = integral_simpson(n1_j, nstep-1, dr);
-	//n2[i] = integral_simpson(n2_j, nstep-1, dr);
-	//n3[i] = integral_simpson(n3_j, nstep-1, dr);
-	//nv1[i] = integral_simpson(nv1_j, nstep-1, dr);
-	//nv2[i] = integral_simpson(nv2_j, nstep-1, dr);
+	//n0[i] = integral_simpson(n0_j, nstep-1, dr) + 2.0*n0_j[0]*(dr/2.0);
+	//n1[i] = integral_simpson(n1_j, nstep-1, dr) + 2.0*n1_j[0]*(dr/2.0);
+	//n2[i] = integral_simpson(n2_j, nstep-1, dr) + 2.0*n2_j[0]*(dr/2.0);
+	//n3[i] = integral_simpson(n3_j, nstep-1, dr) + 2.0*n3_j[0]*(dr/2.0);
+	//nv1[i] = integral_simpson(nv1_j, nstep-1, dr) + 2.0*nv1_j[0]*(dr/2.0);
+	//nv2[i] = integral_simpson(nv2_j, nstep-1, dr) + 2.0*nv2_j[0]*(dr/2.0);
 	//
 	//std::cout << "i, r[i], j, r[j], raj, xf, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
 	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << raj << ", " << xf << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
@@ -1193,20 +1193,20 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	}
 	//
     //integral_trapezoidal(double *f, int n, double dx)
-	dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep-1, dr);
-	dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep-1, dr);
-	dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, nstep-1, dr);
-	dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, nstep-1, dr);
-	dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, nstep-1, dr);
-	dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, nstep-1, dr);
+	dphi_per_n0  = integral_trapezoidal(dphi_per_n0_j, nstep-1, dr) + 2.0*dphi_per_n0_j[0]*(dr/2.0);
+	dphi_per_n1  = integral_trapezoidal(dphi_per_n1_j, nstep-1, dr) + 2.0*dphi_per_n1_j[0]*(dr/2.0);
+	dphi_per_n2  = integral_trapezoidal(dphi_per_n2_j, nstep-1, dr) + 2.0*dphi_per_n2_j[0]*(dr/2.0);
+	dphi_per_n3  = integral_trapezoidal(dphi_per_n3_j, nstep-1, dr) + 2.0*dphi_per_n3_j[0]*(dr/2.0);
+	dphi_per_nv1 = integral_trapezoidal(dphi_per_nv1_j, nstep-1, dr) + 2.0*dphi_per_nv1_j[0]*(dr/2.0);
+	dphi_per_nv2 = integral_trapezoidal(dphi_per_nv2_j, nstep-1, dr) + 2.0*dphi_per_nv2_j[0]*(dr/2.0);
 	//
 	//integral_simpson(double *f, int n, double dx)
-	//dphi_per_n0 = integral_simpson(dphi_per_n0_j, nstep-1, dr);
-	//dphi_per_n1 = integral_simpson(dphi_per_n1_j, nstep-1, dr);
-	//dphi_per_n2 = integral_simpson(dphi_per_n2_j, nstep-1, dr);
-	//dphi_per_n3 = integral_simpson(dphi_per_n3_j, nstep-1, dr);
-	//dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, nstep-1, dr);
-	//dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, nstep-1, dr);
+	//dphi_per_n0 = integral_simpson(dphi_per_n0_j, nstep-1, dr) + 2.0*dphi_per_n0_j[0]*(dr/2.0);
+	//dphi_per_n1 = integral_simpson(dphi_per_n1_j, nstep-1, dr) + 2.0*dphi_per_n1_j[0]*(dr/2.0);
+	//dphi_per_n2 = integral_simpson(dphi_per_n2_j, nstep-1, dr) + 2.0*dphi_per_n2_j[0]*(dr/2.0);
+	//dphi_per_n3 = integral_simpson(dphi_per_n3_j, nstep-1, dr) + 2.0*dphi_per_n3_j[0]*(dr/2.0);
+	//dphi_per_nv1 = integral_simpson(dphi_per_nv1_j, nstep-1, dr) + 2.0*dphi_per_nv1_j[0]*(dr/2.0);
+	//dphi_per_nv2 = integral_simpson(dphi_per_nv2_j, nstep-1, dr) + 2.0*dphi_per_nv2_j[0]*(dr/2.0);
 	//
 	//std::cout << "i, dphi_per_n0, dphi_per_n1, dphi_per_n2, dphi_per_n3, dphi_per_nv1, dphi_per_nv2" << std::endl;
 	//std::cout << i << ", " << dphi_per_n0 << "," << dphi_per_n1 << "," << dphi_per_n2 << "," << dphi_per_n3 << "," << dphi_per_nv1 << "," << dphi_per_nv2 << "," << std::endl;
