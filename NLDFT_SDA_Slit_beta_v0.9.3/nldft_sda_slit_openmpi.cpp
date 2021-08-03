@@ -639,7 +639,7 @@ double press_hs(double rho_b){
 	return press_hs_out;
 }
 
-double Maxwell_construction(double *r){
+double Maxwell_construction(void){
 	int i,j;
 	int iter_max_drhob0 = 250000;
 	int iter_max_dmue = 1500;
@@ -778,7 +778,7 @@ MPI::Init();
 	if ( rho_b0 != 0.0 ){
 		std::cout << "rho_b0 = " << rho_b0 << std::endl;
 	} else {
-		rho_b0 = Maxwell_construction(r);
+		rho_b0 = Maxwell_construction();
 	}
 	
 	//std::cout << rho_b0 << std::endl;
