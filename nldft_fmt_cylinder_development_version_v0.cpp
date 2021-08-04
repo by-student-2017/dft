@@ -587,8 +587,9 @@ double mu_b(double rho_b){
 
 double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_j, double *n3_j, double *nv1_j, double *nv2_j,
 		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
-	double Rif, Ris;
+	double Rif;
 	Rif = d_hs/2.0; // [nm], Rif is the hard-sphere radius of fluid
+	//double Ris;
 	//Ris = 0.2217/2.0; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
 	// 2.217e-1 [m], The hard sphere diameter of carbon atoms
 	//
@@ -617,6 +618,7 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double new_nrad, old_nrad, dnrad;
 	double nrho, old_nrho;
 	double ny, ny2, old_ny, dny;
+	double nypw;
 	//
 	double praj;
 	double pxf, pxf2;
@@ -624,6 +626,7 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double new_prad, old_prad, dprad;
 	double prho, old_prho;
 	double py, py2, old_py, dpy;
+	double pypw;
 	//
 	for (j=0; j<nstep; j++) {
 		//std::cout << j << " " << nr[j] << std::endl;
@@ -638,43 +641,52 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//
 		nraj = (-r[j]-r[i]);
 		nxf2 = (Rif*Rif-nraj*nraj);
-		ntr2 = nxf2 + -r[j]*-r[j];
-		ntr = (Dcc-sigma_ss)/2.0;
-		if ( ntr2 >= 0.0 ) {
-			ntr = std::sqrt(ntr2);
-		}
-		//
-		if ( nxf2 >= 0.0 && ntr < (Dcc-sigma_ss)/2.0 ){
+		// nxf2 >= 0.0 is in Rif range.
+		if ( nxf2 >= 0.0 ){
 			old_nrad = 0.0;
 			old_nrho = rho[j];
 			old_ny = 0.0;
-			nxf = std::sqrt(nxf2);
 			//
 			for (t=j+1; t<nstep; t++){
 				ny2 = -r[t]*-r[t] - -r[j]*-r[j];
 				ny = std::sqrt(ny2);
 				dny = ny - old_ny;
-				if ( ny <= nxf ){
-					new_nrad = std::asin(ny/nxf); // radian
-					dnrad = new_nrad - old_nrad;
-					nrho = 4.0*nxf*(old_nrho*dnrad/2.0 + rho[t]*dnrad/2.0);
+				//
+				ntr2 = nxf2 + -r[j]*-r[j];
+				ntr = std::sqrt(ntr2);
+				if ( ntr < (Dcc-sigma_ss)/2.0 ){
 					//
-					//n0_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif*Rif);
-					n0_j[j] += nrho/(4.0*M_PI*Rif*Rif);
+					nxf = std::sqrt(nxf2);
+					if ( ny <= nxf ){
+						new_nrad = std::asin(ny/nxf); // radian
+						dnrad = new_nrad - old_nrad;
+						//
+						nrho = 4.0*nxf*(old_nrho*dnrad/2.0 + rho[t]*dnrad/2.0);
+						//
+						//n0_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif*Rif);
+						n0_j[j] += nrho/(4.0*M_PI*Rif*Rif);
+						//
+						//n1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif);
+						n1_j[j] += nrho/(4.0*M_PI*Rif);
+						//
+						//n2_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0);
+						n2_j[j] += nrho;
+						//
+						n3_j[j] += 4.0*nxf*(old_nrho*(dny/2.0)*std::cos(old_nrad) + rho[t]*(dny/2.0)*std::cos(new_nrad));
+						//
+						//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
+						nv1_j[j] += nrho/(4.0*M_PI*Rif)*(nraj/Rif); // total is 0.0 on x-y plane.
+						//
+						//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)*(raj/Rif);
+						nv2_j[j] += nrho*(nraj/Rif); // total is 0.0 on x-y plane.
+					}
+				} else {
 					//
-					//n1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif);
-					n1_j[j] += nrho/(4.0*M_PI*Rif);
-					//
-					//n2_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0);
-					n2_j[j] += nrho;
-					//
-					n3_j[j] += 4.0*(old_nrho*dny/2.0*std::cos(old_nrad) + rho[t]*dny/2.0*std::cos(new_nrad));
-					//
-					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
-					nv1_j[j] += nrho/(4.0*M_PI*Rif)*(nraj/Rif); // total is 0.0 on x-y plane.
-					//
-					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)*(raj/Rif);
-					nv2_j[j] += nrho*(nraj/Rif); // total is 0.0 on x-y plane.
+					nypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - -r[j]*-r[j]);
+					if ( ny <= nypw ) {
+						new_nrad = std::asin(ny/nypw); // radian
+						n3_j[j] += 4.0*nypw*(old_nrho*(dny/2.0)*std::cos(old_nrad) + rho[t]*(dny/2.0)*std::cos(new_nrad));
+					}
 				}
 				old_ny = ny;
 				old_nrad = new_nrad;
@@ -686,43 +698,52 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//
 		praj = (r[j]-r[i]);
 		pxf2 = (Rif*Rif-praj*praj);
-		ptr2 = pxf2 + r[j]*r[j];
-		ptr = (Dcc-sigma_ss)/2.0;
-		if ( ptr2 >= 0.0 ) {
-			ptr = std::sqrt(ptr2);
-		}
-		//
-		if ( pxf2 >= 0.0 && ptr < (Dcc-sigma_ss)/2.0 ){
+		// pxf2 >= 0.0 is in Rif range.
+		if ( pxf2 >= 0.0  ){
 			old_prad = 0.0;
 			old_prho = rho[j];
 			old_py = 0.0;
-			pxf = std::sqrt(pxf2);
 			//
 			for (t=j+1; t<nstep; t++){
 				py2 = r[t]*r[t] - r[j]*r[j];
 				py = std::sqrt(py2);
 				dpy = py - old_py;
-				if ( py <= pxf ){
-					new_prad = std::asin(py/pxf); // radian
-					dprad = new_prad - old_prad;
-					prho = 4.0*pxf*(old_prho*dprad/2.0 + rho[t]*dprad/2.0);
+				//
+				ptr2 = pxf2 + r[j]*r[j];
+				ptr = std::sqrt(ptr2);
+				if ( ptr < (Dcc-sigma_ss)/2.0 ){
 					//
-					//n0_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif*Rif);
-					n0_j[j] += prho/(4.0*M_PI*Rif*Rif);
+					pxf = std::sqrt(pxf2);
+					if ( py <= pxf ){
+						new_prad = std::asin(py/pxf); // radian
+						dprad = new_prad - old_prad;
+						//
+						prho = 4.0*pxf*(old_prho*dprad/2.0 + rho[t]*dprad/2.0);
+						//
+						//n0_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif*Rif);
+						n0_j[j] += prho/(4.0*M_PI*Rif*Rif);
+						//
+						//n1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif);
+						n1_j[j] += prho/(4.0*M_PI*Rif);
+						//
+						//n2_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0);
+						n2_j[j] += prho;
+						//
+						n3_j[j] += 4.0*pxf*(old_prho*(dpy/2.0)*std::cos(old_prad) + rho[t]*(dpy/2.0)*std::cos(new_prad));
+						//
+						//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
+						nv1_j[j] += prho/(4.0*M_PI*Rif)*(praj/Rif); // total is 0.0 on x-y plane.
+						//
+						//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)*(raj/Rif);
+						nv2_j[j] += prho*(praj/Rif); // total is 0.0 on x-y plane.
+					}
+				} else {
 					//
-					//n1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif);
-					n1_j[j] += prho/(4.0*M_PI*Rif);
-					//
-					//n2_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0);
-					n2_j[j] += prho;
-					//
-					n3_j[j] += 4.0*(old_prho*dpy/2.0*std::cos(old_prad) + rho[t]*dpy/2.0*std::cos(new_prad));
-					//
-					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)/(4.0*M_PI*Rif)*(raj/Rif);
-					nv1_j[j] += prho/(4.0*M_PI*Rif)*(praj/Rif); // total is 0.0 on x-y plane.
-					//
-					//nv1_j[j] += 4.0*(M_PI/180.0*xf)*(old_rho*dtheta/2.0 + rho[t]*dtheta/2.0)*(raj/Rif);
-					nv2_j[j] += prho*(praj/Rif); // total is 0.0 on x-y plane.
+					pypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - r[j]*r[j]);
+					if ( py <= pypw ) {
+						new_prad = std::asin(py/pypw); // radian
+						n3_j[j] += 4.0*pypw*(old_prho*(dpy/2.0)*std::cos(old_prad) + rho[t]*(dpy/2.0)*std::cos(new_prad));
+					}
 				}
 				old_py = py;
 				old_prad = new_prad;
@@ -773,8 +794,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	//nv1[i] = integral_simpson(nv1_j, nstep-1, dr) + 2.0*nv1_j[0]*(dr/2.0);
 	//nv2[i] = integral_simpson(nv2_j, nstep-1, dr) + 2.0*nv2_j[0]*(dr/2.0);
 	//
-	//std::cout << "i, r[i], j, r[j], raj, xf, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
-	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << raj << ", " << xf << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
+	//std::cout << "i, r[i], j, r[j], nraj, nxf, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
+	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << nraj << ", " << nxf << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
 	return 0;
 }
 
@@ -789,8 +810,9 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double dfex_out;
 	double sxi;
 	double sign;
-	double Rif, Ris;
+	double Rif;
 	Rif = d_hs/2.0; // [nm] Rif is the hard-sphere radius of fluid
+	//double Ris;
 	//Ris = 0.2217/2.0; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
 	// 2.217e-1 [m], The hard sphere diameter of carbon atoms
 	//
@@ -808,8 +830,9 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double nx, nx2;
 	double ntr, ntr2;
 	double new_nrad, old_nrad, dnrad;
-	double nrho, old_nrho;
+	//double nrho, old_nrho;
 	double ny, ny2, old_ny, dny;
+	double nypw;
 	double old_ndpn0, old_ndpn1, old_ndpn2, old_ndpn3;
 	double old_ndpnv1, old_ndpnv2;
 	double new_ndpn0, new_ndpn1, new_ndpn2, new_ndpn3;
@@ -819,8 +842,9 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double px, px2;
 	double ptr, ptr2;
 	double new_prad, old_prad, dprad;
-	double prho, old_prho;
+	//double prho, old_prho;
 	double py, py2, old_py, dpy;
+	double pypw;
 	double old_pdpn0, old_pdpn1, old_pdpn2, old_pdpn3;
 	double old_pdpnv1, old_pdpnv2;
 	double new_pdpn0, new_pdpn1, new_pdpn2, new_pdpn3;
@@ -845,26 +869,22 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//
 		if ( n2[j] > 0.0 ){
 			sxi = std::abs(-nv2[j]/n2[j]);
-			if ( -nv2[j]/n2[j] >= 0.0 ){
-				// nv2/n2 > 0  ->  nv2/n2 = sxi
-				sign = 1.0;
-			} else if ( -nv2[j]/n2[j] < 0.0 ) {
-				// nv2/n2 < 0  ->  -nv2/n2 = -sxi
-				sign = -1.0;
-			}
 		} else {
 			sxi = 0.0;
 		}
 		//
-		nraj = (-r[j]-r[i]);
-		nx2 = (Rif*Rif-nraj*nraj);
-		ntr2 = nx2 + -r[j]*-r[j];
-		ntr = (Dcc-sigma_ss)/2.0;
-		if ( ntr2 >= 0.0 ) {
-			ntr = std::sqrt(ntr2);
+		if ( -nv2[j]/n2[j] >= 0.0 ){
+			// nv2/n2 > 0  ->  nv2/n2 = sxi
+			sign = 1.0;
+		} else if ( -nv2[j]/n2[j] < 0.0 ) {
+			// nv2/n2 < 0  ->  -nv2/n2 = -sxi
+			sign = -1.0;
 		}
 		//
-		if ( nx2 >= 0.0 && ntr < (Dcc-sigma_ss)/2.0 ){
+		nraj = (-r[j]-r[i]);
+		nx2 = (Rif*Rif-nraj*nraj);
+		// nx2 >= 0.0 is in Rif range.
+		if ( nx2 >= 0.0 ){
 			old_nrad = 0.0;
 			old_ndpn0 = -std::log(1.0-n3[j]);
 			//std::cout << old_dpn0 << std::endl;
@@ -889,49 +909,66 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 					   );
 			//std::cout << old_dpnv2 << std::endl;
 			//
-			nx = std::sqrt(nx2);
-			//
 			for (t=j+1; t<nstep; t++){
 				ny2 = -r[t]*-r[t] - -r[j]*-r[j];
 				ny = std::sqrt(ny2);
 				dny = ny - old_ny;
-				if ( ny <= nx ){
-					new_nrad = std::asin(ny/nx); // radian
-					dnrad = new_nrad - old_nrad;
+				//
+				ntr2 = nx2 + -r[j]*-r[j];
+				ntr = std::sqrt(ntr2);
+				if ( ntr < (Dcc-sigma_ss)/2.0 ) {
 					//
-					// dphi/dn0
-					new_ndpn0 = -std::log(1.0-n3[t]);
-					dphi_per_n0_j[j] += 4.0*nx*(old_ndpn0*dnrad/2.0 + new_ndpn0*dnrad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					nx = std::sqrt(nx2);
+					if ( ny <= nx ){
+						new_nrad = std::asin(ny/nx); // radian
+						dnrad = new_nrad - old_nrad;
+						//
+						// dphi/dn0
+						new_ndpn0 = -std::log(1.0-n3[t]);
+						dphi_per_n0_j[j] += 4.0*nx*(old_ndpn0*dnrad/2.0 + new_ndpn0*dnrad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+						//
+						// dphi/dn1
+						new_ndpn1 = n2[t]/(1.0-n3[t]);
+						dphi_per_n1_j[j] += 4.0*nx*(old_ndpn1*dnrad/2.0 + new_ndpn1*dnrad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+						//
+						// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
+						new_ndpn2 = ( n1[t]/(1.0-n3[t])
+							+ 3.0*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+							+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+							* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(nv2[t]/(n2[t]*n2[t])*sign)
+						);
+						dphi_per_n2_j[j] += 4.0*nx*(old_ndpn2*dnrad/2.0 + new_ndpn2*dnrad/2.0);
+						//
+						// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+						new_ndpn3 = ( n0[t]/(1.0-n3[t])
+							+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
+							+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						);
+						dphi_per_n3_j[j] += 4.0*nx*(old_ndpn3*(dny/2.0)*std::cos(old_nrad) + new_ndpn3*(dny/2.0)*std::cos(new_nrad));
+						//
+						// dphi/dnv1, total is 0.0 on x-y plane.
+						new_ndpnv1 = nv2[t]/(1.0-n3[t]);
+						dphi_per_nv1_j[j] += 4.0*nx*(old_ndpnv1*dnrad/2.0 + new_ndpnv1*dnrad/2.0)/(4.0*M_PI*Rif)*(nraj/Rif);
+						//
+						// dphi/dnv2, total is 0.0 on x-y plane.
+						new_ndpnv2 = ( nv1[t]/(1.0-n3[t])
+							+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+							* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[t])
+						);
+						dphi_per_nv2_j[j] += 4.0*nx*(old_ndpnv2*dnrad/2.0 + new_ndpnv2*dnrad/2.0)*(nraj/Rif);
+					}
+				} else {
 					//
-					// dphi/dn1
-					new_ndpn1 = n2[t]/(1.0-n3[t]);
-					dphi_per_n1_j[j] += 4.0*nx*(old_ndpn0*dnrad/2.0 + new_ndpn0*dnrad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
-					//
-					// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
-					new_ndpn2 = ( n1[t]/(1.0-n3[t])
-						+ 3.0*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(nv2[t]/(n2[t]*n2[t])*sign)
-					);
-					dphi_per_n2_j[j] += 4.0*nx*(old_ndpn2*dnrad/2.0 + new_ndpn2*dnrad/2.0);
-					//
-					// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
-					new_ndpn3 = ( n0[t]/(1.0-n3[t])
-						+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
-						+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-					); // PHYSICAL REVIEW E, VOLUME 64, 011602
-					dphi_per_n3_j[j] += 4.0*(old_ndpn3*dny/2.0*std::cos(old_nrad) + new_ndpn3*dny/2.0*std::cos(new_nrad));
-					//
-					// dphi/dnv1, total is 0.0 on x-y plane.
-					new_ndpnv1 = nv2[t]/(1.0-n3[t]);
-					dphi_per_nv1_j[j] += 4.0*nx*(old_ndpnv1*dnrad/2.0 + new_ndpnv1*dnrad/2.0)/(4.0*M_PI*Rif)*(nraj/Rif);
-					//
-					// dphi/dnv2, total is 0.0 on x-y plane.
-					new_ndpnv2 = ( nv1[t]/(1.0-n3[t])
-						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[t])
-					);
-					dphi_per_nv2_j[j] += 4.0*nx*(old_ndpnv2*dnrad/2.0 + new_ndpnv2*dnrad/2.0)*(nraj/Rif);
+					nypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - -r[j]*-r[j]);
+					if ( ny <= nypw ){
+						new_nrad = std::asin(ny/nypw); // radian
+						// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+						new_ndpn3 = ( n0[t]/(1.0-n3[t])
+							+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
+							+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						);
+						dphi_per_n3_j[j] += 4.0*nypw*(old_ndpn3*(dny/2.0)*std::cos(old_nrad) + new_ndpn3*(dny/2.0)*std::cos(new_nrad));
+					}
 				}
 				old_ny = ny;
 				old_nrad = new_nrad;
@@ -948,26 +985,22 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 		//
 		if ( n2[j] > 0.0 ){
 			sxi = std::abs(nv2[j]/n2[j]);
-			if ( nv2[j]/n2[j] >= 0.0 ){
-				// nv2/n2 > 0  ->  nv2/n2 = sxi
-				sign = 1.0;
-			} else if ( nv2[j]/n2[j] < 0.0 ) {
-				// nv2/n2 < 0  ->  -nv2/n2 = -sxi
-				sign = -1.0;
-			}
 		} else {
 			sxi = 0.0;
 		}
 		//
-		praj = (r[j]-r[i]);
-		px2 = (Rif*Rif-praj*praj);
-		ptr2 = px2 + r[j]*r[j];
-		ptr = (Dcc-sigma_ss)/2.0;
-		if ( ptr2 >= 0.0 ) {
-			ptr = std::sqrt(ptr2);
+		if ( nv2[j]/n2[j] >= 0.0 ){
+			// nv2/n2 > 0  ->  nv2/n2 = sxi
+			sign = 1.0;
+		} else if ( nv2[j]/n2[j] < 0.0 ) {
+			// nv2/n2 < 0  ->  -nv2/n2 = -sxi
+			sign = -1.0;
 		}
 		//
-		if ( px2 >= 0.0 && ptr < (Dcc-sigma_ss)/2.0 ){
+		praj = (r[j]-r[i]);
+		px2 = (Rif*Rif-praj*praj);
+		// px2 >= 0.0 is in Rif range.
+		if ( px2 >= 0.0 ){
 			old_prad = 0.0;
 			old_pdpn0 = -std::log(1.0-n3[j]);
 			//std::cout << old_dpn0 << std::endl;
@@ -992,49 +1025,66 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 					   );
 			//std::cout << old_dpnv2 << std::endl;
 			//
-			px = std::sqrt(px2);
-			//
 			for (t=j+1; t<nstep; t++){
 				py2 = r[t]*r[t] - r[j]*r[j];
 				py = std::sqrt(py2);
 				dpy = py - old_py;
-				if ( py <= px ){
-					new_prad = std::asin(py/px); // radian
-					dprad = new_prad - old_prad;
+				//
+				ptr2 = px2 + r[j]*r[j];
+				ptr = std::sqrt(ptr2);
+				if ( ptr < (Dcc-sigma_ss)/2.0) {
 					//
-					// dphi/dn0
-					new_pdpn0 = -std::log(1.0-n3[t]);
-					dphi_per_n0_j[j] += 4.0*px*(old_pdpn0*dprad/2.0 + new_pdpn0*dprad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+					px = std::sqrt(px2);
+					if ( py <= px ){
+						new_prad = std::asin(py/px); // radian
+						dprad = new_prad - old_prad;
+						//
+						// dphi/dn0
+						new_pdpn0 = -std::log(1.0-n3[t]);
+						dphi_per_n0_j[j] += 4.0*px*(old_pdpn0*dprad/2.0 + new_pdpn0*dprad/2.0)/(4.0*M_PI*Rif*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+						//
+						// dphi/dn1
+						new_pdpn1 = n2[t]/(1.0-n3[t]);
+						dphi_per_n1_j[j] += 4.0*px*(old_pdpn1*dprad/2.0 + new_pdpn1*dprad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
+						//
+						// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
+						new_pdpn2 = ( n1[t]/(1.0-n3[t])
+							+ 3.0*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+							+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+							* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[t]/(n2[t]*n2[t])*sign)
+						);
+						dphi_per_n2_j[j] += 4.0*px*(old_pdpn2*dprad/2.0 + new_pdpn2*dprad/2.0);
+						//
+						// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+						new_pdpn3 = ( n0[t]/(1.0-n3[t])
+							+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
+							+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						);
+						dphi_per_n3_j[j] += 4.0*px*(old_pdpn3*(dpy/2.0)*std::cos(old_prad) + new_pdpn3*(dpy/2.0)*std::cos(new_prad));
+						//
+						// dphi/dnv1, total is 0.0 on x-y plane.
+						new_pdpnv1 = -nv2[t]/(1.0-n3[t]);
+						dphi_per_nv1_j[j] += 4.0*px*(old_pdpnv1*dprad/2.0 + new_pdpnv1*dprad/2.0)/(4.0*M_PI*Rif)*(praj/Rif);
+						//
+						// dphi/dnv2, total is 0.0 on x-y plane.
+						new_pdpnv2 = ( -nv1[t]/(1.0-n3[t])
+							+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
+							* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[t])
+						);
+						dphi_per_nv2_j[j] += 4.0*px*(old_pdpnv2*dprad/2.0 + new_pdpnv2*dprad/2.0)*(praj/Rif);
+					}
+				} else {
 					//
-					// dphi/dn1
-					new_pdpn1 = n2[t]/(1.0-n3[t]);
-					dphi_per_n1_j[j] += 4.0*px*(old_pdpn0*dprad/2.0 + new_pdpn0*dprad/2.0)/(4.0*M_PI*Rif); // PHYSICAL REVIEW E, VOLUME 64, 011602
-					//
-					// dphi/dn2, q=2 case, RSLT version // PHYSICAL REVIEW E 64 011602
-					new_pdpn2 = ( n1[t]/(1.0-n3[t])
-						+ 3.0*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[t]/(n2[t]*n2[t])*sign)
-					);
-					dphi_per_n2_j[j] += 4.0*px*(old_pdpn2*dprad/2.0 + new_pdpn2*dprad/2.0);
-					//
-					// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
-					new_pdpn3 = ( n0[t]/(1.0-n3[t])
-						+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
-						+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-					); // PHYSICAL REVIEW E, VOLUME 64, 011602
-					dphi_per_n3_j[j] += 4.0*(old_pdpn3*dpy/2.0*std::cos(old_prad) + new_pdpn3*dpy/2.0*std::cos(new_prad));
-					//
-					// dphi/dnv1, total is 0.0 on x-y plane.
-					new_pdpnv1 = -nv2[t]/(1.0-n3[t]);
-					dphi_per_nv1_j[j] += 4.0*px*(old_pdpnv1*dprad/2.0 + new_pdpnv1*dprad/2.0)/(4.0*M_PI*Rif)*(praj/Rif);
-					//
-					// dphi/dnv2, total is 0.0 on x-y plane.
-					new_pdpnv2 = ( -nv1[t]/(1.0-n3[t])
-						+ n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))
-						* 2.0*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(1.0/n2[t])
-					);
-					dphi_per_nv2_j[j] += 4.0*px*(old_pdpnv2*dprad/2.0 + new_pdpnv2*dprad/2.0)*(praj/Rif);
+					pypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - r[j]*r[j]);
+					if ( py <= pypw ) {
+						new_prad = std::asin(py/pypw); // radian
+						// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
+						new_pdpn3 = ( n0[t]/(1.0-n3[t])
+							+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
+							+ 2.0*n2[t]*n2[t]*n2[t]/(24.0*M_PI*(1.0-n3[t])*(1.0-n3[t])*(1.0-n3[t]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+						);
+						dphi_per_n3_j[j] += 4.0*pypw*(old_pdpn3*(dpy/2.0)*std::cos(old_prad) + new_pdpn3*(dpy/2.0)*std::cos(new_prad));
+					}
 				}
 				old_py = py;
 				old_prad = new_prad;
@@ -1222,42 +1272,54 @@ double calc_alpha(double *r){
 	double raj;
 	double rak;
 	double alpha_other_method;
+	double alpha_int_i[nstep];
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
 	double alpha_int_t[nrmesh];
 	double x,y;
 	double drad = M_PI/nrmesh;
-	for (j=0; j<nstep; j++) {
-		for (k=0; k<nhmesh; k++) {
-			rak = dh*double(k);
-			//alpha_int_k[k] = 0.0;
-			for (t=0; t<nrmesh; t++) {
-				x = r[j]*std::cos(drad*double(t));
-				y = r[j]*std::sin(drad*double(t));
-				raj = x - r[i];
-				ra = raj*raj + y*y + rak*rak;
-				ra = std::sqrt(ra);
-				alpha_int_t[t] = -phi_att(ra);
-				//alpha_int_k[k] += -phi_att(ra);
+	for (i=0; i<nstep; i++) {
+		alpha_int_i[i] = 0.0;
+		for (j=0; j<nstep; j++) {
+			alpha_int_j[j] = 0.0;
+			for (k=0; k<nhmesh; k++) {
+				rak = dh*double(k);
+				alpha_int_k[k] = 0.0;
+				for (t=0; t<nrmesh; t++) {
+					alpha_int_t[t] = 0.0;
+					x = r[j]*std::cos(drad*double(t));
+					y = r[j]*std::sin(drad*double(t));
+					raj = x - r[i];
+					ra = raj*raj + y*y + rak*rak;
+					ra = std::sqrt(ra);
+					alpha_int_t[t] = -phi_att(ra);
+					//alpha_int_k[k] += -phi_att(ra);
+				}
+				//integral_simpson(double *f, int n, double dx)
+				alpha_int_k[k] = integral_simpson(alpha_int_t, nrmesh-1, drad);
+				//integral_trapezoidal(double *f, int n, double dx)
+				//alpha_int_k[k] = integral_trapezoidal(alpha_int_t, nrmesh-1, drad);
 			}
 			//integral_simpson(double *f, int n, double dx)
-			alpha_int_k[k] = integral_simpson(alpha_int_t, nrmesh-1, drad);
+			alpha_int_j[j]  = 2.0*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+			//alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
 			//integral_trapezoidal(double *f, int n, double dx)
-			//alpha_int_k[k] = integral_trapezoidal(alpha_int_t, nrmesh-1, drad);
+			//alpha_int_j[j]  = 2.0*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
+			//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
 		}
 		//integral_simpson(double *f, int n, double dx)
-		alpha_int_j[j]  = 2.0*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
-		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+		alpha_int_i[i] = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 		//integral_trapezoidal(double *f, int n, double dx)
-		//alpha_int_j[j]  = 2.0*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
-		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
+		//alpha_int_i[i] = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	}
+	//alpha_other_method = alpha_int_i[0]; // check
 	//integral_simpson(double *f, int n, double dx)
-	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	alpha_other_method = integral_simpson(alpha_int_i, nstep-1, dr) / ((Dcc-sigma_ss)/2.0);
 	//integral_trapezoidal(double *f, int n, double dx)
-	//alpha_other_method  = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	//std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
+	//alpha_other_method = integral_trapezoidal(alpha_int_i, nstep-1, dr) / ((Dcc-sigma_ss)/2.0);
+	//
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) cylinder" << std::endl;
 	return alpha_other_method;
 }
 
@@ -1302,13 +1364,13 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, double *rho_phi_int, double *phi_ext_i){
-	int j,k,t;
-	double ra;
-	double raj;
-	double rak;
+	int j;
+	//double ra;
+	//double raj;
+	//double rak;
 	double rho_phi_int_j[nstep];
-	double x,y;
-	double drad = M_PI/nrmesh;
+	//double x,y;
+	//double drad = M_PI/nrmesh;
 	for (j=0; j<nstep; j++) {
 		rho_phi_int_j[j]  = 2.0*r[j]*rho[j]*phi_att_int_ij[i*nstep+j];
 	}
@@ -1532,7 +1594,7 @@ int main(){
 	}
 	
 	// show alpha
-	calc_alpha(r);
+	//calc_alpha(r);
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
@@ -1587,6 +1649,7 @@ int main(){
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
 	double rho_r[nstep];
+	double check_c1xi;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -1604,6 +1667,8 @@ int main(){
 				//std::cout << c1 << std::endl;
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				//check_c1xi = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T);
+				//std::cout << "i = " << i << ", c1 = " << c1 << ", c1+xi = " << check_c1xi << std::endl;
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
 				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;

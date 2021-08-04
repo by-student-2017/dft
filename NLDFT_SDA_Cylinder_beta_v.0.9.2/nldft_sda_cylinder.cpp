@@ -562,37 +562,55 @@ double calc_alpha(double *r){
 	double ra;
 	double raj;
 	double rak;
-	//double tpidr = 2.0*M_PI*dr;
 	double alpha_other_method;
+	double alpha_int_i[nstep];
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
+	double alpha_int_t[nrmesh];
 	double x,y;
-	//double nrmesh = 180;
 	double drad = M_PI/nrmesh;
-	for (j=0; j<nstep; j++) {
-		for (k=0; k<nhmesh; k++) {
-			rak = dh*double(k);
-			alpha_int_k[k] = 0.0;
-			for (t=0; t<nrmesh; t++) {
-				x = r[j]*std::cos(drad*double(t));
-				y = r[j]*std::sin(drad*double(t));
-				raj = x - r[i];
-				ra = raj*raj + y*y + rak*rak;
-				ra = std::sqrt(ra);
-				alpha_int_k[k] += -phi_att(ra);
+	for (i=0; i<nstep; i++) {
+		alpha_int_i[i] = 0.0;
+		for (j=0; j<nstep; j++) {
+			alpha_int_j[j] = 0.0;
+			for (k=0; k<nhmesh; k++) {
+				rak = dh*double(k);
+				alpha_int_k[k] = 0.0;
+				for (t=0; t<nrmesh; t++) {
+					alpha_int_t[t] = 0.0;
+					x = r[j]*std::cos(drad*double(t));
+					y = r[j]*std::sin(drad*double(t));
+					raj = x - r[i];
+					ra = raj*raj + y*y + rak*rak;
+					ra = std::sqrt(ra);
+					alpha_int_t[t] = -phi_att(ra);
+					//alpha_int_k[k] += -phi_att(ra);
+				}
+				//integral_simpson(double *f, int n, double dx)
+				alpha_int_k[k] = integral_simpson(alpha_int_t, nrmesh-1, drad);
+				//integral_trapezoidal(double *f, int n, double dx)
+				//alpha_int_k[k] = integral_trapezoidal(alpha_int_t, nrmesh-1, drad);
 			}
+			//integral_simpson(double *f, int n, double dx)
+			alpha_int_j[j]  = 2.0*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+			//alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+			//integral_trapezoidal(double *f, int n, double dx)
+			//alpha_int_j[j]  = 2.0*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
+			//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
 		}
 		//integral_simpson(double *f, int n, double dx)
-		alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+		alpha_int_i[i] = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 		//integral_trapezoidal(double *f, int n, double dx)
-		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
+		//alpha_int_i[i] = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	}
+	//alpha_other_method = alpha_int_i[0]; // check
 	//integral_simpson(double *f, int n, double dx)
-	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	alpha_other_method = integral_simpson(alpha_int_i, nstep-1, dr) / ((Dcc-sigma_ss)/2.0);
 	//integral_trapezoidal(double *f, int n, double dx)
-	//alpha_other_method  = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	//std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
+	//alpha_other_method = integral_trapezoidal(alpha_int_i, nstep-1, dr) / ((Dcc-sigma_ss)/2.0);
+	//
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) cylinder" << std::endl;
 	return alpha_other_method;
 }
 
@@ -825,7 +843,7 @@ int main(){
 	}
 	
 	// show alpha
-	calc_alpha(r);
+	//calc_alpha(r);
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0

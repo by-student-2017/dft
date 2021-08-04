@@ -769,7 +769,7 @@ int main(){
 	}
 	
 	// show alpha
-	calc_alpha(r);
+	//calc_alpha(r);
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0

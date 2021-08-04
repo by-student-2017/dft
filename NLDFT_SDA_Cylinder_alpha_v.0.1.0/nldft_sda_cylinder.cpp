@@ -557,44 +557,7 @@ double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j
 	return drhos_per_drho_out;
 }
 
-double calc_alpha(double *r){
-	int i,j,k,t;
-	double ra;
-	double raj;
-	double rak;
-	//double tpidr = 2.0*M_PI*dr;
-	double alpha_other_method;
-	double alpha_int_j[nstep];
-	double alpha_int_k[nhmesh];
-	double x,y;
-	//double nrmesh = 180;
-	double drad = M_PI/nrmesh;
-	for (j=0; j<nstep; j++) {
-		for (k=0; k<nhmesh; k++) {
-			rak = dh*double(k);
-			alpha_int_k[k] = 0.0;
-			for (t=0; t<nrmesh; t++) {
-				x = r[j]*std::cos(drad*double(t));
-				y = r[j]*std::sin(drad*double(t));
-				raj = x - r[i];
-				ra = raj*raj + y*y + rak*rak;
-				ra = std::sqrt(ra);
-				alpha_int_k[k] += -phi_att(ra);
-			}
-		}
-		//integral_simpson(double *f, int n, double dx)
-		alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
-		//integral_trapezoidal(double *f, int n, double dx)
-		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
-	}
-	//integral_simpson(double *f, int n, double dx)
-	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	//integral_trapezoidal(double *f, int n, double dx)
-	//alpha_other_method  = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	//std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
-	return alpha_other_method;
-}
+calc_alpha
 
 double phi_att_int(double *r, double *phi_att_int_ij){
 	int i,j,k,t;
@@ -825,7 +788,7 @@ int main(){
 	}
 	
 	// show alpha
-	calc_alpha(r);
+	//calc_alpha(r);
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
