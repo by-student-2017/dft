@@ -1,4 +1,4 @@
-00_Dcc=0.70
+00_Dcc=0.90
 01_sigma_ss=0.276
 02_nstep=20
 03_cycle_max=10001
