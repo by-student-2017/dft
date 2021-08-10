@@ -657,8 +657,12 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 				if ( ntr < (Dcc-sigma_ss)/2.0 ){
 					//
 					nxf = std::sqrt(nxf2);
-					if ( ny <= nxf ){
-						new_nrad = std::asin(ny/nxf); // radian
+					if ( old_ny <= nxf ){
+						if ( ny <= nxf ){
+							new_nrad = std::asin(ny/nxf); // radian
+						} else {
+							new_nrad = M_PI;
+						}
 						dnrad = new_nrad - old_nrad;
 						//
 						nrho = 4.0*nxf*(old_nrho*dnrad/2.0 + rho[t]*dnrad/2.0);
@@ -714,8 +718,12 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 				if ( ptr < (Dcc-sigma_ss)/2.0 ){
 					//
 					pxf = std::sqrt(pxf2);
-					if ( py <= pxf ){
-						new_prad = std::asin(py/pxf); // radian
+					if ( old_py <= pxf ){
+						if ( py <= pxf ){
+							new_prad = std::asin(py/pxf); // radian
+						} else {
+							new_prad = M_PI;
+						}
 						dprad = new_prad - old_prad;
 						//
 						prho = 4.0*pxf*(old_prho*dprad/2.0 + rho[t]*dprad/2.0);
@@ -919,8 +927,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 				if ( ntr < (Dcc-sigma_ss)/2.0 ) {
 					//
 					nx = std::sqrt(nx2);
-					if ( ny <= nx ){
-						new_nrad = std::asin(ny/nx); // radian
+					if ( old_ny <= nx ){
+						if ( ny <= nx ){
+							new_nrad = std::asin(ny/nx); // radian
+						} else {
+							new_nrad = M_PI;
+						}
 						dnrad = new_nrad - old_nrad;
 						//
 						// dphi/dn0
@@ -1035,8 +1047,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 				if ( ptr < (Dcc-sigma_ss)/2.0) {
 					//
 					px = std::sqrt(px2);
-					if ( py <= px ){
-						new_prad = std::asin(py/px); // radian
+					if ( old_py <= px ){
+						if ( py <= px ){
+							new_prad = std::asin(py/px); // radian
+						} else {
+							new_prad = M_PI;
+						}
 						dprad = new_prad - old_prad;
 						//
 						// dphi/dn0
