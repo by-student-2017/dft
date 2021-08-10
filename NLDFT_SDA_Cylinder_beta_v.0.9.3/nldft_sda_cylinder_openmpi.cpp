@@ -846,9 +846,9 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i] * tpidr*r[i];
 	}
 	//integral_simpson(double *f, int n, double dx)
-	omega1 = -(kb1*T) * integral_simpson(rhor, nstep-1, dr) + rhor[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	omega2 = -integral_simpson(rho_x_rho_dfex_int, nstep-1, dr) + rho_x_rho_dfex_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	omega1 = -(kb1*T) * ( integral_simpson(rhor, nstep-1, dr) + rhor[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0) );
+	omega2 = -1.0 * ( integral_simpson(rho_x_rho_dfex_int, nstep-1, dr) + rho_x_rho_dfex_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0) );
+	omega3 = -0.5 * ( integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0) );
 	//integral_trapezoidal(double *f, int n, double dx)
 	//omega1 = -(kb1*T) * integral_trapezoidal(rho, nstep-1, dr) + rhor[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//omega2 = -integral_trapezoidal(rho_x_rho_dfex_int, nstep-1, dr) + rho_x_rho_dfex_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
