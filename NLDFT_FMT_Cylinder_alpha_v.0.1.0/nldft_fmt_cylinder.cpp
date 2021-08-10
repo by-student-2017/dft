@@ -687,8 +687,12 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 				} else {
 					//
 					nypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - -r[j]*-r[j]);
-					if ( ny <= nypw ) {
-						new_nrad = std::asin(ny/nypw); // radian
+					if ( old_ny <= nypw ){
+						if ( ny <= nypw ){
+							new_nrad = std::asin(ny/nypw); // radian
+						} else {
+							new_nrad = M_PI;
+						}
 						n3_j[j] += 4.0*nypw*(old_nrho*(dny/2.0)*std::cos(old_nrad) + rho[t]*(dny/2.0)*std::cos(new_nrad));
 					}
 				}
@@ -748,8 +752,12 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 				} else {
 					//
 					pypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - r[j]*r[j]);
-					if ( py <= pypw ) {
-						new_prad = std::asin(py/pypw); // radian
+					if ( old_py <= pypw ){
+						if ( py <= pypw ){
+							new_prad = std::asin(py/pypw); // radian
+						} else {
+							new_prad = M_PI;
+						}
 						n3_j[j] += 4.0*pypw*(old_prho*(dpy/2.0)*std::cos(old_prad) + rho[t]*(dpy/2.0)*std::cos(new_prad));
 					}
 				}
@@ -972,8 +980,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 				} else {
 					//
 					nypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - -r[j]*-r[j]);
-					if ( ny <= nypw ){
-						new_nrad = std::asin(ny/nypw); // radian
+					if ( old_ny <= nypw ){
+						if ( ny <= nypw ){
+							new_nrad = std::asin(ny/nypw); // radian
+						} else {
+							new_nrad = M_PI;
+						}
 						// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
 						new_ndpn3 = ( n0[t]/(1.0-n3[t])
 							+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
@@ -1092,8 +1104,12 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 				} else {
 					//
 					pypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - r[j]*r[j]);
-					if ( py <= pypw ) {
-						new_prad = std::asin(py/pypw); // radian
+					if ( old_py <= pypw ){
+						if ( py <= pypw ){
+							new_prad = std::asin(py/pypw); // radian
+						} else {
+							new_prad = M_PI;
+						}
 						// dphi/dn3, q=2 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
 						new_pdpn3 = ( n0[t]/(1.0-n3[t])
 							+ (n1[t]*n2[t] - nv1[t]*nv2[t])/((1.0-n3[t])*(1.0-n3[t])) 
