@@ -19,21 +19,18 @@ using namespace std;
 // H = 5*sigma_ff (cut off radius)
 
 // Note
-// This routine assumes that rho, etc is same value in x-y plane.
-// Because of cut off (rc), it calculate circle in x-y plane.
 // Units are fundamentaly [K] and [nm] in this routine.
 
 // There are many imperfections, so I hope someone can make it better with a CC0 license. 
 // It seems that this code is the first in the world at present (2021/7/5) to be released on CC0 even in NLDFT. 
 
-// compiling: c++ nldft.cpp
+// compiling: mpic++ nldft.cpp -O2
 // usage: ./a.out
 
 // debag mode
-// compiling: c++ nldft.cpp -g3 -ggdb
+// compiling: c++ nldft.cpp -g -Wall -O0
 // run: gdb ./a.out
-//      (gdb) r
-//      (gdb) backtrace
+//      (gdb) run
 
 // ---------- ----------- ------------ ------------
 // Adsorbent 

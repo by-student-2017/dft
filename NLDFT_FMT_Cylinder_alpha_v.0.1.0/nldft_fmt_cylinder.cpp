@@ -12,21 +12,18 @@ using namespace std;
 //Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
 
 // Note
-// This routine assumes that rho, etc is same value in x-y plane.
-// Because of cut off (rc), it calculate circle in x-y plane.
 // Units are fundamentaly [K] and [nm] in this routine.
 
 // There are many imperfections, so I hope someone can make it better with a CC0 license. 
 // It seems that this code is the first in the world at present (2021/7/5) to be released on CC0 even in NLDFT. 
 
-// compiling: c++ nldft.cpp
+// compiling: c++ nldft.cpp -O2
 // usage: ./a.out
 
 // debag mode
-// compiling: c++ nldft.cpp -g3 -ggdb
+// compiling: c++ nldft.cpp -g -Wall -O0
 // run: gdb ./a.out
-//      (gdb) r
-//      (gdb) backtrace
+//      (gdb) run
 
 // ---------- ----------- ------------ ------------
 // Adsorbent 
@@ -687,8 +684,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 				} else {
 					//
 					nypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - -r[j]*-r[j]);
-					if ( old_ny <= nypw ){
-						if ( ny <= nypw ){
+					if ( old_ny < nypw ){
+						if ( ny < nypw ){
 							new_nrad = std::asin(ny/nypw); // radian
 						} else {
 							new_nrad = M_PI;
@@ -752,8 +749,8 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 				} else {
 					//
 					pypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - r[j]*r[j]);
-					if ( old_py <= pypw ){
-						if ( py <= pypw ){
+					if ( old_py < pypw ){
+						if ( py < pypw ){
 							new_prad = std::asin(py/pypw); // radian
 						} else {
 							new_prad = M_PI;
@@ -980,8 +977,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 				} else {
 					//
 					nypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - -r[j]*-r[j]);
-					if ( old_ny <= nypw ){
-						if ( ny <= nypw ){
+					if ( old_ny < nypw ){
+						if ( ny < nypw ){
 							new_nrad = std::asin(ny/nypw); // radian
 						} else {
 							new_nrad = M_PI;
@@ -1104,8 +1101,8 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 				} else {
 					//
 					pypw = std::sqrt((Dcc-sigma_ss)/2.0*(Dcc-sigma_ss)/2.0 - r[j]*r[j]);
-					if ( old_py <= pypw ){
-						if ( py <= pypw ){
+					if ( old_py < pypw ){
+						if ( py < pypw ){
 							new_prad = std::asin(py/pypw); // radian
 						} else {
 							new_prad = M_PI;
