@@ -23,11 +23,11 @@ using namespace std;
 // There are many imperfections, so I hope someone can make it better with a CC0 license. 
 // It seems that this code is the first in the world at present (2021/7/5) to be released on CC0 even in NLDFT. 
 
-// compiling: c++ nldft.cpp -O2
+// compiling: c++ qsdft_fmt_slit.cpp -O2
 // usage: ./a.out
 
 // debag mode
-// compiling: c++ nldft.cpp -g -Wall -O0
+// compiling: c++ qsdft_fmt_slit.cpp -g -Wall -O0
 // run: gdb ./a.out
 //      (gdb) run
 
