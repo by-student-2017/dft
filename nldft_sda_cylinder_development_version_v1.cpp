@@ -17,18 +17,16 @@ using namespace std;
 // H = 5*sigma_ff (cut off radius)
 
 // Note
-// This routine assumes that rho, etc is same value in x-y plane.
-// Because of cut off (rc), it calculate circle in x-y plane.
 // Units are fundamentaly [K] and [nm] in this routine.
 
 // There are many imperfections, so I hope someone can make it better with a CC0 license. 
 // It seems that this code is the first in the world at present (2021/7/5) to be released on CC0 even in NLDFT. 
 
-// compiling: c++ nldft.cpp -O2
+// compiling: c++ nldft_sda_cylinder.cpp -O2
 // usage: ./a.out
 
 // debag mode
-// compiling: c++ nldft.cpp -g -Wall -O0
+// compiling: c++ nldft_sda_cylinder.cpp -g -Wall -O0
 // run: gdb ./a.out
 //      (gdb) run
 
@@ -570,42 +568,54 @@ double calc_alpha(double *r){
 	double raj;
 	double rak;
 	double alpha_other_method;
+	double alpha_int_i[nstep];
 	double alpha_int_j[nstep];
 	double alpha_int_k[nhmesh];
 	double alpha_int_t[nrmesh];
 	double x,y;
 	double drad = M_PI/nrmesh;
-	for (j=0; j<nstep; j++) {
-		for (k=0; k<nhmesh; k++) {
-			rak = dh*double(k);
-			//alpha_int_k[k] = 0.0;
-			for (t=0; t<nrmesh; t++) {
-				x = r[j]*std::cos(drad*double(t));
-				y = r[j]*std::sin(drad*double(t));
-				raj = x - r[i];
-				ra = raj*raj + y*y + rak*rak;
-				ra = std::sqrt(ra);
-				alpha_int_t[t] = -phi_att(ra);
-				//alpha_int_k[k] += -phi_att(ra);
+	for (i=0; i<nstep; i++) {
+		alpha_int_i[i] = 0.0;
+		for (j=0; j<nstep; j++) {
+			alpha_int_j[j] = 0.0;
+			for (k=0; k<nhmesh; k++) {
+				rak = dh*double(k);
+				alpha_int_k[k] = 0.0;
+				for (t=0; t<nrmesh; t++) {
+					alpha_int_t[t] = 0.0;
+					x = r[j]*std::cos(drad*double(t));
+					y = r[j]*std::sin(drad*double(t));
+					raj = x - r[i];
+					ra = raj*raj + y*y + rak*rak;
+					ra = std::sqrt(ra);
+					alpha_int_t[t] = -phi_att(ra);
+					//alpha_int_k[k] += -phi_att(ra);
+				}
+				//integral_simpson(double *f, int n, double dx)
+				alpha_int_k[k] = integral_simpson(alpha_int_t, nrmesh-1, drad);
+				//integral_trapezoidal(double *f, int n, double dx)
+				//alpha_int_k[k] = integral_trapezoidal(alpha_int_t, nrmesh-1, drad);
 			}
 			//integral_simpson(double *f, int n, double dx)
-			alpha_int_k[k] = integral_simpson(alpha_int_t, nrmesh-1, drad);
+			alpha_int_j[j]  = 2.0*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+			//alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
 			//integral_trapezoidal(double *f, int n, double dx)
-			//alpha_int_k[k] = integral_trapezoidal(alpha_int_t, nrmesh-1, drad);
+			//alpha_int_j[j]  = 2.0*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
+			//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
 		}
 		//integral_simpson(double *f, int n, double dx)
-		alpha_int_j[j]  = 2.0*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
-		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_simpson(alpha_int_k, nhmesh-1, dh)*2.0;
+		alpha_int_i[i] = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 		//integral_trapezoidal(double *f, int n, double dx)
-		//alpha_int_j[j]  = 2.0*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
-		//alpha_int_j[j]  = 2.0*drad*r[j]*integral_trapezoidal(alpha_int_k, nhmesh-1, dh)*2.0;
+		//alpha_int_i[i] = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	}
+	//alpha_other_method = alpha_int_i[0]; // check
 	//integral_simpson(double *f, int n, double dx)
-	alpha_other_method  = integral_simpson(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	alpha_other_method = integral_simpson(alpha_int_i, nstep-1, dr) / ((Dcc-sigma_ss)/2.0);
 	//integral_trapezoidal(double *f, int n, double dx)
-	//alpha_other_method  = integral_trapezoidal(alpha_int_j, nstep-1, dr) + alpha_int_j[0]/(2.0*M_PI*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	//std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) slit" << std::endl;
+	//alpha_other_method = integral_trapezoidal(alpha_int_i, nstep-1, dr) / ((Dcc-sigma_ss)/2.0);
+	//
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "average alpha of other method = " << alpha_other_method << " in (carbon) cylinder" << std::endl;
 	return alpha_other_method;
 }
 
@@ -657,7 +667,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_dfex_int_j[nstep];
 	double rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nhmesh];
-	double rho_phi_int_k[nhmesh];
+	//double rho_phi_int_k[nhmesh];
 	double rho_dfex_int_t[nrmesh];
 	double x,y;
 	double drad = M_PI/nrmesh;
@@ -824,9 +834,9 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i] * tpidr*r[i];
 	}
 	//integral_simpson(double *f, int n, double dx)
-	omega1 = -(kb1*T) * integral_simpson(rhor, nstep-1, dr) + rhor[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	omega2 = -integral_simpson(rho_x_rho_dfex_int, nstep-1, dr) + rho_x_rho_dfex_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
-	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	omega1 = -(kb1*T) * ( integral_simpson(rhor, nstep-1, dr) + rhor[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0) );
+	omega2 = -1.0 * ( integral_simpson(rho_x_rho_dfex_int, nstep-1, dr) + rho_x_rho_dfex_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0) );
+	omega3 = -0.5 * ( integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0) );
 	//integral_trapezoidal(double *f, int n, double dx)
 	//omega1 = -(kb1*T) * integral_trapezoidal(rho, nstep-1, dr) + rhor[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
 	//omega2 = -integral_trapezoidal(rho_x_rho_dfex_int, nstep-1, dr) + rho_x_rho_dfex_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
@@ -845,7 +855,7 @@ int main(){
 	double v_cm3STP_per_g;
 	double grand_potential;
 	//
-	double Dref=(Dcc-sigma_ss);
+	//double Dref=(Dcc-sigma_ss);
 	//
 	read_parameters();
 	double r[nstep];
@@ -857,7 +867,7 @@ int main(){
 	}
 	
 	// show alpha
-	calc_alpha(r);
+	//calc_alpha(r);
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0

@@ -524,9 +524,11 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
 	int j;
 	double raj;
-	double xf, xs, xf2, xs2;
-	double Rif, Ris;
+	//double xf, xs, xf2, xs2;
+	double xf, xf2;
+	double Rif;
 	Rif = d_hs/2.0; // [nm], Rif is the hard-sphere radius of fluid
+	//double Ris;
 	//Ris = 0.2217/2.0; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
 	// 2.217e-1 [m], The hard sphere diameter of carbon atoms
 	//
@@ -630,8 +632,9 @@ double dfex(double *r, int i, double *n0, double *n1, double *n2, double *n3, do
 	double dphi_per_nv2, dphi_per_nv2_j[nstep];
 	double sxi;
 	double sign;
-	double Rif, Ris;
+	double Rif;
 	Rif = d_hs/2.0; // [nm] Rif is the hard-sphere radius of fluid
+	//double Ris;
 	//Ris = 0.2217/2.0; // [nm] Ris is the hard-sphere radius of solid (for QSDFT)
 	// 2.217e-1 [m], The hard sphere diameter of carbon atoms
 	//
@@ -887,20 +890,21 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 double xi(double *rho, double *r, int i, double rho_b, double *phi_att_int_ij, double *rho_phi_int, double *phi_ext_i){
-	int j,k;
-	double ra;
-	double raj;
-	double rak;
+	int j;
+	//int j,k;
+	//double ra;
+	//double raj;
+	//double rak;
 	//double ndmesh = 2*d_hs*nrmesh/rc;
 	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
-	double tpidd = 2.0*M_PI*dd;
-	double rho_dfex_int_j[nstep];
+	//double tpidd = 2.0*M_PI*dd;
+	//double rho_dfex_int_j[nstep];
 	double rho_phi_int_j[nstep];
-	double rho_dfex_int_k[nrmesh];
-	double rho_phi_int_k[nrmesh]; // old ver.1.1.1
-	rho_phi_int_k[0] = 0.0;
+	//double rho_dfex_int_k[nrmesh];
+	//double rho_phi_int_k[nrmesh]; // old ver.1.1.1
+	//rho_phi_int_k[0] = 0.0;
 	for (j=0; j<nstep; j++) {
 		//raj = (r[i]-r[j]);
 		//for (k=1; k<ndmesh; k++) {
@@ -1195,7 +1199,7 @@ int main(){
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	//double rho_dfex_int[nstep];
-	double dfex_int[nstep];
+	//double dfex_int[nstep];
 	double rho_phi_int[nstep];
 	double phi_ext_i[nstep];
 	for (i=0; i<nstep; i++){
