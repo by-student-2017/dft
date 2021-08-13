@@ -573,7 +573,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	double rho_dfex_int_j[nstep];
 	double rho_phi_int_j[nstep];
 	double rho_dfex_int_k[nrmesh];
-	double rho_phi_int_k[nrmesh]; // old ver.1.1.1
+	//double rho_phi_int_k[nrmesh]; // old ver.1.1.1
 	rho_phi_int_k[0] = 0.0;
 //#pragma omp parallel for private(k)
 	for (j=0; j<nstep; j++) {
