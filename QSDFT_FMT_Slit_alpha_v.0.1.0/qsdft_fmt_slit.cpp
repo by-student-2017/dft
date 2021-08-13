@@ -1052,22 +1052,23 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
 //double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_ff_int_ij){
 double xi(double *rho, double *r, int i, double rho_b, double *phi_att_ff_int_ij, double *rho_phi_ff_int_i){
-	int j,k;
-	double ra;
-	double raj;
-	double rak;
+	int j;
+	//int j,k;
+	//double ra;
+	//double raj;
+	//double rak;
 	//double ndmesh = 2*d_hs*nrmesh/rc;
 	//double dd = 2.0*d_hs/double(ndmesh-1);
 	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
-	double tpidd = 2.0*M_PI*dd;
+	//double tpidd = 2.0*M_PI*dd;
 	//double rho_dfex_int_j[nstep];
 	double rho_phi_ff_int_j[nstep];
-	double rho_phi_sf_int_j[nstep];
+	//double rho_phi_sf_int_j[nstep];
 	//double rho_dfex_int_k[nrmesh];
 	//double rho_phi_ff_int = 0.0;
 	//double rho_phi_sf_int = 0.0;
-	double dz = H/(nstep-1);
+	//double dz = H/(nstep-1);
 	for (j=0; j<nstep; j++) {
 		rho_phi_ff_int_j[j]  = rho[j]*phi_att_ff_int_ij[i*nstep+j];
 		//rho_phi_sf_int_j[j]  = (rho_ssq(double(j)*dz)+rho_ssq(H-double(j)*dz))*phi_att_sf_int_ij[i*nstep+j];
@@ -1235,7 +1236,8 @@ double omega(double *rho, double *r, double *fex_i, double *rho_phi_ff_int_i, do
 	double omega_out;
 	omega_out = 1.0;
 	double omega1, omega2, omega3, omega4;
-	int i,j;
+	int i;
+	//int i,j;
 	double fidf[nstep];
 	double rho_x_rho_phi_ff_int[nstep];
 	double rho_x_rhos_phi_sf_int[nstep];
@@ -1322,10 +1324,10 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-(2.0*ze+sigma_sf))/2.0 = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
-	double rho_sj[nstep];
-	double rho_s0j[nstep];
-	double rho_s1j[nstep];
-	double rho_s2j[nstep];
+	//double rho_sj[nstep];
+	//double rho_s0j[nstep];
+	//double rho_s1j[nstep];
+	//double rho_s2j[nstep];
 	//double phi_att_ff_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	double *phi_att_ff_int_ij = (double *)malloc(sizeof(double)*((nstep+1)*nstep));
 	if (phi_att_ff_int_ij == NULL) {
@@ -1355,7 +1357,7 @@ int main(){
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
-		double check_data;
+		//double check_data;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); // for NLDFT
@@ -1436,7 +1438,7 @@ int main(){
 		for (i=0; i<nstep; i++){
 			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
 		}
-		grand_potential = (rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
+		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
 		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
@@ -1455,7 +1457,7 @@ int main(){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
-		double check_data;
+		//double check_data;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); // for NLDFT
@@ -1536,7 +1538,7 @@ int main(){
 		for (i=0; i<nstep; i++){
 			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
 		}
-		grand_potential = (rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
+		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
 		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
