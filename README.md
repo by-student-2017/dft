@@ -91,19 +91,19 @@
 ## References
 
 
-[1] https://www.j-ad.org/adsorption_news/30_1.pdf (Japanese)
+[1] https://www.j-ad.org/adsorption_news/30_1.pdf (Japanese) (NLDFT-SDA)
 
 
-[2] P. I. Ravikovitch et al., Phys. Rev., 64 (2001) 011602. (FMT)
+[2] P. I. Ravikovitch et al., Phys. Rev., 64 (2001) 011602. (NLDFT-FMT)
 
 
-[3] Y. Rosenfeld et al., Phys. Rev. E., 55 (1997) 4245.
+[3] Y. Rosenfeld et al., Phys. Rev. E., 55 (1997) 4245. (FMT)
 
 
-[4] A. V. Neimark et al., Carbon 47 (2009) 1617. (QSDFT)
+[4] A. V. Neimark et al., Carbon 47 (2009) 1617. (QSDFT-FMT)
 
 
-[5] J. Jagiello et al., J. Phys. Chem. C. Lett., 113 (2009) 19382. (2D-NLDFT)
+[5] J. Jagiello et al., J. Phys. Chem. C. Lett., 113 (2009) 19382. (2D-NLDFT-SDA)
 
 
 [6] T. Aslyamov et al., J. Chem. Phys. 147, 154703 (2017); https://doi.org/10.1063/1.4997001
