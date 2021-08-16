@@ -1,6 +1,6 @@
 00_H=0.70
 01_sigma_ss=0.276
-02_nstep=30
+02_nzstep=30
 03_cycle_max=10001
 04_wmixing=0.001
 05_epsilon_ff=95.77
