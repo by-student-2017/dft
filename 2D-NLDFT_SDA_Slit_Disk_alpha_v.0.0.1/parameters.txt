@@ -1,5 +1,5 @@
 00_H=0.70
-01_sigma_ss=0.276
+01_sigma_ss=0.34
 02_nzstep=30
 03_cycle_max=10001
 04_wmixing=0.001
@@ -7,7 +7,7 @@
 06_sigma_ff=0.3549
 07_d_hs=0.3549
 08_rc=0.0
-09_nhmesh=30
+09_ntmesh=20
 10_epsilon_sf=150
 11_sigma_sf=0.3508
 12_delta=0.0
@@ -18,4 +18,3 @@
 17_h0=0.68
 18_DH=4
 19_nxstep=20
-20_ntmesh=20

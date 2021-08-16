@@ -180,13 +180,10 @@ void read_parameters(void){
 		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
-	nrmesh = int(num[9]);
-	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.08 + 0.5);
-		if ( nrmesh%2 == 1 ){
-			nrmesh = nrmesh + 1;
-		}
-		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
+	ntmesh = int(num[9]);
+	if ( ntmesh == 0 ) {
+		ntmesh = 20;
+		std::cout << "autoset ntmesh = " << ntmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
@@ -218,12 +215,6 @@ void read_parameters(void){
 		}
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nxstep = " << nxstep << std::endl;
-	}
-	// ---------- ----------- ------------ ------------
-	ntmesh = int(num[20]);
-	if ( ntmesh == 0 ) {
-		ntmesh = 20;
-		std::cout << "autoset ntmesh = " << ntmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	
