@@ -38,7 +38,6 @@ double D;  // diameter of disk
 // ---------- ----------- ------------ ------------
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
-int nrmesh; // number of mesh, radius of disk
 int ntmesh; // theta
 // ---------- ----------- ------------ ------------
 // iteration of rho
@@ -352,7 +351,7 @@ double rho_si(double *rho, double x0, double z0, double *x, double *z, int i){
 	double rho_si_int_t[ntmesh];
 	//
 	double xt,yt;
-	double drad = M_PI/nrmesh; // radian
+	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (iz=0; iz<nzstep; iz++) {
@@ -526,7 +525,7 @@ double calc_alpha(double *x, double *z){
 	double phi_att_ff_int_jz[nzstep]; // z axis
 	//
 	double xt,yt;
-	double drad = M_PI/nrmesh; // radian
+	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	double alpha_int_ix[nxstep];
@@ -582,7 +581,7 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 	double phi_att_ff_int_jz[nzstep]; // z axis
 	//
 	double xt,yt;
-	double drad = M_PI/nrmesh; // radian
+	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (ix=0; ix<nxstep; ix++) {
@@ -627,11 +626,11 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	double wwidth = (h0+2.0*delta);
 	//
 	double phi_sf_int_jz[sfzmesh];
-	double phi_sf_int_jx[nrmesh];
+	double phi_sf_int_jx[ntmesh];
 	double phi_sf_int_t[ntmesh];
 	//
 	double xt,yt;
-	double drad = M_PI/nrmesh; // radian
+	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (ix=0; ix<nxstep; ix++) {
@@ -695,7 +694,7 @@ double xi(double *rho, double *x, double *z, int x0, int z0, double rho_b, doubl
 	double rho_phi_int_jz[nzstep];
 	//
 	double xt,yt;
-	double drad = M_PI/nrmesh; // radian
+	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	// j, z
 	for (jz=0; jz<nzstep; jz++) {
