@@ -629,8 +629,8 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
-	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "phi_att_sf_int calculation: start" << std::endl;
+	//std::cout << "--------------------------------------------------" << std::endl;
+	//std::cout << "phi_att_sf_int calculation: start" << std::endl;
 	//
 	for (ix=0; ix<nxstep; ix++) {
 		for (iz=0; iz<nzstep; iz++) {
@@ -670,8 +670,8 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 			//std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rhos_phi_sf_int=" << rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
 		}
 	}
-	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "phi_att_sf_int calculation: end" << std::endl;
+	//std::cout << "--------------------------------------------------" << std::endl;
+	//std::cout << "phi_att_sf_int calculation: end" << std::endl;
 	return 0;
 }
 
