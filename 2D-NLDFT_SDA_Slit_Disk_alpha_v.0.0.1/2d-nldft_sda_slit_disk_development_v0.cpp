@@ -666,8 +666,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 				//phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
 				phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
 			}
-			//
-			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(phi_sf_int_jz, sfzmesh-1, dsf);
+			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(phi_sf_int_jz, sfzmesh-1, dsf);
 			//std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rhos_phi_sf_int=" << rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
 		}
 	}
@@ -942,7 +941,7 @@ int main(){
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-					std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << std::endl;
+					std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
