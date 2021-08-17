@@ -678,7 +678,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, double *rho_s_jxjz, double *rho_s0_jxjz, double *rho_s1_jxjz, double *rho_s2_jxjz, double *phi_att_ff_int_ixizjxjz, double *rho_dfex_int_ixiz, double *rho_phi_int_ixiz){
+double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, double *rho_s_jxjz, double *rho_s0_jxjz, double *rho_s1_jxjz, double *rho_s2_jxjz, double *phi_att_ff_int_ixizjxjz, double *rho_dfex_int_ixiz, double *rho_phi_ff_int_ixiz){
 	int jz;  // wall area
 	int jx;  // radius on x-y plane
 	int t;  // theta
@@ -688,8 +688,8 @@ double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, dou
 	double rho_dfex_int_t[ntmesh];
 	double rho_dfex_int_jx[nxstep];
 	double rho_dfex_int_jz[nzstep];
-	double rho_phi_int_jx[nxstep];
-	double rho_phi_int_jz[nzstep];
+	double rho_phi_ff_int_jx[nxstep];
+	double rho_phi_ff_int_jz[nzstep];
 	//
 	double xt,yt;
 	double drad = M_PI/ntmesh; // radian
@@ -707,20 +707,22 @@ double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, dou
 				rho_dfex_int_t[t] = drhos_per_drho_j(ra, rho_s_jxjz[jx*nzstep+jz], rho_s1_jxjz[jx*nzstep+jz], rho_s2_jxjz[jx*nzstep+jz]);
 			}
 			rho_dfex_int_jx[jx] = 2.0*x[jx]*rho[jx*nzstep+jz]*dfex_per_drhos(rho_s_jxjz[jx*nzstep+jz])*integral_simpson(rho_dfex_int_t, ntmesh-1, drad);
-			rho_phi_int_jx[jx]  = rho[jx*nzstep+jz]*phi_att_ff_int_ixizjxjz[ix0*nzstep*nxstep*nzstep+iz0*nxstep*nzstep+jx*nzstep+jz];
+			rho_phi_ff_int_jx[jx]  = rho[jx*nzstep+jz]*phi_att_ff_int_ixizjxjz[ix0*nzstep*nxstep*nzstep+iz0*nxstep*nzstep+jx*nzstep+jz];
 		}
 		//rho_dfex_int_jz[jz] = integral_simpson(rho_dfex_int_jx, nxstep-1, dx) + rho_dfex_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
-		//rho_phi_int_jz[jz]  = integral_simpson(rho_phi_int_jx, nxstep-1, dx) + rho_phi_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
+		//rho_phi_ff_int_jz[jz]  = integral_simpson(rho_phi_ff_int_jx, nxstep-1, dx) + rho_phi_ff_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
 		rho_dfex_int_jz[jz] = integral_simpson(rho_dfex_int_jx, nxstep-1, dx) + rho_dfex_int_jx[0]*spr2;
-		rho_phi_int_jz[jz]  = integral_simpson(rho_phi_int_jx, nxstep-1, dx) + rho_phi_int_jx[0]*spr2;
+		rho_phi_ff_int_jz[jz]  = integral_simpson(rho_phi_ff_int_jx, nxstep-1, dx) + rho_phi_ff_int_jx[0]*spr2;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_dfex_int_ixiz[ix0*nzstep+iz0] = integral_simpson(rho_dfex_int_jz, nzstep-1, dz);
-	rho_phi_int_ixiz[ix0*nzstep+iz0]  = integral_simpson(rho_phi_int_jz, nzstep-1, dz);
+	rho_phi_ff_int_ixiz[ix0*nzstep+iz0]  = integral_simpson(rho_phi_ff_int_jz, nzstep-1, dz);
 	//
 	double xi_out;
-	xi_out = ( - rho_b*alpha - rho_dfex_int_ixiz[ix0*nzstep+iz0] - f_ex(rho_s_jxjz[ix0*nzstep+iz0]) ) + ( mu_ex(rho_b) - rho_phi_int_ixiz[ix0*nzstep+iz0] ) + ( kb1*T*std::log(rho_b) );
+	xi_out = ( - rho_b*alpha - rho_dfex_int_ixiz[ix0*nzstep+iz0] - f_ex(rho_s_jxjz[ix0*nzstep+iz0]) ) + ( mu_ex(rho_b) - rho_phi_ff_int_ixiz[ix0*nzstep+iz0] ) + ( kb1*T*std::log(rho_b) );
 	// debug
+	//std::cout << "-rho_b*alpha, -rho_dfex_int_ixiz[ix0*nzstep+iz0], -f_ex(rho_s_jxjz[ix0*nzstep+iz0]), mu_ex(rho_b),  -rho_phi_ff_int_ixiz[ix0*nzstep+iz0], kb1*T*std::log(rho_b)" << std::endl;
+	//std::cout << -rho_b*alpha << ", " << -rho_dfex_int_ixiz[ix0*nzstep+iz0] << ", " <<  -f_ex(rho_s_jxjz[ix0*nzstep+iz0]) << ", " << mu_ex(rho_b) << ", " <<  -rho_phi_int_ixiz[ix0*nzstep+iz0] << ", " << kb1*T*std::log(rho_b) << std::endl;
 	return xi_out;
 }
 
@@ -821,18 +823,18 @@ double Maxwell_construction(void){
 }
 
 // grand potential
-double omega(double *rho, double *x, double *z, double *rho_dfex_int_ixiz, double *rho_phi_int_ixiz){
+double omega(double *rho, double *x, double *z, double *rho_dfex_int_ixiz, double *rho_phi_ff_int_ixiz){
 	int ix;
 	int iz;
 	int omega_nstep = (nzstep-2)/2;
 	// z
 	double rho_int_iz[omega_nstep+1];
 	double rho_x_rho_dfex_int_iz[omega_nstep+1];
-	double rho_x_rho_phi_int_iz[omega_nstep+1];
+	double rho_x_rho_phi_ff_int_iz[omega_nstep+1];
 	// x
 	double rho_int_ix[nxstep];
 	double rho_x_rho_dfex_int_ix[nxstep];
-	double rho_x_rho_phi_int_ix[nxstep];
+	double rho_x_rho_phi_ff_int_ix[nxstep];
 	//
 	double omega1, omega2, omega3;
 	double omega_out;
@@ -844,15 +846,15 @@ double omega(double *rho, double *x, double *z, double *rho_dfex_int_ixiz, doubl
 		for (ix=0; ix<nxstep; ix++){
 			rho_int_ix[ix] = tpi * x[ix] * rho[ix*nzstep+iz];
 			rho_x_rho_dfex_int_ix[ix] = tpi * x[ix] * rho[ix*nzstep+iz] * rho_dfex_int_ixiz[ix*nzstep+iz];
-			rho_x_rho_phi_int_ix[ix]  = tpi * x[ix] * rho[ix*nzstep+iz] * rho_phi_int_ixiz[ix*nzstep+iz];
+			rho_x_rho_phi_ff_int_ix[ix]  = tpi * x[ix] * rho[ix*nzstep+iz] * rho_phi_ff_int_ixiz[ix*nzstep+iz];
 		}
 		rho_int_iz[iz] = integral_simpson(rho_int_ix, nxstep, dx) + rho_int_ix[0]*spr2;
 		rho_x_rho_dfex_int_iz[iz] = integral_simpson(rho_x_rho_dfex_int_ix, nxstep, dx) + rho_x_rho_dfex_int_ix[0]*spr2;
-		rho_x_rho_phi_int_iz[iz] = integral_simpson(rho_x_rho_phi_int_ix, nxstep, dx) + rho_x_rho_phi_int_ix[0]*spr2;
+		rho_x_rho_phi_ff_int_iz[iz] = integral_simpson(rho_x_rho_phi_ff_int_ix, nxstep, dx) + rho_x_rho_phi_ff_int_ix[0]*spr2;
 	}
 	omega1 = -(kb1*T) * integral_simpson(rho_int_iz, omega_nstep, dz);
 	omega2 = -integral_simpson(rho_x_rho_dfex_int_iz, omega_nstep, dz);
-	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_int_iz, omega_nstep, dz);
+	omega3 = -0.5 * integral_simpson(rho_x_rho_phi_ff_int_iz, omega_nstep, dz);
 	omega_out = (omega1 + omega2 + omega3) * 2.0 / epsilon_ff;
 	return omega_out;
 }
@@ -923,7 +925,7 @@ int main(){
 	//
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
 	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
-	double *rho_phi_int_ixiz   = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
+	double *rho_phi_ff_int_ixiz   = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
 	//
 	double diff0;
 	double mixing;
@@ -940,8 +942,8 @@ int main(){
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz);
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-					std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
+					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+					//std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
@@ -999,7 +1001,7 @@ int main(){
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		//
 		pp0 = press_b/press_b0;
-		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_int_ixiz);
+		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
