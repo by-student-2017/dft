@@ -57,7 +57,6 @@ double d_hs;
 double rc;   // fluid-fluid
 // ---------- ----------- ------------ ------------
 double rm; // rm = std::pow(2.0,1.0/6.0)*sigma_ff = 1.12246205*sigma_ff, minimum position of LJ
-double rmsf; // rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 // ---------- ----------- ------------ ------------
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
@@ -221,7 +220,6 @@ void read_parameters(void){
 	dz = (H-sigma_ss)/double(nzstep-1);
 	dx = (D/2.0)/double(nxstep); // x-y plane
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
-	//rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
 	
@@ -631,6 +629,9 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "phi_att_sf_int calculation: start" << std::endl;
+	//
 	for (ix=0; ix<nxstep; ix++) {
 		for (iz=0; iz<nzstep; iz++) {
 			// under side, z <= 0
@@ -670,6 +671,8 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 			//std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rhos_phi_sf_int=" << rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
 		}
 	}
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "phi_att_sf_int calculation: end" << std::endl;
 	return 0;
 }
 
@@ -823,14 +826,14 @@ double omega(double *rho, double *x, double *z, double *rho_dfex_int_ixiz, doubl
 	int ix;
 	int iz;
 	int omega_nstep = (nzstep-2)/2;
-	// x
-	double rho_int_ix[nxstep];
-	double rho_x_rho_dfex_int_ix[nxstep];
-	double rho_x_rho_phi_int_ix[nxstep];
 	// z
 	double rho_int_iz[omega_nstep+1];
 	double rho_x_rho_dfex_int_iz[omega_nstep+1];
 	double rho_x_rho_phi_int_iz[omega_nstep+1];
+	// x
+	double rho_int_ix[nxstep];
+	double rho_x_rho_dfex_int_ix[nxstep];
+	double rho_x_rho_phi_int_ix[nxstep];
 	//
 	double omega1, omega2, omega3;
 	double omega_out;
@@ -939,6 +942,7 @@ int main(){
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+					std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << std::endl;
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
@@ -951,22 +955,20 @@ int main(){
 						rho[ix*nzstep+iz] = 1e-18;
 					}
 				}
-				diff = 0.0;
-				for (ix=0; ix<nxstep; ix++){
-					for (iz=0; iz<=(nzstep-2)/2; iz++){
-						diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-						diff = diff + 2.0*diff0;
-						mixing = wmixing + wmixing/(0.5+diff0);
-						//std::cout << i << ", " << mixing << std::endl;
-						rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
-						rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
-					}
+			}
+			diff = 0.0;
+			for (ix=0; ix<nxstep; ix++){
+				for (iz=0; iz<=(nzstep-2)/2; iz++){
+					diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
+					diff = diff + 2.0*diff0;
+					mixing = wmixing + wmixing/(0.5+diff0);
+					//std::cout << i << ", " << mixing << std::endl;
+					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
+					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
-				if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
-					break;
-				}
-				//std::cout << "--------------------------------------------------" << std::endl;
-				//std::cout << "cycle=" << j << ", diff=" << diff << ", rho[nzstep/2]=" << rho[nzstep/2] << std::endl;
+			}
+			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
+				break;
 			}
 		}
 		//for (i=0; i<nzstep; i++){
