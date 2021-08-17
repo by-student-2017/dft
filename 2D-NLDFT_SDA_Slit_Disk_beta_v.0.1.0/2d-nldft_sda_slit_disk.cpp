@@ -1006,5 +1006,86 @@ int main(){
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
+	// reverse
+	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
+	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
+		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+		//std::cout << "--------------------------------------------------" << std::endl;
+		//std::cout << "rho_b = " << rho_b << std::endl;
+		for (j=0; j<cycle_max; j++){
+			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dz*nzstep/2. 
+			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz);
+			for (ix=0; ix<nxstep; ix++){
+				for (iz=0; iz<=(nzstep-2)/2; iz++){
+					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+					//std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
+					//
+					// overflow about std::exp(730)
+					// to avoid overflow
+					if (rho_new[ix*nzstep+iz] > 1e9){
+						rho_new[ix*nzstep+iz] = 1e9;
+					}
+					// to avoid -inf or int
+					if (rho_new[ix*nzstep+iz] < 1e-18 && rho[ix*nzstep+iz] < 1e-18){
+						rho_new[ix*nzstep+iz] = 1e-18;
+						rho[ix*nzstep+iz] = 1e-18;
+					}
+				}
+			}
+			diff = 0.0;
+			for (ix=0; ix<nxstep; ix++){
+				for (iz=0; iz<=(nzstep-2)/2; iz++){
+					diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
+					diff = diff + 2.0*diff0;
+					mixing = wmixing + wmixing/(0.5+diff0);
+					//std::cout << i << ", " << mixing << std::endl;
+					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
+					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
+				}
+			}
+			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
+				break;
+			}
+		}
+		//for (i=0; i<nzstep; i++){
+		//	std::cout << "--------------------------------------------------" << std::endl;
+		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
+		//}
+		//
+		double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
+		for (iz=0; iz<=(nzstep-2)/2; iz++){
+			for (ix=0; ix<nxstep; ix++){
+				rho_int_ix[ix] = 2.0*M_PI * x[ix] * rho[ix*nzstep+iz];
+			}
+			rho_int_iz[iz] = integral_simpson(rho_int_ix, nxstep, dx) + rho_int_ix[0]*spr2;
+		}
+		v_gamma = 2.0 * integral_simpson(rho_int_iz, ((nzstep-2)/2), dz);
+		v_gamma = v_gamma/((H-sigma_ss)*M_PI*(D/2.0)*(D/2.0)) - rho_b;
+		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
+		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
+		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
+		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		if (v_gamma < 0) { v_gamma = 0.0; }
+		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
+		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
+		//std::cout << "V= " << v_gamma << std::endl;
+		//
+		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
+		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
+		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+		//
+		pp0 = press_b/press_b0;
+		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
+		//std::cout << "P/P0= " << pp0 << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+	}
 	return 0;
 }
