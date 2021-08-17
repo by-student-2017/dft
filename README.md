@@ -84,6 +84,7 @@
 	./2d-nldft_sda_slit_disk.exe
 	2d-nldft routine is not good !
 	Maxwell constraction routine is not good !
+- The DH means "D/H".
 
 
 ## QSDFT (FMT) alpha version 0.1.0 (July/12/2021)
