@@ -393,7 +393,6 @@ double rho_si(double *rho, double *x, double *z, double x0, double z0, int i){
 double rho_s(double *rho, double *x, double *z, double *rho_s_ixiz, double *rho_s0_ixiz, double *rho_s1_ixiz, double *rho_s2_ixiz){
 	int ix; // x axis for rho, x = y
 	int iz; // z axis for rho
-	int t;  // theta
 	//
 	double rho_den1;
 	double rho_den2;
@@ -577,12 +576,11 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 	double rajz; // z axis
 	//
 	double phi_att_ff_int_t[ntmesh];  // theta
-	double phi_att_ff_int_jx[nxstep]; // x axis
-	double phi_att_ff_int_jz[nzstep]; // z axis
+	//double phi_att_ff_int_jx[nxstep]; // x axis
+	//double phi_att_ff_int_jz[nzstep]; // z axis
 	//
 	double xt,yt;
 	double drad = M_PI/ntmesh; // radian
-	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (ix=0; ix<nxstep; ix++) {
 		for (iz=0; iz<nzstep; iz++) {
@@ -940,7 +938,7 @@ int main(){
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz);
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					rho_new[i] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
