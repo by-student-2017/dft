@@ -76,6 +76,16 @@
 	Maxwell constraction routine is not good !
 
 
+## 2D-NLDFT (SDA) beta version 0.1.0 (August/17/2021)
+	sudo apt update
+	sudo apt -y g++
+	cd 2D-NLDFT_SDA_Slit_Disk_beta_v.0.1.0
+	c++ -O2 2d-nldft_sda_slit_disk.cpp -o 2d-nldft_sda_slit_disk.exe
+	./2d-nldft_sda_slit_disk.exe
+	2d-nldft routine is not good !
+	Maxwell constraction routine is not good !
+
+
 ## QSDFT (FMT) alpha version 0.1.0 (July/12/2021)
 	sudo apt update
 	sudo apt -y g++
@@ -87,6 +97,7 @@
 - This QSDFT just worked. The operation has not been examined in detail yet.
 - I'll leave it here as it may be an important step.
 - The parameters of non-graphited carbon black BP-280 were used.
+
 
 ## References
 
