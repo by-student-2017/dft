@@ -694,8 +694,8 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	int ix; // x axis for rho
 	int iz; // z axis for rho
-	int jz;  // wall area
-	int jx;  // radius on x-y plane
+	int jz; // wall area
+	int jx; // radius on x-y plane
 	int t;  // theta
 	//
 	double ra_under;  // distance
@@ -712,8 +712,8 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 		sfzmesh = 100; // number of step in wall area
 		dsf = (h0+2.0*delta)/(sfzmesh-1);
 	} else {
-		sfzmesh = 4; // number of step in wall area
-		h0 = delta*sfzmesh;
+		sfzmesh = 2; // number of step in wall area
+		h0 = delta*(sfzmesh-1);
 		dsf = h0/(sfzmesh-1);
 	}
 	//
