@@ -321,7 +321,7 @@ double rho_si(double *rho, double r1, double *r, int i){
 	double rho_si_int_k[nhmesh];
 	double rho_si_int_t[nrmesh];
 	double x,y;
-	double drad = M_PI/nrmesh;
+	double drad = M_PI/(nrmesh-1);
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
@@ -554,7 +554,7 @@ double calc_alpha(double *r){
 	double alpha_int_k[nhmesh];
 	double alpha_int_t[nrmesh];
 	double x,y;
-	double drad = M_PI/nrmesh;
+	double drad = M_PI/(nrmesh-1);
 	for (i=0; i<nstep; i++) {
 		alpha_int_i[i] = 0.0;
 		for (j=0; j<nstep; j++) {
@@ -606,7 +606,7 @@ double phi_att_int(double *r, double *phi_att_int_ij){
 	double rho_phi_int_k[nhmesh];
 	double rho_phi_int_t[nrmesh];
 	double x,y;
-	double drad = M_PI/nrmesh;
+	double drad = M_PI/(nrmesh-1);
 	for (i=0; i<nstep; i++) {
 		for (j=0; j<nstep; j++) {
 			for (k=0; k<nhmesh; k++) {
@@ -649,7 +649,7 @@ double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *r
 	//double rho_phi_int_k[nhmesh];
 	double rho_dfex_int_t[nrmesh];
 	double x,y;
-	double drad = M_PI/nrmesh;
+	double drad = M_PI/(nrmesh-1);
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nhmesh; k++) {
 			rak = dh*double(k);
