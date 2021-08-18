@@ -1011,7 +1011,7 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 	double rak;
 	//double drc = rc/double(nrmesh-1);
 	//dd = drc;
-	int sfmesh = 20000;
+	int sfmesh = 2000;
 	double dsf = (h0+2.0*delta)/(sfmesh-1);
 	double phi_sf_int_j[sfmesh];
 	double phi_sf_int_k[nrmesh];
