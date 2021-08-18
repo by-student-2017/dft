@@ -606,72 +606,163 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 	return 0;
 }
 
-// solid-fluid
+// solid-fluid, old version
+//double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
+//	int ix; // x axis for rho
+//	int iz; // z axis for rho
+//	int jz;  // wall area
+//	int jx;  // radius on x-y plane
+//	int t;  // theta
+//	double ra;  // distance
+//	double rajz; // z axis
+//	//
+//	int sfzmesh; // number of step in wall area
+//	//double h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
+//	double dsf;
+//	double wwidth;
+//	//
+//	delta = 0.0;
+//	if ( delta == 0.0 ) {
+//		sfzmesh = 50; // number of step in wall area
+//		dsf = (h0+2.0*delta)/(sfzmesh-1);
+//	} else {
+//		sfzmesh = 2; // number of step in wall area
+//		h0 = delta*sfzmesh;
+//		dsf = delta/(sfzmesh-1);
+//	}
+//	//
+//	double phi_sf_int_jz[sfzmesh];
+//	double phi_sf_int_jx[nxstep];
+//	double phi_sf_int_t[ntmesh];
+//	//
+//	double xt,yt;
+//	double drad = M_PI/ntmesh; // radian
+//	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
+//	//
+//	//std::cout << "--------------------------------------------------" << std::endl;
+//	//std::cout << "phi_att_sf_int calculation: start" << std::endl;
+//	//
+//	for (ix=0; ix<nxstep; ix++) {
+//		for (iz=0; iz<nzstep; iz++) {
+//			// under side, z <= 0
+//			for (jz=0; jz<sfzmesh; jz++) {
+//				rajz = (-double(jz)*dsf-z[iz]);
+//				for (jx=0; jx<nxstep; jx++) {
+//					for (t=0; t<ntmesh; t++) {
+//						xt = x[jx]*std::cos(drad*double(t));
+//						yt = x[jx]*std::sin(drad*double(t));
+//						ra = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz*rajz; // x, y, z
+//						ra = std::sqrt(ra);
+//						phi_sf_int_t[t]  = phi_att_sf(ra);
+//					}
+//					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
+//					//phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
+//				}
+//				//phi_sf_int_jz[jz] = integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
+//				phi_sf_int_jz[jz] = integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
+//				//phi_sf_int_jz[jz] = integral_trapezoidal(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
+//			}
+//			// top side, z >= H, z go to a positive value.
+//			for (jz=0; jz<sfzmesh; jz++) {
+//				rajz = ((H+double(jz)*dsf)-z[iz]);
+//				for (jx=0; jx<nxstep; jx++) {
+//					for (t=0; t<ntmesh; t++) {
+//						xt = x[jx]*std::cos(drad*double(t));
+//						yt = x[jx]*std::sin(drad*double(t));
+//						ra = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz*rajz; // x, y, z
+//						ra = std::sqrt(ra);
+//						phi_sf_int_t[t]  = phi_att_sf(ra);
+//					}
+//					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
+//					//phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
+//				}
+//				//phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
+//				phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
+//				//phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_trapezoidal(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
+//			}
+//			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(phi_sf_int_jz, sfzmesh-1, dsf);
+//			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_trapezoidal(phi_sf_int_jz, sfzmesh-1, dsf);
+//			std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rhos_phi_sf_int=" << rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
+//		}
+//	}
+//	//std::cout << "--------------------------------------------------" << std::endl;
+//	//std::cout << "phi_att_sf_int calculation: end" << std::endl;
+//	return 0;
+//}
+
+// solid-fluid, modified version
 double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	int ix; // x axis for rho
 	int iz; // z axis for rho
 	int jz;  // wall area
 	int jx;  // radius on x-y plane
 	int t;  // theta
-	double ra;  // distance
-	double rajz; // z axis
 	//
-	int sfzmesh = 20000; // number of step in wall area
+	double ra_under;  // distance
+	double rajz_under; // z axis
+	//
+	double ra_top;  // distance
+	double rajz_top; // z axis
+	//
+	int sfzmesh; // number of step in wall area
 	//double h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
-	double dsf = (h0+2.0*delta)/(sfzmesh-1);
-	double wwidth = (h0+2.0*delta);
+	double dsf;
 	//
-	double phi_sf_int_jz[sfzmesh];
-	double phi_sf_int_jx[ntmesh];
+	if ( delta == 0.0 ) {
+		sfzmesh = 100; // number of step in wall area
+		dsf = (h0+2.0*delta)/(sfzmesh-1);
+	} else {
+		sfzmesh = 4; // number of step in wall area
+		h0 = delta*sfzmesh;
+		dsf = h0/(sfzmesh-1);
+	}
+	//
+	double rhos_phi_sf_int_jz[sfzmesh];
+	double rhos_phi_sf_int_jx[nxstep];
 	double phi_sf_int_t[ntmesh];
 	//
 	double xt,yt;
 	double drad = M_PI/ntmesh; // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
-	//std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "phi_att_sf_int calculation: start" << std::endl;
-	//
 	for (ix=0; ix<nxstep; ix++) {
-		for (iz=0; iz<nzstep; iz++) {
-			// under side, z <= 0
+		for (iz=0; iz<=(nzstep-2)/2; iz++){
+			//
 			for (jz=0; jz<sfzmesh; jz++) {
-				rajz = ((double(jz)*dsf-wwidth)-z[iz]);
+				rajz_under = (-double(jz)*dsf-z[iz]);
+				rajz_top   = ((H+double(jz)*dsf)-z[iz]);
 				for (jx=0; jx<nxstep; jx++) {
 					for (t=0; t<ntmesh; t++) {
 						xt = x[jx]*std::cos(drad*double(t));
 						yt = x[jx]*std::sin(drad*double(t));
-						ra = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz*rajz; // x, y, z
-						ra = std::sqrt(ra);
-						phi_sf_int_t[t]  = phi_att_sf(ra);
+						// under
+						ra_under = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz_under*rajz_under; // x, y, z
+						ra_under = std::sqrt(ra_under);
+						// top
+						ra_top = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz_top*rajz_top; // x, y, z
+						ra_top = std::sqrt(ra_top);
+						//
+						phi_sf_int_t[t]  = phi_att_sf(ra_under) + phi_att_sf(ra_top);
 					}
-					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
+					rhos_phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
+					//rhos_phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
 				}
-				//phi_sf_int_jz[jz] = integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
-				phi_sf_int_jz[jz] = integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
+				//rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
+				rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]*spr2;
+				//rhos_phi_sf_int_jz[jz] = integral_trapezoidal(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]*spr2;
 			}
-			// top side, z >= H, z go to a positive value.
-			for (jz=0; jz<sfzmesh; jz++) {
-				rajz = ((H+double(jz)*dsf)-z[iz]);
-				for (jx=1; jx<nxstep; jx++) {
-					for (t=0; t<ntmesh; t++) {
-						xt = x[jx]*std::cos(drad*double(t));
-						yt = x[jx]*std::sin(drad*double(t));
-						ra = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz*rajz; // x, y, z
-						ra = std::sqrt(ra);
-						phi_sf_int_t[t]  = phi_att_sf(ra);
-					}
-					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
-				}
-				//phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
-				phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
-			}
-			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(phi_sf_int_jz, sfzmesh-1, dsf);
-			//std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rhos_phi_sf_int=" << rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
+			//
+			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(rhos_phi_sf_int_jz, sfzmesh-1, dsf);
+			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_trapezoidal(rhos_phi_sf_int_jz, sfzmesh-1, dsf);
+			rhos_phi_sf_int_ixiz[ix*nzstep+((nzstep-1)-iz)] = rhos_phi_sf_int_ixiz[ix*nzstep+iz];
 		}
 	}
-	//std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "phi_att_sf_int calculation: end" << std::endl;
+	//
+	//for (ix=0; ix<nxstep; ix++) {
+	//	for (iz=0; iz<nzstep; iz++) {
+	//		std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rho_phi_sf="<< rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
+	//	}
+	//}
 	return 0;
 }
 
@@ -860,27 +951,24 @@ double omega(double *rho, double *x, double *z, double *rho_dfex_int_ixiz, doubl
 }
 
 int main(){
-	int i,j,k;
-	double diff;
-	double v_gamma;
-	double press_b, press_b0, pp0;
-	double rho_b;
-	double v_mmol_per_cm3;
-	double v_cm3STP_per_g;
-	double grand_potential;
 	//
+	double rho_b;
+	// from parameters.txt
 	read_parameters();
+	//
 	double z[nzstep];
 	double x[nxstep]; // x = y
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	double *rho     = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
-	double *rho_new = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
+	double *rho     = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
+	double *rho_new = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	//
-	for (i=0; i<nxstep; i++){
-		x[i] = dx/2.0 + dx*double(i); // dx = (D/2.0)/double(nxstep);
+	int ix;
+	for (ix=0; ix<nxstep; ix++){
+		x[ix] = dx/2.0 + dx*double(ix); // dx = (D/2.0)/double(nxstep);
 	}
-	for (i=0; i<nzstep; i++){
-		z[i] = sigma_ss/2.0 + dz*double(i); // dz = (H-sigma_ss)/double(nzstep+1);
+	int iz;
+	for (iz=0; iz<nzstep; iz++){
+		z[iz] = sigma_ss/2.0 + dz*double(iz); // dz = (H-sigma_ss)/double(nzstep+1);
 	}
 	
 	// show alpha
@@ -896,7 +984,6 @@ int main(){
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization
-	int ix, iz;
 	for (ix=0; ix<nxstep; ix++){
 		for (iz=0; iz<nzstep; iz++){
 			rho[iz*nxstep+ix] = rho_b0/(nzstep*dz)/(nxstep*dx);
@@ -910,28 +997,38 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	double *rho_s_ixiz  = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep)); // rho_s_jxjz in xi()
-	double *rho_s0_ixiz = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
-	double *rho_s1_ixiz = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep)); // rho_s1_jxjz in xi()
-	double *rho_s2_ixiz = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep)); // rho_s2_jxjz in xi()
+	//double rho[nxstep][nzstep]; // [(nxstep+1)*nzstep)], a[x][z]= a[x*n+z] for a[][n]
+	double *rho_s_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep)); // rho_s_jxjz in xi()
+	double *rho_s0_ixiz = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
+	double *rho_s1_ixiz = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep)); // rho_s1_jxjz in xi()
+	double *rho_s2_ixiz = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep)); // rho_s2_jxjz in xi()
 	//double phi_att_ff_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	//Memo: a[i][j][k]= a[i*n*o+j*n+k] for a[][n][o], a[i][j][k][l]= a[i*n*o*p+j*o*p+k*p+l] for a[][n][o][p]
 	double *phi_att_ff_int_ixizjxjz = (double *)malloc(sizeof(double)*(nxstep*nzstep*nxstep*nzstep+nzstep*nxstep*nzstep+nxstep*nzstep+nzstep));
 	phi_att_ff_int(x, z, phi_att_ff_int_ixizjxjz); // calculate integral phi_att_ff at r[i]
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	double *rhos_phi_sf_int_ixiz  = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
+	double *rhos_phi_sf_int_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	phi_att_sf_int(x, z, rhos_phi_sf_int_ixiz); // calculate integral phi_att_sf at r[i] -> rhos * phi_att_sf
 	//
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
-	double *rho_phi_ff_int_ixiz   = (double *)malloc(sizeof(double)*((nzstep+1)*nxstep));
+	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
+	double *rho_phi_ff_int_ixiz   = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	//
 	double diff0;
 	double mixing;
 	//
 	double rho_int_ix[nxstep];
 	double rho_int_iz[((nzstep-2)/2)];
+	//
+	double diff = 1.0;
+	double old_diff;
+	double v_gamma;
+	double press_b, press_b0, pp0;
+	double v_mmol_per_cm3;
+	double v_cm3STP_per_g;
+	double grand_potential;
+	//
+	int j,k;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
@@ -957,25 +1054,26 @@ int main(){
 					}
 				}
 			}
+			old_diff = diff;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-					diff = diff + 2.0*diff0;
+					//diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
+					diff0 = std::abs(rho_new[ix*nzstep+iz]/rho[ix*nzstep+iz]-1.0);
+					diff = diff + diff0;
 					mixing = wmixing + wmixing/(0.5+diff0);
 					//std::cout << i << ", " << mixing << std::endl;
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
+			if ( diff/old_diff > 0.95 && j >= 20) {
 				break;
 			}
+			//for (ix=0; ix<nxstep; ix++){
+			//	std::cout << j << ", " << rho_new[ix*nzstep+5] << ", " << mixing << ", " << diff/old_diff << std::endl;
+			//}
 		}
-		//for (i=0; i<nzstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
 		//
 		double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 		for (iz=0; iz<=(nzstep-2)/2; iz++){
@@ -1038,25 +1136,23 @@ int main(){
 					}
 				}
 			}
+			old_diff = diff;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-					diff = diff + 2.0*diff0;
+					//diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
+					diff0 = std::abs(rho_new[ix*nzstep+iz]/rho[ix*nzstep+iz]-1.0);
+					diff = diff + diff0;
 					mixing = wmixing + wmixing/(0.5+diff0);
 					//std::cout << i << ", " << mixing << std::endl;
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
+			if ( diff/old_diff > 0.95 && j >= 20) {
 				break;
 			}
 		}
-		//for (i=0; i<nzstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
 		//
 		double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 		for (iz=0; iz<=(nzstep-2)/2; iz++){
