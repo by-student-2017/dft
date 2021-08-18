@@ -1067,7 +1067,7 @@ int main(){
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff/old_diff > 0.95 && j >= 20) {
+			if ( diff/old_diff > 0.95 && j >= 100) {
 				break;
 			}
 			//for (ix=0; ix<nxstep; ix++){
@@ -1076,14 +1076,14 @@ int main(){
 		}
 		//
 		double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
-		for (iz=0; iz<=(nzstep-2)/2; iz++){
+		for (iz=0; iz<nzstep; iz++){
 			for (ix=0; ix<nxstep; ix++){
 				rho_int_ix[ix] = 2.0*M_PI * x[ix] * rho[ix*nzstep+iz];
 			}
 			rho_int_iz[iz] = integral_simpson(rho_int_ix, nxstep, dx) + rho_int_ix[0]*spr2;
 		}
-		v_gamma = 2.0 * integral_simpson(rho_int_iz, ((nzstep-2)/2), dz);
-		v_gamma = v_gamma/((H-sigma_ss)*M_PI*(D/2.0)*(D/2.0)) - rho_b;
+		v_gamma = integral_simpson(rho_int_iz, nzstep-1, dz);
+		v_gamma = v_gamma/((H-sigma_ss)*(M_PI*(D/2.0)*(D/2.0))) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
@@ -1149,20 +1149,20 @@ int main(){
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff/old_diff > 0.95 && j >= 20) {
+			if ( diff/old_diff > 0.95 && j >= 100) {
 				break;
 			}
 		}
 		//
 		double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
-		for (iz=0; iz<=(nzstep-2)/2; iz++){
+		for (iz=0; iz<nzstep; iz++){
 			for (ix=0; ix<nxstep; ix++){
 				rho_int_ix[ix] = 2.0*M_PI * x[ix] * rho[ix*nzstep+iz];
 			}
 			rho_int_iz[iz] = integral_simpson(rho_int_ix, nxstep, dx) + rho_int_ix[0]*spr2;
 		}
-		v_gamma = 2.0 * integral_simpson(rho_int_iz, ((nzstep-2)/2), dz);
-		v_gamma = v_gamma/((H-sigma_ss)*M_PI*(D/2.0)*(D/2.0)) - rho_b;
+		v_gamma = integral_simpson(rho_int_iz, nzstep-1, dz);
+		v_gamma = v_gamma/((H-sigma_ss)*(M_PI*(D/2.0)*(D/2.0))) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]

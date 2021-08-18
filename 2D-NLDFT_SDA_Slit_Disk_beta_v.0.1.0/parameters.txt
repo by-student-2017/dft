@@ -9,7 +9,7 @@
 08_rc=0.0
 09_ntmesh=20
 10_epsilon_sf=120.0
-11_sigma_sf=0.3636
+11_sigma_sf=0.3508
 12_delta=0.0
 13_rho_ss=114.0
 14_m=4.65173e-26
