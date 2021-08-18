@@ -1020,7 +1020,7 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 	for (i=0; i<nstep; i++) {
 		// left side
 		for (j=0; j<sfmesh; j++) {
-			raj = (r[i]-double(j)*dsf);
+			raj = (double(j)*dsf-r[i]);
 			for (k=1; k<nrmesh; k++) {
 				rak = drc*double(k);
 				ra = raj*raj + rak*rak;
@@ -1031,14 +1031,14 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 		}
 		// right side
 		for (j=0; j<sfmesh; j++) {
-			raj = (r[i]-(H-double(j)*dsf));
+			raj = ((H-double(j)*dsf)-r[i]);
 			for (k=1; k<nrmesh; k++) {
 				rak = drc*double(k);
 				ra = raj*raj + rak*rak;
 				ra = std::sqrt(ra);
 				phi_sf_int_k[k]  = phi_att_sf(ra)*(tpi*rak);
 			}
-			phi_sf_int_j[j] = phi_sf_int_j[j] + rho_ssq(H-double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
+			phi_sf_int_j[j] = phi_sf_int_j[j] + rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
 		}
 		//
 		rhos_phi_sf_int_i[i] = integral_simpson(phi_sf_int_j, sfmesh-1, dsf);
