@@ -348,7 +348,7 @@ double rho_si(double *rho, double *x, double *z, double x0, double z0, int i){
 	double rho_si_int_t[ntmesh];
 	//
 	double xt,yt;
-	double drad = M_PI/ntmesh; // radian
+	double drad = M_PI/(ntmesh-1); // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (iz=0; iz<nzstep; iz++) {
@@ -522,7 +522,7 @@ double calc_alpha(double *x, double *z){
 	double phi_att_ff_int_jz[nzstep]; // z axis
 	//
 	double xt,yt;
-	double drad = M_PI/ntmesh; // radian
+	double drad = M_PI/(ntmesh-1); // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	double alpha_int_ix[nxstep];
@@ -578,7 +578,7 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 	//double phi_att_ff_int_jz[nzstep]; // z axis
 	//
 	double xt,yt;
-	double drad = M_PI/ntmesh; // radian
+	double drad = M_PI/(ntmesh-1); // radian
 	//
 	for (ix=0; ix<nxstep; ix++) {
 		for (iz=0; iz<nzstep; iz++) {
@@ -636,7 +636,7 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 //	double phi_sf_int_t[ntmesh];
 //	//
 //	double xt,yt;
-//	double drad = M_PI/ntmesh; // radian
+//	double drad = M_PI/(ntmesh-1); // radian
 //	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 //	//
 //	//std::cout << "--------------------------------------------------" << std::endl;
@@ -722,7 +722,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	double phi_sf_int_t[ntmesh];
 	//
 	double xt,yt;
-	double drad = M_PI/ntmesh; // radian
+	double drad = M_PI/(ntmesh-1); // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (ix=0; ix<nxstep; ix++) {
@@ -783,7 +783,7 @@ double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, dou
 	double rho_phi_ff_int_jz[nzstep];
 	//
 	double xt,yt;
-	double drad = M_PI/ntmesh; // radian
+	double drad = M_PI/(ntmesh-1); // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	// j, z
 	for (jz=0; jz<nzstep; jz++) {
