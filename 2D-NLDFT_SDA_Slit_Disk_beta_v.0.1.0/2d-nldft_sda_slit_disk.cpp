@@ -217,8 +217,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
-	dz = (H-sigma_ss)/double(nzstep-1);
-	dx = (D/2.0)/double(nxstep); // x-y plane
+	dz = (H-sigma_ss)/(nzstep-1);
+	dx = (D/2.0)/nxstep; // x-y plane
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
@@ -610,8 +610,8 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 //double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 //	int ix; // x axis for rho
 //	int iz; // z axis for rho
-//	int jz;  // wall area
-//	int jx;  // radius on x-y plane
+//	int jz; // wall area
+//	int jx; // radius on x-y plane
 //	int t;  // theta
 //	double ra;  // distance
 //	double rajz; // z axis
@@ -706,35 +706,44 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	//
 	int sfzmesh; // number of step in wall area
 	//double h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
-	double dsf;
+	double dsfz;
 	//
 	if ( delta == 0.0 ) {
 		sfzmesh = 100; // number of step in wall area
-		dsf = (h0+2.0*delta)/(sfzmesh-1);
+		dsfz = (h0+2.0*delta)/(sfzmesh-1);
 	} else {
 		sfzmesh = 2; // number of step in wall area
 		h0 = delta*(sfzmesh-1);
-		dsf = h0/(sfzmesh-1);
+		dsfz = h0/(sfzmesh-1);
 	}
+	int sfnxstep = 100;
+	int sfntmesh = 180;
+	//sfnxstep = nxstep;
+	//sfntmesh = ntmesh;
 	//
 	double rhos_phi_sf_int_jz[sfzmesh];
-	double rhos_phi_sf_int_jx[nxstep];
-	double phi_sf_int_t[ntmesh];
+	double rhos_phi_sf_int_jx[sfnxstep];
+	double phi_sf_int_t[sfntmesh];
+	double sfx[sfnxstep];
+	double dsfx = (D/2.0)/sfnxstep;
+	for (jx=0; jx<sfnxstep; jx++) {
+		sfx[jx] = dsfx/2.0 + dsfx*jx;
+	}
 	//
 	double xt,yt;
-	double drad = M_PI/(ntmesh-1); // radian
-	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
+	double drad = M_PI/(sfntmesh-1); // radian
+	double spr2 = M_PI*(dsfx/2.0)*(dsfx/2.0) / (2.0*M_PI*sfx[0]);
 	//
 	for (ix=0; ix<nxstep; ix++) {
 		for (iz=0; iz<=(nzstep-2)/2; iz++){
 			//
 			for (jz=0; jz<sfzmesh; jz++) {
-				rajz_under = (-double(jz)*dsf-z[iz]);
-				rajz_top   = ((H+double(jz)*dsf)-z[iz]);
-				for (jx=0; jx<nxstep; jx++) {
-					for (t=0; t<ntmesh; t++) {
-						xt = x[jx]*std::cos(drad*double(t));
-						yt = x[jx]*std::sin(drad*double(t));
+				rajz_under = (-double(jz)*dsfz-z[iz]);
+				rajz_top   = ((H+double(jz)*dsfz)-z[iz]);
+				for (jx=0; jx<sfnxstep; jx++) {
+					for (t=0; t<sfntmesh; t++) {
+						xt = sfx[jx]*std::cos(drad*double(t));
+						yt = sfx[jx]*std::sin(drad*double(t));
 						// under
 						ra_under = (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz_under*rajz_under; // x, y, z
 						ra_under = std::sqrt(ra_under);
@@ -744,16 +753,16 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 						//
 						phi_sf_int_t[t]  = phi_att_sf(ra_under) + phi_att_sf(ra_top);
 					}
-					rhos_phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
-					//rhos_phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
+					rhos_phi_sf_int_jx[jx] = 2.0*sfx[jx]*rho_ssq(double(jz)*dsfz)*integral_simpson(phi_sf_int_t, sfntmesh-1, drad);
+					//rhos_phi_sf_int_jx[jx] = 2.0*sfx[jx]*rho_ssq(double(jz)*dsfz)*integral_trapezoidal(phi_sf_int_t, sfntmesh-1, drad);
 				}
-				//rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
-				rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]*spr2;
+				//rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, nxstep-1, dsfx) + rhos_phi_sf_int_jx[0]/(2.0*M_PI*sfx[0])*M_PI*(dsfx/2.0)*(dsfx/2.0);
+				rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, sfnxstep-1, dsfx) + rhos_phi_sf_int_jx[0]*spr2;
 				//rhos_phi_sf_int_jz[jz] = integral_trapezoidal(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]*spr2;
 			}
 			//
-			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(rhos_phi_sf_int_jz, sfzmesh-1, dsf);
-			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_trapezoidal(rhos_phi_sf_int_jz, sfzmesh-1, dsf);
+			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(rhos_phi_sf_int_jz, sfzmesh-1, dsfz);
+			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_trapezoidal(rhos_phi_sf_int_jz, sfzmesh-1, dsfz);
 			rhos_phi_sf_int_ixiz[ix*nzstep+((nzstep-1)-iz)] = rhos_phi_sf_int_ixiz[ix*nzstep+iz];
 		}
 	}
@@ -769,7 +778,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, double *rho_s_jxjz, double *rho_s0_jxjz, double *rho_s1_jxjz, double *rho_s2_jxjz, double *phi_att_ff_int_ixizjxjz, double *rho_dfex_int_ixiz, double *rho_phi_ff_int_ixiz){
+double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, double *rho_s_jxjz, double *rho_s0_jxjz, double *rho_s1_jxjz, double *rho_s2_jxjz, double *phi_att_ff_int_ixizjxjz, double *rho_dfex_int_ixiz, double *rho_phi_ff_int_ixiz, double *rhos_phi_sf_int_ixiz){
 	int jz;  // wall area
 	int jx;  // radius on x-y plane
 	int t;  // theta
@@ -810,10 +819,10 @@ double xi(double *rho, double *x, double *z, int ix0, int iz0, double rho_b, dou
 	rho_phi_ff_int_ixiz[ix0*nzstep+iz0]  = integral_simpson(rho_phi_ff_int_jz, nzstep-1, dz);
 	//
 	double xi_out;
-	xi_out = ( - rho_b*alpha - rho_dfex_int_ixiz[ix0*nzstep+iz0] - f_ex(rho_s_jxjz[ix0*nzstep+iz0]) ) + ( mu_ex(rho_b) - rho_phi_ff_int_ixiz[ix0*nzstep+iz0] ) + ( kb1*T*std::log(rho_b) );
+	xi_out = ( - rho_b*alpha - rho_dfex_int_ixiz[ix0*nzstep+iz0] - f_ex(rho_s_jxjz[ix0*nzstep+iz0]) ) + ( mu_ex(rho_b) - rho_phi_ff_int_ixiz[ix0*nzstep+iz0] ) + ( kb1*T*std::log(rho_b) -rhos_phi_sf_int_ixiz[ix0*nzstep+iz0]);
 	// debug
-	//std::cout << "-rho_b*alpha, -rho_dfex_int_ixiz[ix0*nzstep+iz0], -f_ex(rho_s_jxjz[ix0*nzstep+iz0]), mu_ex(rho_b),  -rho_phi_ff_int_ixiz[ix0*nzstep+iz0], kb1*T*std::log(rho_b)" << std::endl;
-	//std::cout << -rho_b*alpha << ", " << -rho_dfex_int_ixiz[ix0*nzstep+iz0] << ", " <<  -f_ex(rho_s_jxjz[ix0*nzstep+iz0]) << ", " << mu_ex(rho_b) << ", " <<  -rho_phi_int_ixiz[ix0*nzstep+iz0] << ", " << kb1*T*std::log(rho_b) << std::endl;
+	//std::cout << "xi_out, -rho_b*alpha, -rho_dfex_int_ixiz[ix0*nzstep+iz0], -f_ex(rho_s_jxjz[ix0*nzstep+iz0]), mu_ex(rho_b),  -rho_phi_ff_int_ixiz[ix0*nzstep+iz0], kb1*T*std::log(rho_b)" << std::endl;
+	//std::cout << xi_out << ", " << -rho_b*alpha << ", " << -rho_dfex_int_ixiz[ix0*nzstep+iz0] << ", " <<  -f_ex(rho_s_jxjz[ix0*nzstep+iz0]) << ", " << mu_ex(rho_b) << ", " <<  -rho_phi_ff_int_ixiz[ix0*nzstep+iz0] << ", " << kb1*T*std::log(rho_b) << ", " << -rhos_phi_sf_int_ixiz[ix0*nzstep+iz0] << std::endl;
 	return xi_out;
 }
 
@@ -1039,7 +1048,7 @@ int main(){
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz);
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz, rhos_phi_sf_int_ixiz)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 					//std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
 					//
 					// overflow about std::exp(730)
@@ -1121,7 +1130,7 @@ int main(){
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz);
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz)/(kb1*T)-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz, rhos_phi_sf_int_ixiz)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 					//std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
 					//
 					// overflow about std::exp(730)
