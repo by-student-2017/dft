@@ -735,7 +735,7 @@ MPI::Init();
 	for (i=0; i<nstep; i++){
 		phi_ext_i[i] = phi_ext(r[i]);
 	}
-	double diff = 0.5;
+	double diff = 1.0;
 	double old_diff;
 	double diff0, diff1;
 	double mixing;
