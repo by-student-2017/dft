@@ -712,7 +712,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 		sfzmesh = 100; // number of step in wall area
 		dsfz = (h0+2.0*delta)/(sfzmesh-1);
 	} else {
-		sfzmesh = 2; // number of step in wall area
+		sfzmesh = 5; // number of step in wall area
 		h0 = delta*(sfzmesh-1);
 		dsfz = h0/(sfzmesh-1);
 	}
@@ -1023,14 +1023,12 @@ int main(){
 	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	double *rho_phi_ff_int_ixiz   = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	//
-	double diff0;
+	double diff0, diff1;
 	double mixing;
 	//
 	double rho_int_ix[nxstep];
 	double rho_int_iz[((nzstep-2)/2)];
 	//
-	double diff = 1.0;
-	double old_diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double v_mmol_per_cm3;
@@ -1063,24 +1061,24 @@ int main(){
 					}
 				}
 			}
-			old_diff = diff;
-			diff = 0.0;
+			diff0 = 0.0;
+			diff1 = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					//diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-					diff0 = std::abs(rho_new[ix*nzstep+iz]/rho[ix*nzstep+iz]-1.0);
-					diff = diff + diff0;
-					mixing = wmixing + wmixing/(0.5+diff0);
+					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
+					diff1 = diff1 + rho[ix*nzstep+iz];
+					mixing = wmixing + wmixing/(0.5+(diff0/diff1));
 					//std::cout << i << ", " << mixing << std::endl;
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff/old_diff > 0.95 && j >= 100) {
+			if ( diff0/diff1*100 <= 0.5 ) {
 				break;
 			}
 			//for (ix=0; ix<nxstep; ix++){
-			//	std::cout << j << ", " << rho_new[ix*nzstep+5] << ", " << mixing << ", " << diff/old_diff << std::endl;
+			//	std::cout << j << ", " << rho_new[ix*nzstep+5] << ", " << mixing << ", " << diff0/diff1*100 << std::endl;
 			//}
 		}
 		//
@@ -1145,20 +1143,20 @@ int main(){
 					}
 				}
 			}
-			old_diff = diff;
-			diff = 0.0;
+			diff0 = 0.0;
+			diff1 = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					//diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-					diff0 = std::abs(rho_new[ix*nzstep+iz]/rho[ix*nzstep+iz]-1.0);
-					diff = diff + diff0;
-					mixing = wmixing + wmixing/(0.5+diff0);
+					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
+					diff1 = diff1 + rho[ix*nzstep+iz];
+					mixing = wmixing + wmixing/(0.5+(diff0/diff1));
 					//std::cout << i << ", " << mixing << std::endl;
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff/old_diff > 0.95 && j >= 100) {
+			if ( diff0/diff1*100 <= 0.5 ) {
 				break;
 			}
 		}
