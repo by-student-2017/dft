@@ -669,7 +669,6 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 
 int main(){
 	int i,j,k;
-	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b;
@@ -732,7 +731,9 @@ int main(){
 	for (i=0; i<nstep; i++){
 		phi_ext_i[i] = phi_ext(r[i]);
 	}
-	double diff0;
+	double diff = 0.5;
+	double old_diff;
+	double diff0, diff1;
 	double mixing;
 	for (k=0; k<100; k++){
 		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
@@ -752,26 +753,32 @@ int main(){
 					rho_new[i] = 1e9;
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
+					rho_new[i] = 1e-9;
+					rho[i] = 1e-9;
 				}
 			}
-			diff = 0.0;
+			old_diff = diff;
+			diff0 = 0.0;
+			diff1 = 0.0;
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
-				diff = diff + 2.0*diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
+				diff1 = diff1 + rho[i];
+				mixing = wmixing + wmixing/(0.5+diff);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			diff = diff0/diff1;
+			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
 				break;
 			}
+			//for (i=0; i<nstep; i++){
+			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
+			//}
 		}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
@@ -821,26 +828,32 @@ int main(){
 					rho_new[i] = 1e9;
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
+					rho_new[i] = 1e-9;
+					rho[i] = 1e-9;
 				}
 			}
-			diff = 0.0;
+			old_diff = diff;
+			diff0 = 0.0;
+			diff1 = 0.0;
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
-				diff = diff + 2.0*diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
+				diff1 = diff1 + rho[i];
+				mixing = wmixing + wmixing/(0.5+diff);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			diff = diff0/diff1;
+			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
 				break;
 			}
+			//for (i=0; i<nstep; i++){
+			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
+			//}
 		}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
