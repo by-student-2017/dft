@@ -1223,12 +1223,13 @@ int main(){
 			diff0 = 0.0;
 			diff1 = 0.0;
 #pragma omp parallel for
-			for (i=0; i<nstep; i++){
+			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
 				mixing = wmixing + wmixing/(1.0+diff);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			diff = diff0/diff1;
 			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
