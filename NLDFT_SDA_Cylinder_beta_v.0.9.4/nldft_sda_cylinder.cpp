@@ -875,7 +875,7 @@ int main(){
 		printf("Memory has been allocated. The address is %p\n", phi_att_int_ij);
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
-	double diff = 0.5;
+	double diff = 1.0;
 	double old_diff;
 	double diff0, diff1;
 	double mixing;
