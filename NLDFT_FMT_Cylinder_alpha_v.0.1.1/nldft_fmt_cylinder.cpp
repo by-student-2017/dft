@@ -1587,17 +1587,18 @@ double omega(double *rho, double *r, double *fex_i, double *rho_phi_int, double 
 	double rho_x_rho_phi_int[nstep];
 	double rho_x_phi_ext_mu[nstep];
 	double mu = (kb1*T)*std::log(rho_b*lam*lam*lam) + mu_ex(rho_b) - rho_b*alpha;
-	double tpidr = 2.0*M_PI*dr;
+	double tpi = 2.0*M_PI;
 	for (i=0; i<nstep; i++){
-		fid[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0) * tpidr*r[i];
-		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i] * tpidr*r[i];
-		rho_x_phi_ext_mu[i] = rho[i] * (phi_ext(r[i]) - mu) * tpidr*r[i];
+		fid[i] = tpi*r[i]*rho[i] * (std::log(rho[i]*lam*lam*lam)-1.0);
+		rho_x_rho_phi_int[i]  = tpi*r[i]*rho[i] * rho_phi_int[i];
+		rho_x_phi_ext_mu[i] = tpi*r[i]*rho[i] * (phi_ext(r[i]) - mu);
 		//std::cout << i << ", " << rho[i] << ", " << fid[i] << std::endl;
 	}
-	omega1 = (kb1*T) * (integral_simpson(fid, nstep-1, dr) + fid[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0)); // Fid
-	omega2 = (kb1*T) * (integral_simpson(fex_i, nstep-1, dr) + fex_i[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0)); // Fex
-	omega3 = 0.5 * (integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0));
-	omega4 = integral_simpson(rho_x_phi_ext_mu, nstep-1, dr) + rho_x_phi_ext_mu[0]/(tpidr*r[0])*M_PI*(dr/2.0)*(dr/2.0);
+	double spr2 = M_PI*(dr/2.0)*(dr/2.0)/(tpi*r[0])
+	omega1 = (kb1*T) * (integral_simpson(fid, nstep-1, dr) + fid[0]*spr2; // Fid
+	omega2 = (kb1*T) * (integral_simpson(fex_i, nstep-1, dr) + fex_i[0]*spr2; // Fex
+	omega3 = 0.5 * (integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]*spr2;
+	omega4 = integral_simpson(rho_x_phi_ext_mu, nstep-1, dr) + rho_x_phi_ext_mu[0]*spr2;
 	//
 	omega_out = (omega1 + omega2 + omega3 + omega4) / epsilon_ff;
 	//std::cout << omega1 << ", " << omega2 << ", " << omega3 << ", " << omega4 << std::endl;

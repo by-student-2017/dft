@@ -1096,7 +1096,7 @@ double omega(double *rho, double *r, double *fex_i, double *rho_phi_int, double 
 	double mu = (kb1*T)*std::log(rho_b*lam*lam*lam) + mu_ex(rho_b) - rho_b*alpha;
 #pragma omp parallel for
 	for (i=0; i<nstep; i++){
-		fid[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0);
+		fid[i] = rho[i] * (std::log(rho[i]*lam*lam*lam)-1.0);
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
 		rho_x_phi_ext_mu[i] = rho[i] * (phi_ext(r[i]) - mu);
 		//std::cout << i << ", " << rho[i] << ", " << fid[i] << std::endl;
