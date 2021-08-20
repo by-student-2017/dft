@@ -1594,10 +1594,10 @@ double omega(double *rho, double *r, double *fex_i, double *rho_phi_int, double 
 		rho_x_phi_ext_mu[i] = tpi*r[i]*rho[i] * (phi_ext(r[i]) - mu);
 		//std::cout << i << ", " << rho[i] << ", " << fid[i] << std::endl;
 	}
-	double spr2 = M_PI*(dr/2.0)*(dr/2.0)/(tpi*r[0])
-	omega1 = (kb1*T) * (integral_simpson(fid, nstep-1, dr) + fid[0]*spr2; // Fid
-	omega2 = (kb1*T) * (integral_simpson(fex_i, nstep-1, dr) + fex_i[0]*spr2; // Fex
-	omega3 = 0.5 * (integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]*spr2;
+	double spr2 = M_PI*(dr/2.0)*(dr/2.0)/(tpi*r[0]);
+	omega1 = (kb1*T) * (integral_simpson(fid, nstep-1, dr) + fid[0]*spr2); // Fid
+	omega2 = (kb1*T) * (integral_simpson(fex_i, nstep-1, dr) + fex_i[0]*spr2); // Fex
+	omega3 = 0.5 * (integral_simpson(rho_x_rho_phi_int, nstep-1, dr) + rho_x_rho_phi_int[0]*spr2);
 	omega4 = integral_simpson(rho_x_phi_ext_mu, nstep-1, dr) + rho_x_phi_ext_mu[0]*spr2;
 	//
 	omega_out = (omega1 + omega2 + omega3 + omega4) / epsilon_ff;
