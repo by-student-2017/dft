@@ -713,7 +713,6 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	//double h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
 	double dsfz;
 	//
-	D = 6.0;
 	if ( delta == 0.0 ) {
 		sfzmesh = 100; // number of step in wall area
 		dsfz = (h0+2.0*delta)/(sfzmesh-1);
