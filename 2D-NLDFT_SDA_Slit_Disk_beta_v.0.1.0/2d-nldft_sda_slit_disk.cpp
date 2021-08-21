@@ -64,6 +64,11 @@ double rm; // rm = std::pow(2.0,1.0/6.0)*sigma_ff = 1.12246205*sigma_ff, minimum
 //double sigma_sf = 0.3508; // [nm]
 double epsilon_sf;
 double sigma_sf;
+// C: 52.84 K, 0.343 nm
+// N2: 104.2 K, 0.3632 nm
+// H2: 36.7 K, 0.2958 nm
+// CH4-N2: 95.2 K, 0.3745 nm
+// CO2-N2: 101.6 K, 0.3636 nm
 // ---------- ----------- ------------ ------------
 // slit pore (graphite)
 //double delta = 0.335; // [nm]
@@ -708,18 +713,17 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	//double h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
 	double dsfz;
 	//
+	D = 6.0;
 	if ( delta == 0.0 ) {
 		sfzmesh = 100; // number of step in wall area
 		dsfz = (h0+2.0*delta)/(sfzmesh-1);
 	} else {
-		sfzmesh = 5; // number of step in wall area
+		sfzmesh = 4; // number of step in wall area
 		h0 = delta*(sfzmesh-1);
 		dsfz = h0/(sfzmesh-1);
 	}
-	int sfnxstep = 100;
-	int sfntmesh = 180;
-	//sfnxstep = nxstep;
-	//sfntmesh = ntmesh;
+	int sfnxstep = int(D/0.02);
+	int sfntmesh = 180*int(sfnxstep/100);
 	//
 	double rhos_phi_sf_int_jz[sfzmesh];
 	double rhos_phi_sf_int_jx[sfnxstep];
