@@ -1,6 +1,6 @@
 00_H=XXX
 01_sigma_ss=0.34
-02_nstep=20
+02_nstep=0
 03_cycle_max=10001
 04_wmixing=0.001
 05_epsilon_ff=94.45
