@@ -724,6 +724,7 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	double rai;
 	rai = (r[i]-r[0]);
 	if ( rai <= Ris ) {
+		// integral sin(x) dx = -cos(x) + C
 		in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
 		xs = std::sqrt(Ris*Ris-rai*rai);
 		n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
@@ -731,7 +732,7 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		n2[i] = n2[i] + in2;
 		// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C
 		// sin(2x) = 2*sin(x)*cos(x)
-		n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.5*(xs/Ris)*(rai/Ris))*Ris;
+		n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.25*2.0*(xs/Ris)*(rai/Ris))*Ris;
 		// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
 		// cos(2x) = 1 - 2*sin(x)*sin(x)
 		inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
@@ -740,6 +741,7 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	}
 	rai = (r[nstep-1]-r[i]);
 	if ( rai <= Ris ) {
+		// integral sin(x) dx = -cos(x) + C
 		in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
 		xs = std::sqrt(Ris*Ris-rai*rai);
 		n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
@@ -754,9 +756,11 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		nv1[i] = nv1[i] + inv2/(4.0*M_PI*Ris);
 		nv2[i] = nv2[i] + inv2;
 	}
-	//
-	//std::cout << "i, r[i], j, r[j], raj, xs, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
-	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << raj << ", " << xs << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
+	// debug
+	//std::cout << "-------------------------------------------------------------------------------------------------" << std::endl;
+	//std::cout << "i=" << i << ", r[i]=" << r[i] << ", raj=" << raj << ", xs=" << xs << std::endl;
+	//std::cout << "i=" << i << ", n0[i]=" << n0[i] << ", n1[i]=" << n1[i] << ", n2[i]=" <<  n2[i] << ", n3[i]=" << n3[i] << std::endl;
+	//std::cout << "i=" << i << ", nv1[i]=" << nv1[i] << ", nv2[i]=" <<  nv2[i] << std::endl;
 	return 0;
 }
 
@@ -1037,51 +1041,7 @@ double phi_att_ff_int(double *r, double *phi_att_ff_int_ij){
 	return 0;
 }
 
-// solid-fluid, old version
-//double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
-//	int i,j,k;
-//	double ra;
-//	double raj;
-//	double rak;
-//	//double drc = rc/double(nrmesh-1);
-//	//dd = drc;
-//	int sfmesh = 2000;
-//	double dsf = (h0+2.0*delta)/(sfmesh-1);
-//	double phi_sf_int_j[sfmesh];
-//	double phi_sf_int_k[nrmesh];
-//	double tpi = 2.0*M_PI;
-//	phi_sf_int_k[0] = 0.0;
-//	for (i=0; i<nstep; i++) {
-//		// left side
-//		for (j=0; j<sfmesh; j++) {
-//			raj = (double(j)*dsf-r[i]);
-//			for (k=1; k<nrmesh; k++) {
-//				rak = drc*double(k);
-//				ra = raj*raj + rak*rak;
-//				ra = std::sqrt(ra);
-//				phi_sf_int_k[k]  = phi_att_sf(ra)*(tpi*rak);
-//			}
-//			phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
-//		}
-//		// right side
-//		for (j=0; j<sfmesh; j++) {
-//			raj = ((H-double(j)*dsf)-r[i]);
-//			for (k=1; k<nrmesh; k++) {
-//				rak = drc*double(k);
-//				ra = raj*raj + rak*rak;
-//				ra = std::sqrt(ra);
-//				phi_sf_int_k[k]  = phi_att_sf(ra)*(tpi*rak);
-//			}
-//			phi_sf_int_j[j] = phi_sf_int_j[j] + rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, drc);
-//		}
-//		//
-//		rhos_phi_sf_int_i[i] = integral_simpson(phi_sf_int_j, sfmesh-1, dsf);
-//		std::cout << i << ", " << rhos_phi_sf_int_i[i] << std::endl;
-//	}
-//	return 0;
-//}
-
-// solid-fluid, modified version
+// solid-fluid
 double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 	int i,j,k;
 	double ra_left;
@@ -1089,36 +1049,47 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 	double raj_left;
 	double raj_right;
 	double rak;
-	//double drc = rc/double(nrmesh-1);
-	//dd = drc;
+	//dd = drc = rc/double(nrmesh-1);
+	//
 	int sfmesh = 500;
 	double dsf = (h0+2.0*delta)/(sfmesh-1);
-	double phi_sf_int_j[sfmesh];
+	double rhos_phi_sf_int_j[sfmesh];
+	//
 	int sfnrmesh = 500;
-	double dsfrc = 2.0*rc/double(sfnrmesh-1);
+	double drcsf = rcsf/(sfnrmesh-1);
 	double phi_sf_int_k[sfnrmesh];
+	//
 	double tpi = 2.0*M_PI;
 	phi_sf_int_k[0] = 0.0;
 	//
-	for (i=0; i<nstep; i++) {
+	//for (i=0; i<nstep; i++) {
+	for (i=0; i<=(nstep-2)/2; i++){
 		//
 		for (j=0; j<sfmesh; j++) {
-			raj_left = (double(j)*dsf-r[i]);
-			raj_right = ((H-double(j)*dsf)-r[i]);
+			raj_left  = (double(j)*dsf - r[i]);
+			raj_right = ((H-double(j)*dsf) - r[i]);
 			for (k=1; k<sfnrmesh; k++) {
-				rak = dsfrc*double(k);
-				ra_left = raj_left*raj_left + rak*rak;
-				ra_left = std::sqrt(ra_left);
-				ra_right = raj_right*raj_right + rak*rak;
+				rak = drcsf*double(k);
+				//
+				ra_left  = rak*rak + raj_left*raj_left;
+				ra_left  = std::sqrt(ra_left);
+				//
+				ra_right = rak*rak + raj_right*raj_right;
 				ra_right = std::sqrt(ra_right);
-				phi_sf_int_k[k]  = (phi_att_sf(ra_left)+phi_att_sf(ra_right))*(tpi*rak);
+				//
+				phi_sf_int_k[k]  = ( phi_att_sf(ra_left) + phi_att_sf(ra_right) ) * (tpi*rak);
 			}
-			phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, nrmesh-1, dsfrc);
+			rhos_phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, sfnrmesh-1, drcsf);
+			//rhos_phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_trapezoidal(phi_sf_int_k, sfnrmesh-1, drcsf);
 		}
 		//
-		rhos_phi_sf_int_i[i] = integral_simpson(phi_sf_int_j, sfmesh-1, dsf);
-		//std::cout << i << ", " << rhos_phi_sf_int_i[i] << std::endl;
+		rhos_phi_sf_int_i[i] = integral_simpson(rhos_phi_sf_int_j, sfmesh-1, dsf);
+		//rhos_phi_sf_int_i[i] = integral_trapezoidal(rhos_phi_sf_int_j, sfmesh-1, dsf);
+		rhos_phi_sf_int_i[(nstep-1)-i] = rhos_phi_sf_int_i[i];
 	}
+	//for (i=0; i<nstep; i++) {
+	//	std::cout << i << ", " << r[i] << ", " << rhos_phi_sf_int_i[i] << std::endl;
+	//}
 	return 0;
 }
 
@@ -1433,10 +1404,10 @@ int main(){
 			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
+		//for (i=0; i<nstep; i++){
+		//	std::cout << "i=" << i << ", r=" << r[i] << ", rho_new=" << rho_new[i] << ", rho=" << rho[i] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff=" << diff/old_diff << std::endl;
+		//}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
@@ -1514,9 +1485,6 @@ int main(){
 			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
