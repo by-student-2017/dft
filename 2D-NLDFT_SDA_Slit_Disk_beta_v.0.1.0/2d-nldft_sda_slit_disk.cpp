@@ -719,7 +719,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 		sfzmesh = 100; // number of step in wall area
 		dsfz = (h0+2.0*delta)/(sfzmesh-1);
 	} else {
-		sfzmesh = 4; // number of step in wall area
+		sfzmesh = 2; // number of step in wall area
 		h0 = delta*(sfzmesh-1);
 		dsfz = h0/(sfzmesh-1);
 	}
