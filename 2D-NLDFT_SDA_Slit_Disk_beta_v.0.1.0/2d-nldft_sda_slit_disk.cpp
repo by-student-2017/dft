@@ -649,6 +649,7 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 //	//
 //	for (ix=0; ix<nxstep; ix++) {
 //		for (iz=0; iz<nzstep; iz++) {
+//			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = 0.0;
 //			// under side, z <= 0
 //			for (jz=0; jz<sfzmesh; jz++) {
 //				rajz = (-double(jz)*dsf-z[iz]);
@@ -660,8 +661,8 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 //						ra = std::sqrt(ra);
 //						phi_sf_int_t[t]  = phi_att_sf(ra);
 //					}
-//					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
-//					//phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
+//					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*delta*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
+//					//phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*delta*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
 //				}
 //				//phi_sf_int_jz[jz] = integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
 //				phi_sf_int_jz[jz] = integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
@@ -678,14 +679,15 @@ double phi_att_ff_int(double *x, double *z, double *phi_att_ff_int_ixizjxjz){
 //						ra = std::sqrt(ra);
 //						phi_sf_int_t[t]  = phi_att_sf(ra);
 //					}
-//					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
-//					//phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
+//					phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*delta*integral_simpson(phi_sf_int_t, ntmesh-1, drad);
+//					//phi_sf_int_jx[jx] = 2.0*x[jx]*rho_ssq(double(jz)*dsf)*delta*integral_trapezoidal(phi_sf_int_t, ntmesh-1, drad);
 //				}
 //				//phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
 //				phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_simpson(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
 //				//phi_sf_int_jz[jz] = phi_sf_int_jz[jz] + integral_trapezoidal(phi_sf_int_jx, nxstep-1, dx) + phi_sf_int_jx[0]*spr2;
+//				rhos_phi_sf_int_ixiz[ix*nzstep+iz] = rhos_phi_sf_int_ixiz[ix*nzstep+iz] + phi_sf_int_jz[jz];
 //			}
-//			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(phi_sf_int_jz, sfzmesh-1, dsf);
+//			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(phi_sf_int_jz, sfzmesh-1, dsf);
 //			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_trapezoidal(phi_sf_int_jz, sfzmesh-1, dsf);
 //			std::cout << "x[ix]=" << x[ix] << ", z[iz]=" << z[iz] << ", rhos_phi_sf_int=" << rhos_phi_sf_int_ixiz[ix*nzstep+iz] << std::endl;
 //		}
@@ -740,6 +742,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 	for (ix=0; ix<nxstep; ix++) {
 		for (iz=0; iz<=(nzstep-2)/2; iz++){
 			//
+			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = 0.0;
 			for (jz=0; jz<sfzmesh; jz++) {
 				rajz_under = (-double(jz)*dsfz-z[iz]);
 				rajz_top   = ((H+double(jz)*dsfz)-z[iz]);
@@ -756,15 +759,16 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 						//
 						phi_sf_int_t[t]  = phi_att_sf(ra_under) + phi_att_sf(ra_top);
 					}
-					rhos_phi_sf_int_jx[jx] = 2.0*sfx[jx]*rho_ssq(double(jz)*dsfz)*integral_simpson(phi_sf_int_t, sfntmesh-1, drad);
-					//rhos_phi_sf_int_jx[jx] = 2.0*sfx[jx]*rho_ssq(double(jz)*dsfz)*integral_trapezoidal(phi_sf_int_t, sfntmesh-1, drad);
+					rhos_phi_sf_int_jx[jx] = 2.0*sfx[jx]*rho_ssq(double(jz)*dsfz)*delta*integral_simpson(phi_sf_int_t, sfntmesh-1, drad);
+					//rhos_phi_sf_int_jx[jx] = 2.0*sfx[jx]*rho_ssq(double(jz)*dsfz)*delta*integral_trapezoidal(phi_sf_int_t, sfntmesh-1, drad);
 				}
 				//rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, nxstep-1, dsfx) + rhos_phi_sf_int_jx[0]/(2.0*M_PI*sfx[0])*M_PI*(dsfx/2.0)*(dsfx/2.0);
 				rhos_phi_sf_int_jz[jz] = integral_simpson(rhos_phi_sf_int_jx, sfnxstep-1, dsfx) + rhos_phi_sf_int_jx[0]*spr2;
 				//rhos_phi_sf_int_jz[jz] = integral_trapezoidal(rhos_phi_sf_int_jx, nxstep-1, dx) + rhos_phi_sf_int_jx[0]*spr2;
+				rhos_phi_sf_int_ixiz[ix*nzstep+iz] = rhos_phi_sf_int_ixiz[ix*nzstep+iz] + rhos_phi_sf_int_jz[jz];
 			}
 			//
-			rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(rhos_phi_sf_int_jz, sfzmesh-1, dsfz);
+			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_simpson(rhos_phi_sf_int_jz, sfzmesh-1, dsfz);
 			//rhos_phi_sf_int_ixiz[ix*nzstep+iz] = integral_trapezoidal(rhos_phi_sf_int_jz, sfzmesh-1, dsfz);
 			rhos_phi_sf_int_ixiz[ix*nzstep+((nzstep-1)-iz)] = rhos_phi_sf_int_ixiz[ix*nzstep+iz];
 		}
