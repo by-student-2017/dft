@@ -333,10 +333,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-(2.0*ze+sigma_sf)); // pore width [nm]
-	//dr = H/double(nstep-1);
-	dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
-	//w_pw = (H-sigma_ss); // pore width [nm]
-	//dr = (H-sigma_ss)/double(nstep+1);
+	dr = (H-2.0*h0)/double(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
@@ -723,6 +720,41 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 	nv1[i] = integral_simpson(nv1_j, nstep-1, dr);
 	nv2[i] = integral_simpson(nv2_j, nstep-1, dr);
 	//
+	double in2, inv2;
+	double rai;
+	rai = (r[i]-r[0]);
+	if ( rai <= Ris ) {
+		in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
+		xs = std::sqrt(Ris*Ris-rai*rai);
+		n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
+		n1[i] = n1[i] + in2/(4.0*M_PI*Ris);
+		n2[i] = n2[i] + in2;
+		// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C
+		// sin(2x) = 2*sin(x)*cos(x)
+		n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.5*(xs/Ris)*(rai/Ris))*Ris;
+		// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
+		// cos(2x) = 1 - 2*sin(x)*sin(x)
+		inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
+		nv1[i] = nv1[i] - inv2/(4.0*M_PI*Ris);
+		nv2[i] = nv2[i] - inv2;
+	}
+	rai = (r[nstep-1]-r[i]);
+	if ( rai <= Ris ) {
+		in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
+		xs = std::sqrt(Ris*Ris-rai*rai);
+		n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
+		n1[i] = n1[i] + in2/(4.0*M_PI*Ris);
+		n2[i] = n2[i] + in2;
+		// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C = (1/2)*x - (1/2)*sin(x)*cos(x) + C
+		// sin(2x) = 2*sin(x)*cos(x)
+		n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.5*(xs/Ris)*(rai/Ris))*Ris;
+		// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
+		// cos(2x) = 1 - 2*sin(x)*sin(x)
+		inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
+		nv1[i] = nv1[i] + inv2/(4.0*M_PI*Ris);
+		nv2[i] = nv2[i] + inv2;
+	}
+	//
 	//std::cout << "i, r[i], j, r[j], raj, xs, n0[i], n1[i], n2[i], n3[i], nv1[i], nv2[i]" << std::endl;
 	//std::cout << i << ", " << r[i] << ", " << j-1 << ", " << r[j-1] << ", " << raj << ", " << xs << ", " << n0[i] << ", " << n1[i] << ", " << n2[i] << ", " << n3[i] << ", " << nv1[i] << ", " << nv2[i] << ", " << std::endl;
 	return 0;
@@ -1096,45 +1128,16 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 //double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_ff_int_ij){
 double xi(double *rho, double *r, int i, double rho_b, double *phi_att_ff_int_ij, double *rho_phi_ff_int_i){
 	int j;
-	//int j,k;
-	//double ra;
-	//double raj;
-	//double rak;
-	//double ndmesh = 2*d_hs*nrmesh/rc;
-	//double dd = 2.0*d_hs/double(ndmesh-1);
-	//double drc = rc/double(nrmesh-1);
-	//dd = drc;
-	//double tpidd = 2.0*M_PI*dd;
-	//double rho_dfex_int_j[nstep];
 	double rho_phi_ff_int_j[nstep];
-	//double rho_phi_sf_int_j[nstep];
-	//double rho_dfex_int_k[nrmesh];
-	//double rho_phi_ff_int = 0.0;
-	//double rho_phi_sf_int = 0.0;
-	//double dz = H/(nstep-1);
 	for (j=0; j<nstep; j++) {
 		rho_phi_ff_int_j[j]  = rho[j]*phi_att_ff_int_ij[i*nstep+j];
-		//rho_phi_sf_int_j[j]  = (rho_ssq(double(j)*dz)+rho_ssq(H-double(j)*dz))*phi_att_sf_int_ij[i*nstep+j];
-		//std::cout << rho_phi_sf_int_j[j] << std::endl;
-		//rho_phi_sf_int = rho_phi_sf_int + rho_phi_sf_int_j[j]*dr;
 	}
 	//integral_simpson(double *f, int n, double dx)
 	rho_phi_ff_int_i[i]  = integral_simpson(rho_phi_ff_int_j, nstep-1, dr);
-	//rho_phi_sf_int  = integral_simpson(rho_phi_sf_int_j, nstep-1, dr);
-	//std::cout << rho_phi_sf_int << std::endl;
 	//
 	double xi_out;
-	//xi_out = kb1*T*std::log(rho_b) + mu_ex(rho_b) - rho_b*alpha - phi_ext(r[i]) - f_ex(rho_sj[i]) - rho_dfex_int - rho_phi_int; // old ver.1.1.1
-	//xi_out = ( - rho_b*alpha - rho_dfex_int - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int ) + ( kb1*T*std::log(rho_b) - phi_ext(r[i]) );
 	xi_out = ( - rho_b*alpha ) + ( mu_ex(rho_b) - rho_phi_ff_int_i[i] ) + ( kb1*T*std::log(rho_b) );
-	// debug
-	//std::cout << i << ", " << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -rho_phi_ff_int << std::endl;
-	//std::cout << "xi, (kb1*T)*log(rho_b), mu_ex(rho_b), -rho_b*alpha, -phi_ext(r[i]), -f_ex(rho_s(rho,r[i],r)), -rho_dfex_int, -rho_phi_int" << std::endl;
-	//std::cout << xi_out << ", " << kb1*T*std::log(rho_b) << ", " << mu_ex(rho_b) << ", " << -rho_b*alpha << ", " << -phi_ext(r[i]) << ", " << -f_ex(rho_sj[i]) << ", " << -rho_dfex_int << ", " << -rho_phi_int << std::endl;
-	//if ( std::isnan(rho_sj[i]) || std::isnan(f_ex(rho_sj[i])) || std::isnan(rho_dfex_int) || std::isnan(rho_phi_int) ){
-	//	std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << f_ex(rho_sj[i]) << ", " << rho_dfex_int << ", " << rho_phi_int << std::endl;
-	//	std::exit(1);
-	//}
+	//
 	return xi_out;
 }
 
@@ -1333,13 +1336,7 @@ int main(){
 	double rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		// r[i] = sigma_ss/2.0 + (H-sigma_ss)/double(nstep)*double(i);
-		// 1.72 times is escape nan, etc from positive value of wall potential
-		//r[i] = sigma_ss*1.74/2.0 + dr*double(i) + dr/2.0; // dr = (H-sigma_ss*1.74)/double(nstep+1);
-		//r[i] = sigma_ss/2.0 + dr*double(i); // dr = (H-sigma_ss)/double(nstep+1);
-		//r[i] = dr*double(i);
-		//r[i] = (2.0*ze+sigma_sf)/2.0 + dr*double(i); // dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
-		r[i] = ze + dr*double(i); 
+		r[i] = h0 + dr*double(i);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1404,24 +1401,12 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		//double check_data;
 		for (j=0; j<cycle_max; j++){
-			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); // for NLDFT
 			for (i=0; i<nstep; i++){
 				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
 			}
-			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//std::cout << "c1*(kb1*T) = " << c1*(kb1*T) << std::endl;
-				//std::cout << "-phi_att_sf_i[i] = " << -phi_att_sf_int_i[i] << std::endl;
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				//rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_ff_int_ij)/(kb1*T)-phi_att_sf_int_i[i]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_ff_int_ij,rho_phi_ff_int_i)/(kb1*T)-rhos_phi_sf_int_i[i]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_data = c1*(kb1*T)+xi(rho,r,i,rho_b, phi_att_ff_int_ij)-phi_att_sf_int_i[i];
-				//std::cout << i << ", check_data = " << check_data << std::endl;
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
-				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
@@ -1452,16 +1437,7 @@ int main(){
 			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
 			//}
 		}
-		//for (i=0; i<nstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
 		//
-		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-2)/2; i++){
-			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
-			//v_gamma = v_gamma + 2.0*rho[i]*dr;
-		//}
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
 		v_gamma = v_gamma/(H-(2.0*ze+sigma_sf)) - rho_b;
@@ -1474,6 +1450,7 @@ int main(){
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
 		//std::cout << "V= " << v_gamma << std::endl;
+		//
 		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
@@ -1505,24 +1482,12 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		//double check_data;
 		for (j=0; j<cycle_max; j++){
-			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j); // for NLDFT
 			for (i=0; i<nstep; i++){
 				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
 			}
-			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//std::cout << "c1*(kb1*T) = " << c1*(kb1*T) << std::endl;
-				//std::cout << "-phi_att_sf_i[i] = " << -phi_att_sf_int_i[i] << std::endl;
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				//rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_ff_int_ij)/(kb1*T)-phi_att_sf_int_i[i]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_ff_int_ij,rho_phi_ff_int_i)/(kb1*T)-rhos_phi_sf_int_i[i]/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_data = c1*(kb1*T)+xi(rho,r,i,rho_b, phi_att_ff_int_ij)-phi_att_sf_int_i[i];
-				//std::cout << i << ", check_data = " << check_data << std::endl;
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
-				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
@@ -1553,16 +1518,7 @@ int main(){
 			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
 			//}
 		}
-		//for (i=0; i<nstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
 		//
-		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-2)/2; i++){
-			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
-			//v_gamma = v_gamma + 2.0*rho[i]*dr;
-		//}
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
 		v_gamma = v_gamma/(H-(2.0*ze+sigma_sf)) - rho_b;
@@ -1575,6 +1531,7 @@ int main(){
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
 		//std::cout << "V= " << v_gamma << std::endl;
+		//
 		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
