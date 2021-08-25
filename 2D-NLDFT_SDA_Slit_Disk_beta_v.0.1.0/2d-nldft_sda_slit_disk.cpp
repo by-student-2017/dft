@@ -184,10 +184,7 @@ void read_parameters(void){
 	}
 	// ---------- ----------- ------------ ------------
 	ntmesh = int(num[9]);
-	if ( ntmesh == 0 ) {
-		ntmesh = 20;
-		std::cout << "autoset ntmesh = " << ntmesh << std::endl;
-	}
+	// move blow (nxtep)
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
 	// ---------- ----------- ------------ ------------
@@ -218,6 +215,11 @@ void read_parameters(void){
 		}
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nxstep = " << nxstep << std::endl;
+	}
+	// ntmesh
+	if ( ntmesh == 0 ) {
+		ntmesh = 2*int(nxstep/7.0);
+		std::cout << "autoset ntmesh = " << ntmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	
@@ -287,7 +289,7 @@ double phi_att_ff(double r){
 }
 
 // The attractive potentials of solid-fluid interactions.
-// In this case, WCA type is different from result of steele potential.
+// This case use normal Lennard-Jones（LJ) potential, because the WCA type is different from result of steele potential.
 double phi_att_sf(double r){
 	double e;
 	// Lennard-Jones（LJ) potential
@@ -724,7 +726,7 @@ double phi_att_sf_int(double *x, double *z, double *rhos_phi_sf_int_ixiz){
 		dsfz = h0/(sfzmesh-1);
 	}
 	int sfnxstep = int(D/0.02);
-	int sfntmesh = 180*int(sfnxstep/100);
+	int sfntmesh = 2*int(sfnxstep/7.0);
 	//
 	double rhos_phi_sf_int_jz[sfzmesh];
 	double rhos_phi_sf_int_jx[sfnxstep];
@@ -1030,6 +1032,9 @@ int main(){
 	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	double *rho_phi_ff_int_ixiz   = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
 	//
+	double diff = 1.0;
+	double old_diff1 = 2.0;
+	double old_diff2 = 3.0;
 	double diff0, diff1;
 	double mixing;
 	//
@@ -1062,30 +1067,33 @@ int main(){
 						rho_new[ix*nzstep+iz] = 1e9;
 					}
 					// to avoid -inf or int
-					if (rho_new[ix*nzstep+iz] < 1e-18 && rho[ix*nzstep+iz] < 1e-18){
-						rho_new[ix*nzstep+iz] = 1e-18;
-						rho[ix*nzstep+iz] = 1e-18;
+					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
+						rho_new[ix*nzstep+iz] = 1e-9;
+						rho[ix*nzstep+iz] = 1e-9;
 					}
 				}
 			}
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					//diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
 					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff1 = diff1 + rho[ix*nzstep+iz];
 					mixing = wmixing + wmixing/(0.5+(diff0/diff1));
-					//std::cout << i << ", " << mixing << std::endl;
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff0/diff1*100 <= 0.5 ) {
+			diff = diff0/diff1;
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
+			//
+			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
 			//for (ix=0; ix<nxstep; ix++){
-			//	std::cout << j << ", " << rho_new[ix*nzstep+5] << ", " << mixing << ", " << diff0/diff1*100 << std::endl;
+			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
 			//}
 		}
 		//
@@ -1144,26 +1152,27 @@ int main(){
 						rho_new[ix*nzstep+iz] = 1e9;
 					}
 					// to avoid -inf or int
-					if (rho_new[ix*nzstep+iz] < 1e-18 && rho[ix*nzstep+iz] < 1e-18){
-						rho_new[ix*nzstep+iz] = 1e-18;
-						rho[ix*nzstep+iz] = 1e-18;
+					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
+						rho_new[ix*nzstep+iz] = 1e-9;
+						rho[ix*nzstep+iz] = 1e-9;
 					}
 				}
 			}
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					//diff0 = std::abs((rho_new[ix*nzstep+iz]-rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
 					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff1 = diff1 + rho[ix*nzstep+iz];
 					mixing = wmixing + wmixing/(0.5+(diff0/diff1));
-					//std::cout << i << ", " << mixing << std::endl;
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff0/diff1*100 <= 0.5 ) {
+			diff = diff0/diff1;
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
 		}
