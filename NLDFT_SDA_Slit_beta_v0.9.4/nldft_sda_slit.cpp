@@ -784,13 +784,13 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+diff);
+				mixing = wmixing + wmixing/(0.5+(old_diff1+old_diff2)/2.0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
 			//for (i=0; i<nstep; i++){
@@ -862,13 +862,13 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+zdiff);
+				mixing = wmixing + wmixing/(0.5+(old_diff1+old_diff2)/2.0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
 		}
