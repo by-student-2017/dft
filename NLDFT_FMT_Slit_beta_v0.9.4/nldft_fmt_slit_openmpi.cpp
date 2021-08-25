@@ -1184,7 +1184,8 @@ MPI::Init();
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
 	double diff = 1.0;
-	double old_diff;
+	double old_diff1 = 2.0;
+	double old_diff2 = 3.0;
 	double diff0, diff1;
 	double mixing;
 	double rho_b_k[177]={7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
@@ -1245,39 +1246,30 @@ MPI::Init();
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 #pragma omp parallel for
-			old_diff = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
 				mixing = wmixing + wmixing/(1.0+diff);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+			}
+			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
 			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
+			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff1 << std::endl;
 			//}
 		}
-		//for (i=0; i<nstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
 		//
-		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-2)/2; i++){
-			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
-			//v_gamma = v_gamma + 2.0*rho[i]*dr;
-		//}
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
@@ -1355,7 +1347,8 @@ MPI::Init();
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 #pragma omp parallel for
@@ -1366,24 +1359,15 @@ MPI::Init();
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
+			for (i=0; i<=(nstep-2)/2; i++){
+				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
+			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
-		//for (i=0; i<nstep; i++){
-		//	std::cout << "--------------------------------------------------" << std::endl;
-		//	std::cout << "cycle=" << j << ", r[" << i << "]" << r[i] << " , -ext " << - phi_ext(r[i]) << ", rho[" << i << "]=" << rho[i] << std::endl;
-		//}
 		//
-		//v_gamma = 0.0;
-		//for (i=0; i<=(nstep-2)/2; i++){
-			//std::cout << i << ", " << r[i] << ", " << rho[i] << std::endl;
-			//v_gamma = v_gamma + 2.0*rho[i]*dr;
-		//}
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]

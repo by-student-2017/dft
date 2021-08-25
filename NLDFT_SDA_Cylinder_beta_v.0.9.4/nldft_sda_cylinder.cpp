@@ -876,7 +876,8 @@ int main(){
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	double diff = 1.0;
-	double old_diff;
+	double old_diff1 = 2.0;
+	double old_diff2 = 3.0;
 	double diff0, diff1;
 	double mixing;
 	double rho_r[nstep];
@@ -923,7 +924,8 @@ int main(){
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 			for (i=0; i<nstep; i++){
@@ -934,11 +936,11 @@ int main(){
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
 			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
+			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff1 << std::endl;
 			//}
 		}
 		//
@@ -1003,7 +1005,8 @@ int main(){
 					rho[i] = 1e-18;
 				}
 			}
-			old_diff = diff;
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 			for (i=0; i<nstep; i++){
@@ -1014,12 +1017,9 @@ int main(){
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
 		//
 		for (i=0; i<nstep; i++){

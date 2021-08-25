@@ -736,7 +736,8 @@ MPI::Init();
 		phi_ext_i[i] = phi_ext(r[i]);
 	}
 	double diff = 1.0;
-	double old_diff;
+	double old_diff1 = 2.0;
+	double old_diff2 = 2.0;
 	double diff0, diff1;
 	double mixing;
 	double rho_b_k[177]={7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
@@ -784,7 +785,8 @@ MPI::Init();
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 #pragma omp parallel for
@@ -799,11 +801,11 @@ MPI::Init();
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
 			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
+			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff1 << std::endl;
 			//}
 		}
 		//
@@ -863,7 +865,8 @@ MPI::Init();
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
+			old_diff2 = old_diff1;
+			old_diff1 = diff;
 			diff0 = 0.0;
 			diff1 = 0.0;
 #pragma omp parallel for
@@ -878,12 +881,9 @@ MPI::Init();
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
