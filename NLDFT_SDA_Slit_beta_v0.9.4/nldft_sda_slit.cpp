@@ -862,7 +862,7 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+diff);
+				mixing = wmixing + wmixing/(1.0+zdiff);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 

@@ -1063,9 +1063,9 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > 1e9){
+					if (rho_new[ix*nzstep+iz] > 1e6){
 						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.2;
-						std::cout << "new rho > 1e9, need to check results" << std::endl;
+						std::cout << "new rho > 1e6, need to check results" << std::endl;
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1082,13 +1082,13 @@ int main(){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff1 = diff1 + rho[ix*nzstep+iz];
-					mixing = wmixing + wmixing/(0.5+(diff0/diff1));
+					mixing = wmixing + wmixing/(0.5+(old_diff1+old_diff2)/2.0);
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
 			//
@@ -1151,7 +1151,7 @@ int main(){
 					// to avoid overflow
 					if (rho_new[ix*nzstep+iz] > 1e6){
 						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.2;
-						std::cout << "new rho > 1e9, need to check results" << std::endl;
+						std::cout << "new rho > 1e6, need to check results" << std::endl;
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1174,7 +1174,7 @@ int main(){
 				}
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff1 >= 0.995 && old_diff1/old_diff2 >= 0.995) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
 		}
