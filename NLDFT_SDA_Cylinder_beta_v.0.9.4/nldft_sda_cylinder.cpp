@@ -915,8 +915,9 @@ int main(){
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					rho_new[i] = 1e9;
+				if (rho_new[i] > 1e6){
+					rho_new[i] = rho[i]*1.2;
+					std::cout << "new rho > 1e6, need to check results" << std::endl;
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
@@ -996,13 +997,14 @@ int main(){
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					rho_new[i] = 1e9;
+				if (rho_new[i] > 1e6){
+					rho_new[i] = rho[i]*1.2;
+					std::cout << "new rho > 1e6, need to check results" << std::endl;
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
+					rho_new[i] = 1e-9;
+					rho[i] = 1e-9;
 				}
 			}
 			old_diff2 = old_diff1;
