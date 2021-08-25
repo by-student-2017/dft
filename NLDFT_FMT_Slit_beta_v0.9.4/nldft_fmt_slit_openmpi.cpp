@@ -1255,7 +1255,7 @@ MPI::Init();
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(0.5+(old_diff1+old_diff2)/2.0);
+				mixing = 0.5*(wmixing + wmixing/(0.75+(old_diff1+old_diff2)/2.0));
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
@@ -1357,7 +1357,7 @@ MPI::Init();
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(0.5+(old_diff1+old_diff2)/2.0);
+				mixing = 0.5*(wmixing + wmixing/(0.75+(old_diff1+old_diff2)/2.0));
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
