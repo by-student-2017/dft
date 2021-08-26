@@ -805,6 +805,13 @@ MPI::Init();
 			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
+			if ( j%3 == 0) {
+				if ( std::abs(cdiff3 - diff) <= 0.0001 ) {
+					wmixing = wmixing * 0.90;
+					std::cout << "wmixing=" << wmixing << std::endl;
+				}
+				cdiff3 = diff;
+			}
 			//for (i=0; i<nstep; i++){
 			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff1 << std::endl;
 			//}
@@ -885,6 +892,13 @@ MPI::Init();
 			diff = diff0/diff1;
 			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
+			}
+			if ( j%3 == 0) {
+				if ( std::abs(cdiff3 - diff) <= 0.0001 ) {
+					wmixing = wmixing * 0.90;
+					std::cout << "wmixing=" << wmixing << std::endl;
+				}
+				cdiff3 = diff;
 			}
 		}
 		//
