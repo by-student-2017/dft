@@ -949,7 +949,7 @@ int main(){
 			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
-			if ( j%3 == 0) {
+			if ( j%2 == 0) {
 				if ( std::abs(cdiff3 - diff) <= 0.0001 ) {
 					wmixing = wmixing * 0.90;
 					std::cout << "wmixing=" << wmixing << std::endl;
@@ -1040,7 +1040,7 @@ int main(){
 			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
 			}
-			if ( j%3 == 0) {
+			if ( j%2 == 0) {
 				if ( std::abs(cdiff3 - diff) <= 0.0001 ) {
 					wmixing = wmixing * 0.90;
 					std::cout << "wmixing=" << wmixing << std::endl;
