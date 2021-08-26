@@ -1204,9 +1204,10 @@ int main(){
 	double nv2_j[nstep], nv2[nstep]; // For FMT
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
-	double diff = 1.0;
-	double old_diff1 = 2.0;
-	double old_diff2 = 3.0;
+	//
+	double diff = 0.5;
+	double old_diff1 = 1.00;
+	double old_diff2;
 	double diff0, diff1;
 	double cdiff3 = 1.0;
 	double mixing;
@@ -1275,7 +1276,7 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = 0.5*(wmixing + wmixing/(0.75+(old_diff1+old_diff2)/2.0));
+				mixing = 0.005 + (wmixing - 0.005)*(1.0/(0.5+diff))*(1.0/(1.0+double(j)/10.0));
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
@@ -1283,13 +1284,6 @@ int main(){
 			diff = diff0/diff1;
 			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
-			}
-			if ( j%2 == 0) {
-				if ( std::abs(cdiff3 - diff) <= 0.0001 ) {
-					wmixing = wmixing * 0.90;
-					std::cout << "wmixing=" << wmixing << std::endl;
-				}
-				cdiff3 = diff;
 			}
 			//for (i=0; i<nstep; i++){
 			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff1 << std::endl;
@@ -1387,7 +1381,7 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = 0.5*(wmixing + wmixing/(0.75+(old_diff1+old_diff2)/2.0));
+				mixing = 0.005 + (wmixing - 0.005)*(1.0/(0.5+diff))*(1.0/(1.0+double(j)/10.0));
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
@@ -1395,13 +1389,6 @@ int main(){
 			diff = diff0/diff1;
 			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
 				break;
-			}
-			if ( j%2 == 0) {
-				if ( std::abs(cdiff3 - diff) <= 0.0001 ) {
-					wmixing = wmixing * 0.90;
-					std::cout << "wmixing=" << wmixing << std::endl;
-				}
-				cdiff3 = diff;
 			}
 		}
 		//for (i=0; i<nstep; i++){
