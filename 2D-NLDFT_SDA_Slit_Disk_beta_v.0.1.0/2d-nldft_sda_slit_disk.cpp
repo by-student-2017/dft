@@ -1065,8 +1065,8 @@ int main(){
 					// overflow about std::exp(730)
 					// to avoid overflow
 					if (rho_new[ix*nzstep+iz] > 1e6){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.2;
 						std::cout << "new rho > 1e6, need to check results" << std::endl;
+						std::exit(1);
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1089,11 +1089,11 @@ int main(){
 				}
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.05 && std::abs(old_diff1/old_diff2-1.0) <= 0.05) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
 				break;
 			}
 			//
-			std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
+			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
 			//for (ix=0; ix<nxstep; ix++){
 			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
 			//}
@@ -1151,8 +1151,8 @@ int main(){
 					// overflow about std::exp(730)
 					// to avoid overflow
 					if (rho_new[ix*nzstep+iz] > 1e6){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.2;
 						std::cout << "new rho > 1e6, need to check results" << std::endl;
+						std::exit(1);
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1175,7 +1175,7 @@ int main(){
 				}
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.10 && std::abs(old_diff1/old_diff2-1.0) <= 0.101) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
 				break;
 			}
 		}

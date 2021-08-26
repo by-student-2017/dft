@@ -949,7 +949,7 @@ int main(){
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
 				break;
 			}
 			//for (i=0; i<nstep; i++){
@@ -1033,7 +1033,7 @@ int main(){
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.005 && std::abs(old_diff1/old_diff2-1.0) <= 0.005) ) {
+			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
 				break;
 			}
 		}
