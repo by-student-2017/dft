@@ -1152,17 +1152,13 @@ MPI::Init();
 		rho[i] = rho_b0/(nstep*dr);
 		rho_new[i] = 0.0;
 	}
-	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
-	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	
 	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	//double rho_sj[nstep];
 	//double rho_s0j[nstep];
 	//double rho_s1j[nstep];
 	//double rho_s2j[nstep];
+	//
 	//double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	double *phi_att_int_ij = (double *)malloc(sizeof(double)*((nstep+1)*nstep));
 	if (phi_att_int_ij == NULL) {
@@ -1172,6 +1168,8 @@ MPI::Init();
 		printf("Memory has been allocated. The address is %p\n", phi_att_int_ij);
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
+	std::cout << "phi_att_int calculation was finished" << std::endl;
+	//
 	//double rho_dfex_int[nstep];
 	double dfex_int[nstep];
 	double rho_phi_int[nstep];
@@ -1209,6 +1207,14 @@ MPI::Init();
 						0.989676316,0.990157895,0.990618421,0.991056579,0.991475000,0.991873684,0.992253947,0.992615789,0.992961842,0.993290789,
 						0.993603947,0.993903947,0.994189474,0.994461842,0.994721053,0.994968421,0.995203947,0.995428947,0.995642105,0.995846053,
 						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
+	//
+	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
+	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=0; k<=176; k++){
 		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
@@ -1240,9 +1246,8 @@ MPI::Init();
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					rho_new[i] = rho[i]*1.2;
-					std::cout << "new rho > 1e9, need to check results" << std::endl;
+				if (rho_new[i] > rho[i]*1.10 && rho_new[i] > 150.0){
+					rho_new[i] = rho[i]*1.10;
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
@@ -1342,9 +1347,8 @@ MPI::Init();
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > 1e6){
-					rho_new[i] = rho[i]*1.2;
-					std::cout << "new rho > 1e6, need to check results" << std::endl;
+				if (rho_new[i] > rho[i]*1.10 && rho_new[i] > 150.0){
+					rho_new[i] = rho[i]*1.10;
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
