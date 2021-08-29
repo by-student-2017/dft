@@ -352,7 +352,7 @@ double rho_si_int_t(double *rho_si_int_t_iixizjxjz, double *x, double *z){
 	double rajz; // z axis
 	double ra;
 	//
-	double rho_si_int_t[ntmesh];
+	double tmp_rho_si_int_t[ntmesh];
 	//
 	double xt,yt;
 	double drad = M_PI/(ntmesh-1); // radian
@@ -370,11 +370,11 @@ double rho_si_int_t(double *rho_si_int_t_iixizjxjz, double *x, double *z){
 							yt = x[jx]*std::sin(drad*double(t));
 							ra= (xt-x[ix])*(xt-x[ix]) + yt*yt + rajz*rajz; // x, y, z
 							ra = std::sqrt(ra);
-							rho_si_int_t[t]  = wi(ra,i);
+							tmp_rho_si_int_t[t]  = wi(ra,i);
 						}
 						//integral_simpson(double *f, int n, double dx)
 						rho_si_int_t_iixizjxjz[i*nxstep*nzstep*nxstep*nzstep+ix*nzstep*nxstep*nzstep+iz*nxstep*nzstep+jx*nzstep+jz] = 
-							2.0*x[jx]*integral_simpson(rho_si_int_t, ntmesh-1, drad);
+							2.0*x[jx]*integral_simpson(tmp_rho_si_int_t, ntmesh-1, drad);
 					}
 				}
 				//
@@ -394,7 +394,7 @@ double rho_si(double *rho, double *x, double *z, int ix, int iz, int i, double *
 	//
 	double rho_si_int_jz[nzstep];
 	double rho_si_int_jx[nxstep];
-	double rho_si_int_t[ntmesh];
+	//double rho_si_int_t[ntmesh];
 	//
 	double xt,yt;
 	double drad = M_PI/(ntmesh-1); // radian
@@ -1119,7 +1119,7 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 300.0){
+					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 150.0){
 						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.10;
 					}
 					// to avoid -inf or int
@@ -1204,7 +1204,7 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 300.0){
+					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 150.0){
 						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.10;
 					}
 					// to avoid -inf or int
