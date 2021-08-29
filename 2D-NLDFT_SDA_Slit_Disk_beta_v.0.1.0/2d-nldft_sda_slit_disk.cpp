@@ -1064,8 +1064,8 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.2 && rho_new[ix*nzstep+iz] > 0.01){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.2;
+					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 300.0){
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.10;
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1149,8 +1149,8 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.2 && rho_new[ix*nzstep+iz] > 0.01){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.2;
+					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 300.0){
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.10;
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
