@@ -287,31 +287,68 @@ double wi(double r, int i){
 	return wi_out;
 }
 
+double rho_si_int_k(double *rho_si_int_ijrj, double *r){
+	int i;
+	int jr;
+	int j,k;
+	double ra;
+	double raj;
+	double rak;
+	//
+	//double rho_si_int_j[nstep];
+	double tmp_rho_si_int_k[nrmesh];
+	//
+	// drc = rc/double(nrmesh-1);
+	double tpidrc = 2.0*M_PI*drc;
+	//
+	for (i=0; i<3; i++) {
+		for (jr=0; jr<nstep; jr++) {
+			//
+			for (j=0; j<nstep; j++) {
+				raj = (r[j]-r[jr]);
+				tmp_rho_si_int_k[0] = 0.0;
+				for (k=1; k<nrmesh; k++) {
+					rak = drc*double(k);
+					ra =  rak*rak + raj*raj;
+					ra = std::sqrt(ra);
+					//
+					tmp_rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
+				}
+				//integral_simpson(double *f, int n, double dx)
+				rho_si_int_ijrj[i*nstep*nstep+jr*nstep+j] = integral_simpson(tmp_rho_si_int_k, nrmesh-1, drc);
+			}
+			//
+		}
+	}
+	return 0;
+}
+
 // Tarazona theory
-double rho_si(double *rho, double r1, double *r, int i){
+double rho_si(double *rho, double *r, int jr, int i, double *rho_si_int_ijrj){
 	int j,k;
 	double ra;
 	double raj;
 	double rak;
 	//
 	double rho_si_int_j[nstep];
-	double rho_si_int_k[nrmesh];
+	//double rho_si_int_k[nrmesh];
 	//
 	// drc = rc/double(nrmesh-1);
 	double tpidrc = 2.0*M_PI*drc;
-	rho_si_int_k[0] = 0.0;
+	//rho_si_int_k[0] = 0.0;
 	//
 	for (j=0; j<nstep; j++) {
-		raj = (r1-r[j]);
-		for (k=1; k<nrmesh; k++) {
-			rak = drc*double(k);
-			ra =  rak*rak + raj*raj;
-			ra = std::sqrt(ra);
-			//
-			rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
-		}
+		//raj = (r[j]-r[jr]);
+		//for (k=1; k<nrmesh; k++) {
+		//	rak = drc*double(k);
+		//	ra =  rak*rak + raj*raj;
+		//	ra = std::sqrt(ra);
+		//	//
+		//	rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
+		//}
 		//integral_simpson(double *f, int n, double dx)
-		rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, nrmesh-1, drc);
+		//rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, nrmesh-1, drc);
+		rho_si_int_j[j] = rho[j] * rho_si_int_ijrj[i*nstep*nstep+jr*nstep+j];
 	}
 	double rho_si_out;
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
@@ -332,13 +369,14 @@ double rho_si(double *rho, double r1, double *r, int i){
 //}
 
 // smoothed density approximation (SDA), modified version
-double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j){
+double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *rho_si_int_ijrj){
 	int j;
 	double rho_den1j, rho_den2j;
+	//for (j=0; j<(nstep-2)/2; j++) {
 	for (j=0; j<nstep; j++) {
-		rho_s0j[j] = rho_si(rho, r[j], r, 0);
-		rho_s1j[j] = rho_si(rho, r[j], r, 1);
-		rho_s2j[j] = rho_si(rho, r[j], r, 2);
+		rho_s0j[j] = rho_si(rho, r, j, 0, rho_si_int_ijrj);
+		rho_s1j[j] = rho_si(rho, r, j, 1, rho_si_int_ijrj);
+		rho_s2j[j] = rho_si(rho, r, j, 2, rho_si_int_ijrj);
 		//rho_den1j = std::pow((1.0 - rho_s1j[j]),2.0);
 		rho_den1j = (1.0 - rho_s1j[j]);
 		rho_den1j = rho_den1j * rho_den1j;
@@ -354,6 +392,10 @@ double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rh
 		rho_sj[j] = 2.0*rho_s0j[j]/(1.0 - rho_s1j[j]+rho_den2j);
 		//std::cout << j << ", " << rho[j] << ", " << rho_sj[j] << ", " << rho_s0j[j] << ", " << rho_s1j[j] << ", " << rho_s2j[j] << std::endl;
 		//std::cout << rho_den1j << ", " << rho_den2j << std::endl;
+		//rho_s0j[(nstep-1)-j] = rho_s0j[j];
+		//rho_s1j[(nstep-1)-j] = rho_s1j[j];
+		//rho_s2j[(nstep-1)-j] = rho_s2j[j];
+		//rho_sj[(nstep-1)-j] = rho_sj[j];
 	}
 	return 0;
 }
@@ -669,6 +711,7 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 
 int main(){
 	int i,j,k;
+	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b;
@@ -730,14 +773,15 @@ int main(){
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	std::cout << "phi_att_int calculation was finished" << std::endl;
 	//
-	double diff = 0.5;
-	double old_diff1 = 1.00;
-	double old_diff2;
-	double diff0, diff1;
-	double cdiff3 = 1.0;
+	double *rho_si_int_ijrj = (double *)malloc(sizeof(double)*(2*nstep*nstep+nstep*nstep+nstep));
+	rho_si_int_k(rho_si_int_ijrj, r);
+	std::cout << "rho_si_int_k calculation was finished" << std::endl;
+	//
+	double diff0;
 	double mixing;
 	//
-	double rho_b_k[177]={7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
+	double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
+						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
 						0.004594237,0.005915211,0.007526184,0.009468211,0.011783671,0.014515526,0.017706579,0.021398421,0.025631184,0.030442237,
 						0.035865395,0.041930789,0.048663553,0.056083947,0.064206711,0.073040395,0.082588289,0.092847105,0.103808026,0.115456447,
@@ -763,7 +807,7 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=0; k<=176; k++){
+	for (k=0; k<=181; k++){
 		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
@@ -774,44 +818,38 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
+			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
 			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > rho[i]*1.10 && rho_new[i] > 150.0){
-					rho_new[i] = rho[i]*1.10;
+				if (rho_new[i] > 1e9){
+					std::cout << "rho[i] > 1e9" << std::endl;
+					std::exit(1);
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
-					rho_new[i] = 1e-9;
-					rho[i] = 1e-9;
+				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
+					rho_new[i] = 1e-18;
+					rho[i] = 1e-18;
 				}
 			}
-			old_diff2 = old_diff1;
-			old_diff1 = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
+			diff = 0.0;
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
-				diff1 = diff1 + rho[i];
-				mixing = 0.005 + (wmixing - 0.005)*(1.0/(0.5+diff))*(1.0/(1.0+double(j)/10.0));
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff1 << ", " << diff/old_diff1 << std::endl;
-			//}
 		}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
@@ -843,7 +881,7 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=176; k>=0; k--){
+	for (k=181; k>=0; k--){
 		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
@@ -854,38 +892,36 @@ int main(){
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
-			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
+			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
 			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				//
 				// overflow about std::exp(730)
-				if (rho_new[i] > rho[i]*1.10 && rho_new[i] > 150.0){
-					rho_new[i] = rho[i]*1.10;
+				// to avoid overflow
+				if (rho_new[i] > 1e9){
+					std::cout << "rho[i] > 1e9" << std::endl;
+					std::exit(1);
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
-					rho_new[i] = 1e-9;
-					rho[i] = 1e-9;
+				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
+					rho_new[i] = 1e-18;
+					rho[i] = 1e-18;
 				}
 			}
-			old_diff2 = old_diff1;
-			old_diff1 = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
+			diff = 0.0;
 #pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
-				diff1 = diff1 + rho[i];
-				mixing = 0.005 + (wmixing - 0.005)*(1.0/(0.5+diff))*(1.0/(1.0+double(j)/10.0));
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 		}
