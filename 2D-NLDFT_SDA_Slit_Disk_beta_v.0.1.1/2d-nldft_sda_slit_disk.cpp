@@ -218,7 +218,7 @@ void read_parameters(void){
 	}
 	// ntmesh
 	if ( ntmesh == 0 ) {
-		ntmesh = 2*int(nxstep/7.0);
+		ntmesh = int(nxstep/2.0);
 		std::cout << "autoset ntmesh = " << ntmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
@@ -356,11 +356,11 @@ double rho_si_int_t(double *rho_si_int_t_iixizjxjz, double *x, double *z){
 	//
 	double xt,yt;
 	double drad = M_PI/(ntmesh-1); // radian
-	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
+	//double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
 	for (i=0; i<3; i++) {
 		for (ix=0; ix<nxstep; ix++) {
-			for (iz; iz<nzstep; iz++) {
+			for (iz; iz<(nzstep-2)/2; iz++) {
 				//
 				for (jz=0; jz<nzstep; jz++) {
 					rajz = (z[jz]-z[iz]);
@@ -375,6 +375,8 @@ double rho_si_int_t(double *rho_si_int_t_iixizjxjz, double *x, double *z){
 						//integral_simpson(double *f, int n, double dx)
 						rho_si_int_t_iixizjxjz[i*nxstep*nzstep*nxstep*nzstep+ix*nzstep*nxstep*nzstep+iz*nxstep*nzstep+jx*nzstep+jz] = 
 							2.0*x[jx]*integral_simpson(tmp_rho_si_int_t, ntmesh-1, drad);
+						rho_si_int_t_iixizjxjz[i*nxstep*nzstep*nxstep*nzstep+ix*nzstep*nxstep*nzstep+((nzstep-1)-iz)*nxstep*nzstep+jx*nzstep+jz] = 
+							rho_si_int_t_iixizjxjz[i*nxstep*nzstep*nxstep*nzstep+ix*nzstep*nxstep*nzstep+iz*nxstep*nzstep+jx*nzstep+jz];
 					}
 				}
 				//
@@ -397,11 +399,11 @@ double rho_si(double *rho, double *x, double *z, int ix, int iz, int i, double *
 	//double rho_si_int_t[ntmesh];
 	//
 	double xt,yt;
-	double drad = M_PI/(ntmesh-1); // radian
+	//double drad = M_PI/(ntmesh-1); // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
-	for (jz=0; jz<nzstep; jz++) {
-		rajz = (z[jz]-z[iz]);
+	for (jz=0; jz<(nzstep-2)/2; jz++) {
+		//rajz = (z[jz]-z[iz]);
 		for (jx=0; jx<nxstep; jx++) {
 			//for (t=0; t<ntmesh; t++) {
 			//	xt = x[jx]*std::cos(drad*double(t));
@@ -418,6 +420,8 @@ double rho_si(double *rho, double *x, double *z, int ix, int iz, int i, double *
 		//integral_simpson(double *f, int n, double dx)
 		//rho_si_int_jz[jz] = integral_simpson(rho_si_int_jx, nxstep-1, dx) + rho_si_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
 		rho_si_int_jz[jz] = integral_simpson(rho_si_int_jx, nxstep-1, dx) + rho_si_int_jx[0]*spr2;
+		rho_si_int_jz[((nzstep-1)-iz)] = rho_si_int_jz[jz];
+		
 	}
 	double rho_si_out;
 	//integral_simpson(double *f, int n, double dx)
@@ -446,7 +450,7 @@ double rho_s(double *rho, double *x, double *z, double *rho_s_ixiz, double *rho_
 	double rho_den1;
 	double rho_den2;
 	for (ix=0; ix<nxstep; ix++) {
-		for (iz=0; iz<nzstep; iz++) {
+		for (iz=0; iz<(nzstep-2)/2; iz++) {
 			rho_s0_ixiz[ix*nzstep+iz] = rho_si(rho, x, z, ix, iz, 0, rho_si_int_t_iixizjxjz);
 			rho_s1_ixiz[ix*nzstep+iz] = rho_si(rho, x, z, ix, iz, 1, rho_si_int_t_iixizjxjz);
 			rho_s2_ixiz[ix*nzstep+iz] = rho_si(rho, x, z, ix, iz, 2, rho_si_int_t_iixizjxjz);
@@ -466,6 +470,10 @@ double rho_s(double *rho, double *x, double *z, double *rho_s_ixiz, double *rho_
 			//std::cout << iz << ", " << rho_ixiz[ix*nzstep+iz] << ", " << rho_s_ixiz[ix*nzstep+iz] << ", " << rho_s0_ixiz[ix*nzstep+iz] << ", " << rho_s1_ixiz[ix*nzstep+iz] << ", " << rho_s2_ixiz[ix*nzstep+iz] << std::endl;
 			//std::cout << rho_den1 << ", " << rho_den2 << std::endl;
 		}
+		rho_s0_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s0_ixiz[ix*nzstep+iz];
+		rho_s1_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s1_ixiz[ix*nzstep+iz];
+		rho_s2_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s2_ixiz[ix*nzstep+iz];
+		rho_s_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s_ixiz[ix*nzstep+iz];
 		//std::cout << ix << ", " << rho_ixiz[ix*nzstep+iz] << ", " << rho_s_ixiz[ix*nzstep+iz] << ", " << rho_s0_ixiz[ix*nzstep+iz] << ", " << rho_s1_ixiz[ix*nzstep+iz] << ", " << rho_s2_ixiz[ix*nzstep+iz] << std::endl;
 	}
 	return 0;
@@ -1119,8 +1127,8 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 150.0){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.10;
+					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*3.0 && rho_new[ix*nzstep+iz] > 0.01){
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.1;
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1143,7 +1151,7 @@ int main(){
 				}
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
+			if ( diff <= 0.025 || (std::abs(diff/old_diff1-1.0) <= 0.025 && std::abs(old_diff1/old_diff2-1.0) <= 0.025 && j > 100) ) {
 				break;
 			}
 			//
@@ -1204,7 +1212,7 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*1.10 && rho_new[ix*nzstep+iz] > 150.0){
+					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*3.0 && rho_new[ix*nzstep+iz] > 0.01){
 						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.10;
 					}
 					// to avoid -inf or int
@@ -1228,7 +1236,7 @@ int main(){
 				}
 			}
 			diff = diff0/diff1;
-			if ( diff <= 0.005 || (std::abs(diff/old_diff1-1.0) <= 0.007 && std::abs(old_diff1/old_diff2-1.0) <= 0.007 && j > 200) ) {
+			if ( diff <= 0.025 || (std::abs(diff/old_diff1-1.0) <= 0.025 && std::abs(old_diff1/old_diff2-1.0) <= 0.025 && j > 100) ) {
 				break;
 			}
 		}
