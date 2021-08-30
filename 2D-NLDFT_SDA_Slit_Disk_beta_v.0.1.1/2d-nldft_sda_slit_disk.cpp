@@ -448,7 +448,7 @@ double rho_s(double *rho, double *x, double *z, double *rho_s_ixiz, double *rho_
 	double rho_den1;
 	double rho_den2;
 	for (ix=0; ix<nxstep; ix++) {
-		for (iz=0; iz<(nzstep-2)/2; iz++) {
+		for (iz=0; iz<nzstep; iz++) {
 			rho_s0_ixiz[ix*nzstep+iz] = rho_si(rho, x, z, ix, iz, 0, rho_si_int_t_iixizjxjz);
 			rho_s1_ixiz[ix*nzstep+iz] = rho_si(rho, x, z, ix, iz, 1, rho_si_int_t_iixizjxjz);
 			rho_s2_ixiz[ix*nzstep+iz] = rho_si(rho, x, z, ix, iz, 2, rho_si_int_t_iixizjxjz);
@@ -468,10 +468,6 @@ double rho_s(double *rho, double *x, double *z, double *rho_s_ixiz, double *rho_
 			//std::cout << iz << ", " << rho_ixiz[ix*nzstep+iz] << ", " << rho_s_ixiz[ix*nzstep+iz] << ", " << rho_s0_ixiz[ix*nzstep+iz] << ", " << rho_s1_ixiz[ix*nzstep+iz] << ", " << rho_s2_ixiz[ix*nzstep+iz] << std::endl;
 			//std::cout << rho_den1 << ", " << rho_den2 << std::endl;
 		}
-		rho_s0_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s0_ixiz[ix*nzstep+iz];
-		rho_s1_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s1_ixiz[ix*nzstep+iz];
-		rho_s2_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s2_ixiz[ix*nzstep+iz];
-		rho_s_ixiz[ix*nzstep+((nzstep-1)-iz)] = rho_s_ixiz[ix*nzstep+iz];
 		//std::cout << ix << ", " << rho_ixiz[ix*nzstep+iz] << ", " << rho_s_ixiz[ix*nzstep+iz] << ", " << rho_s0_ixiz[ix*nzstep+iz] << ", " << rho_s1_ixiz[ix*nzstep+iz] << ", " << rho_s2_ixiz[ix*nzstep+iz] << std::endl;
 	}
 	return 0;
