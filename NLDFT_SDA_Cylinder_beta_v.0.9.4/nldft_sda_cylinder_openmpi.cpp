@@ -150,7 +150,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((Dcc-sigma_ss)/0.02 + 0.5);
+		nstep = int((Dcc-sigma_ss)/0.01 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -1049,9 +1049,13 @@ MPI::Init();
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+	for (k=181; k>=0; k--){
+		rho_b = rho_b0 * rho_b_k[k];
+		// Hill Equation
+		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
+		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
+	//for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
