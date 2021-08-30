@@ -711,7 +711,6 @@ double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
 
 int main(){
 	int i,j,k;
-	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b;
@@ -777,6 +776,7 @@ int main(){
 	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
+	double diff;
 	double diff0;
 	double mixing;
 	//

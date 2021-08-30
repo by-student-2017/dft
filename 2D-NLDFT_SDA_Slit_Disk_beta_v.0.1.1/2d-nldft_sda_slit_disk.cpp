@@ -209,7 +209,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nxstep = int(num[19]);
 	if ( nxstep == 0 ) {
-		nxstep = int((D/2.0)/0.01 + 0.5);
+		nxstep = int((D/2.0)/0.02 + 0.5);
 		if ( nxstep%2 == 1 ){
 			nxstep = nxstep + 1;
 		}
@@ -1082,7 +1082,8 @@ int main(){
 	rho_si_int_t(rho_si_int_t_iixizjxjz, x, z);
 	std::cout << "rho_si_int_t calculation was finished" << std::endl;
 	//
-	double diff;
+	double old_diff;
+	double diff=1.0;
 	double diff0;
 	double mixing;
 	//
@@ -1153,23 +1154,24 @@ int main(){
 					}
 				}
 			}
+			old_diff = diff;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
-					diff = diff + 2.0*diff0;
+					diff = diff + diff0;
 					mixing = wmixing + wmixing/(0.5+diff0);
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
+			if ( (diff/old_diff*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 			//
-			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
+			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", tdiff=" << (diff/old_diff*100.0) << std::endl;
 			//for (ix=0; ix<nxstep; ix++){
-			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff1=" << diff/old_diff1 << std::endl;
+			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", tdiff=" << (diff/old_diff*100.0) << std::endl;
 			//}
 		}
 		//
@@ -1238,17 +1240,18 @@ int main(){
 					}
 				}
 			}
+			old_diff = diff;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
-					diff = diff + 2.0*diff0;
+					diff = diff + diff0;
 					mixing = wmixing + wmixing/(0.5+diff0);
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
+			if ( (diff/old_diff*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 		}

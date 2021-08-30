@@ -1137,7 +1137,6 @@ double omega(double *rho, double *r, double *fex_i, double *rho_phi_int, double 
 
 int main(){
 	int i,j,k;
-	double diff;
 	double v_gamma;
 	double press_b, press_b0, pp0;
 	double rho_b;
@@ -1202,6 +1201,8 @@ int main(){
 	double nv2_j[nstep], nv2[nstep]; // For FMT
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
+	//
+	double diff;
 	double diff0;
 	double mixing;
 	//
