@@ -1069,7 +1069,7 @@ int main(){
 	double pre_rho;
 	for (ix=0; ix<nxstep; ix++){
 		for (iz=0; iz<nzstep; iz++){
-			pre_rho = -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/1700;
+			pre_rho = rho_b0*-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/2000.0;
 			if ( pre_rho <= 0.0 ) {
 				rho[iz*nxstep+ix] = 0.0;
 			} else {
