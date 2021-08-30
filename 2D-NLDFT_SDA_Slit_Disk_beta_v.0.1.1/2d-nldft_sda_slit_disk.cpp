@@ -402,7 +402,7 @@ double rho_si(double *rho, double *x, double *z, int ix, int iz, int i, double *
 	//double drad = M_PI/(ntmesh-1); // radian
 	double spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
 	//
-	for (jz=0; jz<(nzstep-2)/2; jz++) {
+	for (jz=0; jz<nzstep; jz++) {
 		//rajz = (z[jz]-z[iz]);
 		for (jx=0; jx<nxstep; jx++) {
 			//for (t=0; t<ntmesh; t++) {
@@ -420,8 +420,6 @@ double rho_si(double *rho, double *x, double *z, int ix, int iz, int i, double *
 		//integral_simpson(double *f, int n, double dx)
 		//rho_si_int_jz[jz] = integral_simpson(rho_si_int_jx, nxstep-1, dx) + rho_si_int_jx[0]/(2.0*M_PI*x[0])*M_PI*(dx/2.0)*(dx/2.0);
 		rho_si_int_jz[jz] = integral_simpson(rho_si_int_jx, nxstep-1, dx) + rho_si_int_jx[0]*spr2;
-		rho_si_int_jz[((nzstep-1)-iz)] = rho_si_int_jz[jz];
-		
 	}
 	double rho_si_out;
 	//integral_simpson(double *f, int n, double dx)
