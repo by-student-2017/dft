@@ -288,7 +288,7 @@ double wi(double r, int i){
 	return wi_out;
 }
 
-double rho_si_int_k(double *rho_si_int_ijrj, double *r){
+double rho_si_int_k(double *r, double *rho_si_int_ijrj){
 	int i;
 	int jr;
 	int j,k;
@@ -778,7 +778,7 @@ MPI::Init();
 	std::cout << "phi_att_int calculation was finished" << std::endl;
 	//
 	double *rho_si_int_ijrj = (double *)malloc(sizeof(double)*(2*nstep*nstep+nstep*nstep+nstep));
-	rho_si_int_k(rho_si_int_ijrj, r);
+	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
 	double diff0;
@@ -952,6 +952,8 @@ MPI::Init();
 		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
+	free(phi_att_int_ij);
+	free(rho_si_int_ijrj);
 MPI::Finalize();
 	return 0;
 }
