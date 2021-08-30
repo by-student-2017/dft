@@ -825,9 +825,9 @@ int main(){
 					std::exit(1);
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
+					rho_new[i] = 1e-9;
+					rho[i] = 1e-9;
 				}
 			}
 			diff = 0.0;
@@ -896,9 +896,9 @@ int main(){
 					std::exit(1);
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
+					rho_new[i] = 1e-9;
+					rho[i] = 1e-9;
 				}
 			}
 			diff = 0.0;
