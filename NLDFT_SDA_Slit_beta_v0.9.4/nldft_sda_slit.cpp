@@ -775,7 +775,8 @@ int main(){
 	double diff0;
 	double mixing;
 	//
-	double rho_b_k[177]={7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
+	double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
+						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
 						0.004594237,0.005915211,0.007526184,0.009468211,0.011783671,0.014515526,0.017706579,0.021398421,0.025631184,0.030442237,
 						0.035865395,0.041930789,0.048663553,0.056083947,0.064206711,0.073040395,0.082588289,0.092847105,0.103808026,0.115456447,
@@ -801,8 +802,8 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=0; k<=176; k++){
-		rho_b = rho_b0 * rho_b_k[k]/nstep;
+	for (k=0; k<=181; k++){
+		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
 		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
@@ -820,6 +821,7 @@ int main(){
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
+					std::cout << "rho[i] > 1e9" << std::endl;
 					std::exit(1);
 				}
 				// to avoid -inf or int
@@ -871,7 +873,7 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=176; k>=0; k--){
+	for (k=181; k>=0; k--){
 		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
@@ -890,6 +892,7 @@ int main(){
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
+					std::cout << "rho[i] > 1e9" << std::endl;
 					std::exit(1);
 				}
 				// to avoid -inf or int
