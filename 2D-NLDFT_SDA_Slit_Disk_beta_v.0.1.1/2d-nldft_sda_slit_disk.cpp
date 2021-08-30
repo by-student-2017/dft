@@ -157,7 +157,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nzstep = int(num[2]);
 	if ( nzstep == 0 ) {
-		nzstep = int((H-sigma_ss)/0.02 + 0.5);
+		nzstep = int((H-sigma_ss)/0.01 + 0.5);
 		if ( nzstep%2 == 1 ){
 			nzstep = nzstep + 1;
 		}
@@ -209,7 +209,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nxstep = int(num[19]);
 	if ( nxstep == 0 ) {
-		nxstep = int((D/2.0)/0.02 + 0.5);
+		nxstep = int((D/2.0)/0.01 + 0.5);
 		if ( nxstep%2 == 1 ){
 			nxstep = nxstep + 1;
 		}
@@ -218,7 +218,7 @@ void read_parameters(void){
 	}
 	// ntmesh
 	if ( ntmesh == 0 ) {
-		ntmesh = int(nxstep/2.0);
+		ntmesh = int(nxstep/1.0);
 		std::cout << "autoset ntmesh = " << ntmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
@@ -1082,11 +1082,8 @@ int main(){
 	rho_si_int_t(rho_si_int_t_iixizjxjz, x, z);
 	std::cout << "rho_si_int_t calculation was finished" << std::endl;
 	//
-	double diff = 0.5;
-	double old_diff1 = 1.00;
-	double old_diff2;
-	double diff0, diff1;
-	double cdiff3 = 1.0;
+	double diff;
+	double diff0;
 	double mixing;
 	//
 	double rho_int_ix[nxstep];
@@ -1098,6 +1095,27 @@ int main(){
 	double v_cm3STP_per_g;
 	double grand_potential;
 	//
+	int j,k;
+	double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
+						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
+						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
+						0.004594237,0.005915211,0.007526184,0.009468211,0.011783671,0.014515526,0.017706579,0.021398421,0.025631184,0.030442237,
+						0.035865395,0.041930789,0.048663553,0.056083947,0.064206711,0.073040395,0.082588289,0.092847105,0.103808026,0.115456447,
+						0.127772237,0.140730263,0.154301316,0.168452632,0.183144737,0.198336842,0.213988158,0.230053947,0.246484211,0.263235526,
+						0.280259211,0.297506579,0.314930263,0.332486842,0.350127632,0.367810526,0.385494737,0.403138158,0.420705263,0.438159211,
+						0.455467105,0.472598684,0.489525000,0.506219737,0.522661842,0.538827631,0.554700000,0.570261842,0.585498684,0.600400000,
+						0.614953947,0.629153947,0.642990789,0.656461842,0.669563158,0.682292105,0.694648684,0.706632895,0.718247368,0.729494737,
+						0.740377632,0.750900000,0.761068421,0.770886842,0.780363158,0.789501316,0.798311842,0.806798684,0.814971053,0.822838158,
+						0.830405263,0.837682895,0.844677632,0.851397368,0.857852632,0.864050000,0.869998684,0.875705263,0.881178947,0.886427632,
+						0.891459211,0.896281579,0.900901316,0.905326316,0.909563158,0.913619737,0.917503947,0.921219737,0.924775000,0.928177632,
+						0.931430263,0.934542105,0.937517105,0.940361842,0.943080263,0.945678947,0.948161842,0.950534211,0.952801316,0.954965789,
+						0.957034211,0.959009211,0.960896053,0.962697368,0.964417105,0.966059211,0.967626316,0.969122368,0.970550000,0.971913158,
+						0.973214474,0.974455263,0.975640789,0.976771053,0.977848684,0.978877632,0.979859211,0.980796053,0.981689474,0.982542105,
+						0.983353947,0.984128947,0.984868421,0.985573684,0.986247368,0.986888158,0.987500000,0.988082895,0.988639474,0.989169737,
+						0.989676316,0.990157895,0.990618421,0.991056579,0.991475000,0.991873684,0.992253947,0.992615789,0.992961842,0.993290789,
+						0.993603947,0.993903947,0.994189474,0.994461842,0.994721053,0.994968421,0.995203947,0.995428947,0.995642105,0.995846053,
+						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
+	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
@@ -1105,10 +1123,13 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	int j,k;
-	for (k=0; k<100; k++){
-		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+	for (k=0; k<=181; k++){
+		rho_b = rho_b0 * rho_b_k[k];
+		// Hill Equation
+		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
+		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
+	//for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
@@ -1121,8 +1142,9 @@ int main(){
 					//
 					// overflow about std::exp(730)
 					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > rho[ix*nzstep+iz]*3.0 && rho_new[ix*nzstep+iz] > 0.01){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz]*1.1;
+					if (rho_new[ix*nzstep+iz] > 1e9){
+						std::cout << "rho_new[ix*nzstep+iz] > 1e9" << std::endl;
+						std::exit(1);
 					}
 					// to avoid -inf or int
 					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
@@ -1131,21 +1153,17 @@ int main(){
 					}
 				}
 			}
-			old_diff2 = old_diff1;
-			old_diff1 = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
+			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
-					diff1 = diff1 + rho[ix*nzstep+iz];
-					mixing = 0.005 + (wmixing - 0.005)*(1.25/(0.5+diff))*(1.0/(1.0+double(j)/10.0));
+					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
+					diff = diff + 2.0*diff0;
+					mixing = wmixing + wmixing/(0.5+diff0);
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.025 || (std::abs(diff/old_diff1-1.0) <= 0.025 && std::abs(old_diff1/old_diff2-1.0) <= 0.025 && j > 100) ) {
+			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 			//
@@ -1191,9 +1209,13 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+	for (k=181; k>=0; k--){
+		rho_b = rho_b0 * rho_b_k[k];
+		// Hill Equation
+		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
+		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
+	//for (k=0; k<100; k++){
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
@@ -1216,21 +1238,17 @@ int main(){
 					}
 				}
 			}
-			old_diff2 = old_diff1;
-			old_diff1 = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
+			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					diff0 = diff0 + std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
-					diff1 = diff1 + rho[ix*nzstep+iz];
-					mixing = 0.005 + (wmixing - 0.005)*(1.25/(0.5+diff))*(1.0/(1.0+double(j)/10.0));
+					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
+					diff = diff + 2.0*diff0;
+					mixing = wmixing + wmixing/(0.5+diff0);
 					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.025 || (std::abs(diff/old_diff1-1.0) <= 0.025 && std::abs(old_diff1/old_diff2-1.0) <= 0.025 && j > 100) ) {
+			if ( (diff/(nxstep*nzstep)*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 		}
@@ -1264,5 +1282,14 @@ int main(){
 		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
+	free(rho_s_ixiz);
+	free(rho_s0_ixiz);
+	free(rho_s1_ixiz);
+	free(rho_s2_ixiz);
+	free(phi_att_ff_int_ixizjxjz);
+	free(rhos_phi_sf_int_ixiz);
+	free(rho_dfex_int_ixiz);
+	free(rho_phi_ff_int_ixiz);
+	free(rho_si_int_t_iixizjxjz);
 	return 0;
 }
