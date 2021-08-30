@@ -7,7 +7,7 @@
 06_sigma_ff=0.3549
 07_d_hs=0.3549
 08_rc=0.0
-09_nrmesh=20
+09_nrmesh=40
 10_epsilon_sf=53.22
 11_sigma_sf=0.3494
 12_delta=0.335
