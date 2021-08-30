@@ -1046,15 +1046,6 @@ int main(){
 		rho_b0 = Maxwell_construction();
 	}
 	
-	//std::cout << rho_b0 << std::endl;
-	// initialization
-	for (ix=0; ix<nxstep; ix++){
-		for (iz=0; iz<nzstep; iz++){
-			rho[iz*nxstep+ix] = rho_b0/(nzstep*dz)/(nxstep*dx);
-			rho_new[ix*nzstep+iz] = 0.0;
-		}
-	}
-	
 	std::cout << "--------------------------------------------------" << std::endl;
 	//double rho[nxstep][nzstep]; // [(nxstep+1)*nzstep)], a[x][z]= a[x*n+z] for a[][n]
 	double *rho_s_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep)); // rho_s_jxjz in xi()
@@ -1069,9 +1060,24 @@ int main(){
 	std::cout << "phi_att_ff_int calculation was finished" << std::endl;
 	//
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	double *rhos_phi_sf_int_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
+	double *rhos_phi_sf_int_ixiz  = (double *)malloc(sizeof(double)*(nxstep*nzstep+nzstep));
 	phi_att_sf_int(x, z, rhos_phi_sf_int_ixiz); // calculate integral phi_att_sf at r[i] -> rhos * phi_att_sf
 	std::cout << "phi_att_sf_int calculation was finished" << std::endl;
+	//
+	//std::cout << rho_b0 << std::endl;
+	// initialization
+	double pre_rho;
+	for (ix=0; ix<nxstep; ix++){
+		for (iz=0; iz<nzstep; iz++){
+			pre_rho = -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/1700;
+			if ( pre_rho <= 0.0 ) {
+				rho[iz*nxstep+ix] = 0.0;
+			} else {
+				rho[iz*nxstep+ix] = pre_rho;
+			}
+			rho_new[ix*nzstep+iz] = 0.0;
+		}
+	}
 	//
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
 	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*((nxstep+1)*nzstep));
@@ -1082,7 +1088,7 @@ int main(){
 	rho_si_int_t(rho_si_int_t_iixizjxjz, x, z);
 	std::cout << "rho_si_int_t calculation was finished" << std::endl;
 	//
-	double old_diff;
+	double trho;
 	double diff=1.0;
 	double diff0;
 	double mixing;
@@ -1154,10 +1160,11 @@ int main(){
 					}
 				}
 			}
-			old_diff = diff;
+			trho = 0.0;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
+					trho = trho + rho[ix*nzstep+iz];
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff = diff + diff0;
 					mixing = wmixing + wmixing/(0.5+diff0);
@@ -1165,13 +1172,13 @@ int main(){
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/old_diff*100.0) < 5.0 && j >= 100) {
+			if ( (diff/trho*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 			//
-			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", tdiff=" << (diff/old_diff*100.0) << std::endl;
+			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", trho=" << trho << std::endl;
 			//for (ix=0; ix<nxstep; ix++){
-			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", tdiff=" << (diff/old_diff*100.0) << std::endl;
+			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", tdiff=" << (diff/(nxstep*nzstep/2)*100.0) << std::endl;
 			//}
 		}
 		//
@@ -1240,10 +1247,11 @@ int main(){
 					}
 				}
 			}
-			old_diff = diff;
+			trho = 0.0;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
+					trho = trho + rho[ix*nzstep+iz];
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff = diff + diff0;
 					mixing = wmixing + wmixing/(0.5+diff0);
@@ -1251,7 +1259,7 @@ int main(){
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/old_diff*100.0) < 5.0 && j >= 100) {
+			if ( (diff/trho*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 		}
