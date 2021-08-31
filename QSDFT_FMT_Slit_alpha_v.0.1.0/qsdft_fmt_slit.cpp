@@ -333,7 +333,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-(2.0*ze+sigma_sf)); // pore width [nm]
-	dr = (H-2.0*h0)/double(nstep-1);
+	dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
@@ -635,8 +635,82 @@ double mu_b(double rho_b){
 //	return drhos_per_drho_out;
 //}
 
+double ni_wall(double *r, double *n0_wall_i, double *n1_wall_i, double *n2_wall_i, double *n3_wall_i, double *nv1_wall_i, double *nv2_wall_i) {
+	//
+	int i;
+	int w;
+	double rai;
+	double xs, xs2;
+	double n0, n1, n2, n3, nv1, nv2;
+	//
+	int nwstep = 500;
+	double dw = (ze+sigma_sf/2.0)/nwstep;
+	//
+	double n0_wall_w[nwstep];
+	double n1_wall_w[nwstep];
+	double n2_wall_w[nwstep];
+	double n3_wall_w[nwstep];
+	double nv1_wall_w[nwstep];
+	double nv2_wall_w[nwstep];
+	//
+	// under
+	for (i=0; i<nstep; i++) {
+		for (w=0; w<nwstep; w++) {
+			rai = (dw*double(w)-r[i]);
+			//
+			xs2 = (Ris*Ris-rai*rai);
+			if ( xs2 >= 0.0 ){
+				xs = std::sqrt(xs2);
+			} else{
+				xs = 0.0;
+			}
+			//
+			n0_wall_w[w] = rho_ssq(dw*double(w))/(2.0*Ris*Ris)*xs;
+			n1_wall_w[w] = rho_ssq(dw*double(w))/(2.0*Ris)*xs;
+			n2_wall_w[w] = rho_ssq(dw*double(w))*(2.0*M_PI*xs);
+			n3_wall_w[w] = rho_ssq(dw*double(w))*(M_PI*xs*xs);
+			nv1_wall_w[w] = rho_ssq(dw*double(w))/(2.0*Ris)*(rai/Ris)*xs;
+			nv2_wall_w[w] = rho_ssq(dw*double(w))*(rai/Ris)*(2.0*M_PI*xs);
+		}
+		n0_wall_i[i] = integral_simpson(n0_wall_w, nwstep-1, dw);
+		n1_wall_i[i] = integral_simpson(n1_wall_w, nwstep-1, dw);
+		n2_wall_i[i] = integral_simpson(n2_wall_w, nwstep-1, dw);
+		n3_wall_i[i] = integral_simpson(n3_wall_w, nwstep-1, dw);
+		nv1_wall_i[i] = integral_simpson(nv1_wall_w, nwstep-1, dw);
+		nv2_wall_i[i] = integral_simpson(nv2_wall_w, nwstep-1, dw);
+	}
+	// top
+	for (i=0; i<nstep; i++) {
+		for (w=0; w<nwstep; w++) {
+			rai = ((H-dw*double(w))-r[i]);
+			//
+			xs2 = (Ris*Ris-rai*rai);
+			if ( xs2 >= 0.0 ){
+				xs = std::sqrt(xs2);
+			} else{
+				xs = 0.0;
+			}
+			//
+			n0_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris*Ris)*xs;
+			n1_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris)*xs;
+			n2_wall_w[w] = rho_ssq(H-dw*double(w))*(2.0*M_PI*xs);
+			n3_wall_w[w] = rho_ssq(H-dw*double(w))*(M_PI*xs*xs);
+			nv1_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris)*(rai/Ris)*xs;
+			nv2_wall_w[w] = rho_ssq(H-dw*double(w))*(rai/Ris)*(2.0*M_PI*xs);
+		}
+		n0_wall_i[i] = n0_wall_i[i] + integral_simpson(n0_wall_w, nwstep-1, dw);
+		n1_wall_i[i] = n1_wall_i[i] + integral_simpson(n1_wall_w, nwstep-1, dw);
+		n2_wall_i[i] = n2_wall_i[i] + integral_simpson(n2_wall_w, nwstep-1, dw);
+		n3_wall_i[i] = n3_wall_i[i] + integral_simpson(n3_wall_w, nwstep-1, dw);
+		nv1_wall_i[i] = nv1_wall_i[i] + integral_simpson(nv1_wall_w, nwstep-1, dw);
+		nv2_wall_i[i] = nv2_wall_i[i] + integral_simpson(nv2_wall_w, nwstep-1, dw);
+	}
+	return 0;
+}
+
 double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_j, double *n3_j, double *nv1_j, double *nv2_j,
-		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2){
+		  double *n0, double *n1, double *n2, double *n3, double *nv1, double *nv2,
+		  double *n0_wall_i, double *n1_wall_i, double *n2_wall_i, double *n3_wall_i, double *nv1_wall_i, double *nv2_wall_i){
 	int j;
 	double raj;
 	double xf, xs, xf2, xs2;
@@ -705,57 +779,58 @@ double ni(double *rho, double *r, int i, double *n0_j, double *n1_j, double *n2_
 		//std::cout << i << ", " << j << ", " << rho[j] << ", " << n0_j[j] << ", " << n1_j[j] << ", " << n2_j[j] << ", " << n3_j[j] << ", " << nv1_j[j] << ", " << nv2_j[j] << std::endl;
 	}
     //integral_trapezoidal(double *f, int n, double dx)
-	//n0[i] = integral_trapezoidal(n0_j, nstep-1, dr);
-	//n1[i] = integral_trapezoidal(n1_j, nstep-1, dr);
-	//n2[i] = integral_trapezoidal(n2_j, nstep-1, dr);
-	//n3[i] = integral_trapezoidal(n3_j, nstep-1, dr);
-	//nv1[i] = integral_trapezoidal(nv1_j, nstep-1, dr);
-	//nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr);
+	//n0[i] = integral_trapezoidal(n0_j, nstep-1, dr) + n0_wall_i[i];
+	//n1[i] = integral_trapezoidal(n1_j, nstep-1, dr) + n1_wall_i[i];
+	//n2[i] = integral_trapezoidal(n2_j, nstep-1, dr) + n2_wall_i[i];
+	//n3[i] = integral_trapezoidal(n3_j, nstep-1, dr) + n3_wall_i[i];
+	//nv1[i] = integral_trapezoidal(nv1_j, nstep-1, dr) + nv1_wall_i[i];
+	//nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr) + nv2_wall_i[i];
 	//
 	//integral_simpson(double *f, int n, double dx)
-	n0[i] = integral_simpson(n0_j, nstep-1, dr);
-	n1[i] = integral_simpson(n1_j, nstep-1, dr);
-	n2[i] = integral_simpson(n2_j, nstep-1, dr);
-	n3[i] = integral_simpson(n3_j, nstep-1, dr);
-	nv1[i] = integral_simpson(nv1_j, nstep-1, dr);
-	nv2[i] = integral_simpson(nv2_j, nstep-1, dr);
+	n0[i] = integral_simpson(n0_j, nstep-1, dr) + n0_wall_i[i];
+	n1[i] = integral_simpson(n1_j, nstep-1, dr) + n1_wall_i[i];
+	n2[i] = integral_simpson(n2_j, nstep-1, dr) + n2_wall_i[i];
+	n3[i] = integral_simpson(n3_j, nstep-1, dr) + n3_wall_i[i];
+	nv1[i] = integral_simpson(nv1_j, nstep-1, dr) + nv1_wall_i[i];
+	nv2[i] = integral_simpson(nv2_j, nstep-1, dr) + nv2_wall_i[i];
 	//
-	double in2, inv2;
-	double rai;
-	rai = (r[i]-r[0]);
-	if ( rai <= Ris ) {
-		// integral sin(x) dx = -cos(x) + C
-		in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
-		xs = std::sqrt(Ris*Ris-rai*rai);
-		n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
-		n1[i] = n1[i] + in2/(4.0*M_PI*Ris);
-		n2[i] = n2[i] + in2;
-		// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C
-		// sin(2x) = 2*sin(x)*cos(x)
-		n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.25*2.0*(xs/Ris)*(rai/Ris))*Ris;
-		// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
-		// cos(2x) = 1 - 2*sin(x)*sin(x)
-		inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
-		nv1[i] = nv1[i] - inv2/(4.0*M_PI*Ris);
-		nv2[i] = nv2[i] - inv2;
-	}
-	rai = (r[nstep-1]-r[i]);
-	if ( rai <= Ris ) {
-		// integral sin(x) dx = -cos(x) + C
-		in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
-		xs = std::sqrt(Ris*Ris-rai*rai);
-		n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
-		n1[i] = n1[i] + in2/(4.0*M_PI*Ris);
-		n2[i] = n2[i] + in2;
-		// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C = (1/2)*x - (1/2)*sin(x)*cos(x) + C
-		// sin(2x) = 2*sin(x)*cos(x)
-		n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.5*(xs/Ris)*(rai/Ris))*Ris;
-		// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
-		// cos(2x) = 1 - 2*sin(x)*sin(x)
-		inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
-		nv1[i] = nv1[i] + inv2/(4.0*M_PI*Ris);
-		nv2[i] = nv2[i] + inv2;
-	}
+	//double in2, inv2;
+	//double rai;
+	//rai = (r[i]-r[0]);
+	//if ( rai <= Ris ) {
+	//	// integral sin(x) dx = -cos(x) + C
+	//	in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
+	//	xs = std::sqrt(Ris*Ris-rai*rai);
+	//	n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
+	//	n1[i] = n1[i] + in2/(4.0*M_PI*Ris);
+	//	n2[i] = n2[i] + in2;
+	//	// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C
+	//	// sin(2x) = 2*sin(x)*cos(x)
+	//	n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.25*2.0*(xs/Ris)*(rai/Ris))*Ris;
+	//	// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
+	//	// cos(2x) = 1 - 2*sin(x)*sin(x)
+	//	inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
+	//	nv1[i] = nv1[i] - inv2/(4.0*M_PI*Ris);
+	//	nv2[i] = nv2[i] - inv2;
+	//}
+	//rai = (r[nstep-1]-r[i]);
+	//if ( rai <= Ris ) {
+	//	// integral sin(x) dx = -cos(x) + C
+	//	in2 = rho_ss*(2.0*M_PI*Ris)*-(rai/Ris-1.0)*Ris;
+	//	xs = std::sqrt(Ris*Ris-rai*rai);
+	//	n0[i] = n0[i] + in2/(4.0*M_PI*Ris*Ris);
+	//	n1[i] = n1[i] + in2/(4.0*M_PI*Ris);
+	//	n2[i] = n2[i] + in2;
+	//	// integral sin(x)*sin(x) dx = (1/2)*x - (1/4)*sin(2x) + C = (1/2)*x - (1/2)*sin(x)*cos(x) + C
+	//	// sin(2x) = 2*sin(x)*cos(x)
+	//	n3[i] = n3[i] + rho_ss*(M_PI*Ris*Ris)*(0.5*std::asin(xs/Ris) - 0.5*(xs/Ris)*(rai/Ris))*Ris;
+	//	// integral sin(x)*cos(x) dx = integral sin(2x)/2 dx = -(1/4)*cos(2x) + C
+	//	// cos(2x) = 1 - 2*sin(x)*sin(x)
+	//	inv2 = rho_ss*(2.0*M_PI*Ris)*(-0.25*(1.0-2.0*(xs/Ris)*(xs/Ris))+0.25)*Ris;
+	//	nv1[i] = nv1[i] + inv2/(4.0*M_PI*Ris);
+	//	nv2[i] = nv2[i] + inv2;
+	//}
+	//
 	// debug
 	//std::cout << "-------------------------------------------------------------------------------------------------" << std::endl;
 	//std::cout << "i=" << i << ", r[i]=" << r[i] << ", raj=" << raj << ", xs=" << xs << std::endl;
@@ -1307,7 +1382,7 @@ int main(){
 	double rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		r[i] = h0 + dr*double(i);
+		r[i] = (2.0*ze+sigma_sf)/2.0 + dr*double(i);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1353,6 +1428,14 @@ int main(){
 	double rhos_phi_sf_int_i[nstep];
 	phi_att_sf_int(r, rhos_phi_sf_int_i); // calculate integral phi_att_sf at r[i] -> rhos * phi_att_sf
 	//
+	double n0_wall_i[nstep];
+	double n1_wall_i[nstep];
+	double n2_wall_i[nstep];
+	double n3_wall_i[nstep];
+	double nv1_wall_i[nstep];
+	double nv2_wall_i[nstep];
+	ni_wall(r, n0_wall_i, n1_wall_i, n2_wall_i, n3_wall_i, nv1_wall_i, nv2_wall_i);
+	//
 	double n0_j[nstep], n0[nstep];
 	double n1_j[nstep], n1[nstep];
 	double n2_j[nstep], n2[nstep];
@@ -1373,7 +1456,7 @@ int main(){
 		//double check_data;
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
-				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
+				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2, n0_wall_i, n1_wall_i, n2_wall_i, n3_wall_i, nv1_wall_i, nv2_wall_i);
 			}
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
@@ -1382,7 +1465,8 @@ int main(){
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
-					rho_new[i] = 1e9;
+					std::cout << "rho[i] > 1e9" << std::endl;
+					std::exit(1);
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
@@ -1390,23 +1474,21 @@ int main(){
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
-			for (i=0; i<nstep; i++){
-				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
-				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+diff);
+			diff = 0.0;
+			for (i=0; i<=(nstep-2)/2; i++){
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 		}
 		//for (i=0; i<nstep; i++){
-		//	std::cout << "i=" << i << ", r=" << r[i] << ", rho_new=" << rho_new[i] << ", rho=" << rho[i] << ", mixing=" << mixing << ", diff=" << diff << ", diff/old_diff=" << diff/old_diff << std::endl;
+		//	std::cout << "i=" << i << ", r=" << r[i] << ", rho_new=" << rho_new[i] << ", rho=" << rho[i] << ", mixing=" << mixing << ", (diff/nstep*100.0)=" << (diff/nstep*100.0) << std::endl;
 		//}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
@@ -1454,7 +1536,7 @@ int main(){
 		//double check_data;
 		for (j=0; j<cycle_max; j++){
 			for (i=0; i<nstep; i++){
-				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2);
+				ni(rho, r, i, n0_j, n1_j, n2_j, n3_j, nv1_j, nv2_j, n0, n1, n2, n3, nv1, nv2, n0_wall_i, n1_wall_i, n2_wall_i, n3_wall_i, nv1_wall_i, nv2_wall_i);
 			}
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
@@ -1463,7 +1545,8 @@ int main(){
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
-					rho_new[i] = 1e9;
+					std::cout << "rho[i] > 1e9" << std::endl;
+					std::exit(1);
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
@@ -1471,18 +1554,16 @@ int main(){
 					rho[i] = 1e-9;
 				}
 			}
-			old_diff = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
-			for (i=0; i<nstep; i++){
-				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
-				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+diff);
+			diff = 0.0;
+			for (i=0; i<=(nstep-2)/2; i++){
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + 2.0*diff0;
+				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
 			}
 		}
