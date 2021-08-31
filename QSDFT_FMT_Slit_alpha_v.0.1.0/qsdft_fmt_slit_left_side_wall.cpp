@@ -332,8 +332,10 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	w_pw = (H-(2.0*ze+sigma_sf)); // pore width [nm]
-	dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
+	//w_pw = (H-(2.0*ze+sigma_sf)); // pore width [nm]
+	//dr = (H-(2.0*ze+sigma_sf))/double(nstep-1);
+	w_pw = (H-(ze+sigma_sf/2.0)); // pore width [nm]
+	dr = (H-(ze+sigma_sf/2.0))/double(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
@@ -680,31 +682,31 @@ double ni_wall(double *r, double *n0_wall_i, double *n1_wall_i, double *n2_wall_
 		nv2_wall_i[i] = integral_simpson(nv2_wall_w, nwstep-1, dw);
 	}
 	// right
-	for (i=0; i<nstep; i++) {
-		for (w=0; w<nwstep; w++) {
-			rai = ((H-dw*double(w))-r[i]);
-			//
-			xs2 = (Ris*Ris-rai*rai);
-			if ( xs2 >= 0.0 ){
-				xs = std::sqrt(xs2);
-			} else{
-				xs = 0.0;
-			}
-			//
-			n0_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris*Ris)*xs;
-			n1_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris)*xs;
-			n2_wall_w[w] = rho_ssq(H-dw*double(w))*(2.0*M_PI*xs);
-			n3_wall_w[w] = rho_ssq(H-dw*double(w))*(M_PI*xs*xs);
-			nv1_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris)*(rai/Ris)*xs;
-			nv2_wall_w[w] = rho_ssq(H-dw*double(w))*(rai/Ris)*(2.0*M_PI*xs);
-		}
-		n0_wall_i[i] = n0_wall_i[i] + integral_simpson(n0_wall_w, nwstep-1, dw);
-		n1_wall_i[i] = n1_wall_i[i] + integral_simpson(n1_wall_w, nwstep-1, dw);
-		n2_wall_i[i] = n2_wall_i[i] + integral_simpson(n2_wall_w, nwstep-1, dw);
-		n3_wall_i[i] = n3_wall_i[i] + integral_simpson(n3_wall_w, nwstep-1, dw);
-		nv1_wall_i[i] = nv1_wall_i[i] + integral_simpson(nv1_wall_w, nwstep-1, dw);
-		nv2_wall_i[i] = nv2_wall_i[i] + integral_simpson(nv2_wall_w, nwstep-1, dw);
-	}
+	//for (i=0; i<nstep; i++) {
+	//	for (w=0; w<nwstep; w++) {
+	//		rai = ((H-dw*double(w))-r[i]);
+	//		//
+	//		xs2 = (Ris*Ris-rai*rai);
+	//		if ( xs2 >= 0.0 ){
+	//			xs = std::sqrt(xs2);
+	//		} else{
+	//			xs = 0.0;
+	//		}
+	//		//
+	//		n0_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris*Ris)*xs;
+	//		n1_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris)*xs;
+	//		n2_wall_w[w] = rho_ssq(H-dw*double(w))*(2.0*M_PI*xs);
+	//		n3_wall_w[w] = rho_ssq(H-dw*double(w))*(M_PI*xs*xs);
+	//		nv1_wall_w[w] = rho_ssq(H-dw*double(w))/(2.0*Ris)*(rai/Ris)*xs;
+	//		nv2_wall_w[w] = rho_ssq(H-dw*double(w))*(rai/Ris)*(2.0*M_PI*xs);
+	//	}
+	//	n0_wall_i[i] = n0_wall_i[i] + integral_simpson(n0_wall_w, nwstep-1, dw);
+	//	n1_wall_i[i] = n1_wall_i[i] + integral_simpson(n1_wall_w, nwstep-1, dw);
+	//	n2_wall_i[i] = n2_wall_i[i] + integral_simpson(n2_wall_w, nwstep-1, dw);
+	//	n3_wall_i[i] = n3_wall_i[i] + integral_simpson(n3_wall_w, nwstep-1, dw);
+	//	nv1_wall_i[i] = nv1_wall_i[i] + integral_simpson(nv1_wall_w, nwstep-1, dw);
+	//	nv2_wall_i[i] = nv2_wall_i[i] + integral_simpson(nv2_wall_w, nwstep-1, dw);
+	//}
 	return 0;
 }
 
@@ -1120,9 +1122,9 @@ double phi_att_ff_int(double *r, double *phi_att_ff_int_ij){
 double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 	int i,j,k;
 	double ra_left;
-	double ra_right;
+	//double ra_right;
 	double raj_left;
-	double raj_right;
+	//double raj_right;
 	double rak;
 	//dd = drc = rc/double(nrmesh-1);
 	//
@@ -1142,17 +1144,18 @@ double phi_att_sf_int(double *r, double *rhos_phi_sf_int_i){
 		//
 		for (j=0; j<sfmesh; j++) {
 			raj_left  = (double(j)*dsf - r[i]);
-			raj_right = ((H-double(j)*dsf) - r[i]);
+			//raj_right = ((H-double(j)*dsf) - r[i]);
 			for (k=1; k<sfnrmesh; k++) {
 				rak = drcsf*double(k);
 				//
 				ra_left  = rak*rak + raj_left*raj_left;
 				ra_left  = std::sqrt(ra_left);
 				//
-				ra_right = rak*rak + raj_right*raj_right;
-				ra_right = std::sqrt(ra_right);
+				//ra_right = rak*rak + raj_right*raj_right;
+				//ra_right = std::sqrt(ra_right);
 				//
-				phi_sf_int_k[k]  = ( phi_att_sf(ra_left) + phi_att_sf(ra_right) ) * (tpi*rak);
+				//phi_sf_int_k[k]  = ( phi_att_sf(ra_left) + phi_att_sf(ra_right) ) * (tpi*rak);
+				phi_sf_int_k[k]  = ( phi_att_sf(ra_left) ) * (tpi*rak);
 			}
 			rhos_phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_simpson(phi_sf_int_k, sfnrmesh-1, drcsf);
 			//rhos_phi_sf_int_j[j] = rho_ssq(double(j)*dsf)*integral_trapezoidal(phi_sf_int_k, sfnrmesh-1, drcsf);
@@ -1382,7 +1385,8 @@ int main(){
 	double rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		r[i] = (2.0*ze+sigma_sf)/2.0 + dr*double(i);
+		//r[i] = (2.0*ze+sigma_sf)/2.0 + dr*double(i);
+		r[i] = ze+sigma_sf/2.0 + dr*double(i);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1475,13 +1479,14 @@ int main(){
 				}
 			}
 			diff = 0.0;
+			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
-				diff = diff + 2.0*diff0;
+				diff = diff + diff0;
 				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
-				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
@@ -1555,13 +1560,14 @@ int main(){
 				}
 			}
 			diff = 0.0;
-			for (i=0; i<=(nstep-2)/2; i++){
+			//for (i=0; i<=(nstep-2)/2; i++){
+			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
-				diff = diff + 2.0*diff0;
+				diff = diff + diff0;
 				mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
-				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
+				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
 				break;
