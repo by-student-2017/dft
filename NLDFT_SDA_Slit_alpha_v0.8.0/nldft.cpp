@@ -182,9 +182,9 @@ void read_parameters(void){
 }
 
 double integral_simpson(double *f, int n, double dx){
-	if( (n+1)%2 == 1 ){
-		std::cout << "Error, plase change number of data to even" << std::endl;
-	}
+	//if( (n+1)%2 == 1 ){
+	//	std::cout << "Error, plase change number of data to even" << std::endl;
+	//}
 	double sum;
 	sum = f[0] + f[n];
 	int i;
