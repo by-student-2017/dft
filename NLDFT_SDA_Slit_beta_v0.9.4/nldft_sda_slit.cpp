@@ -165,7 +165,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nrmesh = int(num[9]);
 	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.08 + 0.5);
+		nrmesh = int(rc/0.04 + 0.5);
 		if ( nrmesh%2 == 1 ){
 			nrmesh = nrmesh + 1;
 		}
