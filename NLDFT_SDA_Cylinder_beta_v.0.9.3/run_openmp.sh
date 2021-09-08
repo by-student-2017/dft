@@ -7,7 +7,7 @@ items=( 0.40 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
 )
 
 if [ ! -e nldft_sda_cylinder_openmp.exe ]; then
-	c++ -O2 nldft_sda_cylinder_openmp.cpp -fopenmp -o nldft_sda_cylinder_openmp.exe
+	c++ nldft_sda_cylinder_openmp.cpp -fopenmp -o nldft_sda_cylinder_openmp.exe
 fi
 
 if [ ! -d results ]; then

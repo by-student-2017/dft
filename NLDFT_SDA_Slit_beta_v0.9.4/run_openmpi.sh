@@ -7,7 +7,7 @@ OMP_NUM_THREADS=1
 #)
 
 if [ ! -e nldft_sda_slit_openmpi.exe ]; then
-	mpic++ -O2 nldft_sda_slit_openmpi.cpp -o nldft_sda_slit_openmpi.exe
+	mpic++ nldft_sda_slit_openmpi.cpp -o nldft_sda_slit_openmpi.exe
 fi
 
 if [ ! -d results ]; then

@@ -7,7 +7,7 @@ OMP_NUM_THREADS=$1
 #)
 
 if [ ! -e nldft_sda_slit_openmp.exe ]; then
-	c++ -O2 nldft_sda_slit_openmp.cpp -fopenmp -o nldft_sda_slit_openmp.exe
+	c++ nldft_sda_slit_openmp.cpp -fopenmp -o nldft_sda_slit_openmp.exe
 fi
 
 if [ ! -d results ]; then

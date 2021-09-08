@@ -5,7 +5,7 @@ items=( 0.34 0.38 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
 )
 
 if [ ! -e nldft_sda_slit.exe ]; then
-	c++ -O2 nldft_sda_slit.cpp -o nldft_sda_slit.exe
+	c++ nldft_sda_slit.cpp -o nldft_sda_slit.exe
 fi
 
 if [ ! -d results ]; then

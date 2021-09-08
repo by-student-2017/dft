@@ -5,7 +5,7 @@
 #)
 
 if [ ! -e nldft_sda_slit.exe ]; then
-	c++ -O2 nldft_sda_slit.cpp -o nldft_sda_slit.exe
+	c++ nldft_sda_slit.cpp -o nldft_sda_slit.exe
 fi
 
 if [ ! -d results ]; then

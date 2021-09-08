@@ -7,7 +7,7 @@ items=( 0.40 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
 )
 
 if [ ! -e nldft_sda_cylinder_openmpi.exe ]; then
-	mpic++ -O2 nldft_sda_cylinder_openmpi.cpp -o nldft_sda_cylinder_openmpi.exe
+	mpic++ nldft_sda_cylinder_openmpi.cpp -o nldft_sda_cylinder_openmpi.exe
 fi
 
 if [ ! -d results ]; then
