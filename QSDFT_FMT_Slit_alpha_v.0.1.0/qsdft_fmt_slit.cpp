@@ -1464,9 +1464,10 @@ int main(){
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					std::cout << "rho[i] > 1e9" << std::endl;
-					std::exit(1);
+				if (rho_new[i] > 1e6){
+					rho_new[i] = rho[i] * 2.0;
+					//std::cout << "rho[i] > 1e6" << std::endl;
+					//std::exit(1);
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
@@ -1544,9 +1545,10 @@ int main(){
 				//
 				// overflow about std::exp(730)
 				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					std::cout << "rho[i] > 1e9" << std::endl;
-					std::exit(1);
+				if (rho_new[i] > 1e6){
+					rho_new[i] = rho[i] * 2.0;
+					//std::cout << "rho[i] > 1e6" << std::endl;
+					//std::exit(1);
 				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
