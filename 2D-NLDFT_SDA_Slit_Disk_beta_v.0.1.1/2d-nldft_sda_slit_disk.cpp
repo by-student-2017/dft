@@ -1150,14 +1150,14 @@ int main(){
 					// overflow about std::exp(730)
 					// to avoid overflow
 					if (rho_new[ix*nzstep+iz] > 1e6){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] * 2.0;
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] * 10.0;
 						//std::cout << "rho_new[ix*nzstep+iz] > 1e6" << std::endl;
 						//std::exit(1);
 					}
 					// to avoid -inf or int
-					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
-						rho_new[ix*nzstep+iz] = 1e-9;
-						rho[ix*nzstep+iz] = 1e-9;
+					if (rho_new[ix*nzstep+iz] < 1e-6 && rho[ix*nzstep+iz] < 1e-6){
+						rho_new[ix*nzstep+iz] = 1e-6;
+						rho[ix*nzstep+iz] = 1e-6;
 					}
 				}
 			}
@@ -1173,7 +1173,7 @@ int main(){
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/trho*100.0) < 5.0 && j >= 100) {
+			if ( diff/trho < 0.005 && j >= 100) {
 				break;
 			}
 			//
@@ -1239,14 +1239,14 @@ int main(){
 					// overflow about std::exp(730)
 					// to avoid overflow
 					if (rho_new[ix*nzstep+iz] > 1e6){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] * 2.0;
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] * 10.0;
 						//std::cout << "rho_new[ix*nzstep+iz] > 1e6" << std::endl;
 						//std::exit(1);
 					}
 					// to avoid -inf or int
-					if (rho_new[ix*nzstep+iz] < 1e-9 && rho[ix*nzstep+iz] < 1e-9){
-						rho_new[ix*nzstep+iz] = 1e-9;
-						rho[ix*nzstep+iz] = 1e-9;
+					if (rho_new[ix*nzstep+iz] < 1e-6 && rho[ix*nzstep+iz] < 1e-6){
+						rho_new[ix*nzstep+iz] = 1e-6;
+						rho[ix*nzstep+iz] = 1e-6;
 					}
 				}
 			}
@@ -1262,7 +1262,7 @@ int main(){
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( (diff/trho*100.0) < 5.0 && j >= 100) {
+			if ( diff/trho < 0.005 && j >= 100) {
 				break;
 			}
 		}

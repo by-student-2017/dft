@@ -1214,12 +1214,12 @@ MPI::Init();
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
-					rho_new[i] = 1e9;
+					rho_new[i] = rho[i] * 10.0;
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+					rho_new[i] = 1e-6;
+					rho[i] = 1e-6;
 				}
 			}
 			diff = 0.0;
@@ -1231,7 +1231,7 @@ MPI::Init();
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			if ( diff/nstep < 0.005 && j >= 100) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -1312,12 +1312,12 @@ MPI::Init();
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e6){
-					rho_new[i] = 1e6;
+					rho_new[i] = rho[i] * 10.0;
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-18 && rho[i] < 1e-18){
-					rho_new[i] = 1e-18;
-					rho[i] = 1e-18;
+				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+					rho_new[i] = 1e-6;
+					rho[i] = 1e-6;
 				}
 			}
 			diff = 0.0;
@@ -1329,7 +1329,7 @@ MPI::Init();
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			if ( diff/nstep < 0.005 && j >= 100) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;

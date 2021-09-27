@@ -137,7 +137,7 @@ void read_parameters(void){
 	sigma_ss = num[1]; // [nm]
 	nstep = int(num[2]);
 	if ( nstep == 0 ) { nstep = int((H-sigma_ss)/0.017 + 0.5); }
-	if( (nstep+1)%2 == 1 ){
+	if( nstep%2 == 1 ){
 		std::cout << "Error, plase change number of data to even" << std::endl;
 		std::cout << "autoset even data" << std::endl;
 		nstep = nstep + 1;
@@ -152,7 +152,7 @@ void read_parameters(void){
 	if ( rc == 0.0 ) { rc = 5.0*sigma_ff; }
 	nrmesh = int(num[9]);
 	if ( nrmesh == 0 ) { nrmesh = int(rc/0.017 + 0.5); }
-	if( (nrmesh+1)%2 == 1 ){
+	if( nrmesh%2 == 1 ){
 		std::cout << "Error, plase change number of data to even" << std::endl;
 		std::cout << "autoset even data" << std::endl;
 		nrmesh = nrmesh + 1;
@@ -575,7 +575,7 @@ int main(){
 				rho[nstep-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0) {
+			if ( diff/nstep < 0.005) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;

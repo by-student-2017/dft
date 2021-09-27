@@ -790,7 +790,7 @@ int main(){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0) {
+			if ( diff/nstep < 0.005) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -846,7 +846,7 @@ int main(){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0) {
+			if ( diff/nstep < 0.005) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;

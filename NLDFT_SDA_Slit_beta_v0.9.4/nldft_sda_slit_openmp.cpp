@@ -826,14 +826,14 @@ int main(){
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
-					rho_new[i] = rho[i] * 2.0;
+					rho_new[i] = rho[i] * 10.0;
 					//std::cout << "rho[i] > 1e9" << std::endl;
 					//std::exit(1);
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
-					rho_new[i] = 1e-9;
-					rho[i] = 1e-9;
+				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+					rho_new[i] = 1e-6;
+					rho[i] = 1e-6;
 				}
 			}
 			diff = 0.0;
@@ -848,7 +848,7 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			if ( diff/nstep < 0.005 && j >= 100) {
 				break;
 			}
 		}
@@ -901,14 +901,14 @@ int main(){
 				// overflow about std::exp(730)
 				// to avoid overflow
 				if (rho_new[i] > 1e9){
-					rho_new[i] = rho[i] * 2.0;
+					rho_new[i] = rho[i] * 10.0;
 					//std::cout << "rho[i] > 1e9" << std::endl;
 					//std::exit(1);
 				}
 				// to avoid -inf or int
-				if (rho_new[i] < 1e-9 && rho[i] < 1e-9){
-					rho_new[i] = 1e-9;
-					rho[i] = 1e-9;
+				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+					rho_new[i] = 1e-6;
+					rho[i] = 1e-6;
 				}
 			}
 			diff = 0.0;
@@ -923,7 +923,7 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			if ( diff/nstep < 0.005 && j >= 100) {
 				break;
 			}
 		}
