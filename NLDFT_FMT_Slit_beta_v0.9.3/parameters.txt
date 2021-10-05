@@ -2,7 +2,7 @@
 01_sigma_ss=0.34
 02_nstep=20
 03_cycle_max=1001
-04_wmixing=0.001
+04_wmixing=0.01
 05_epsilon_ff=95.77
 06_sigma_ff=0.3549
 07_d_hs=0.3549
