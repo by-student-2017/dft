@@ -1266,6 +1266,7 @@ int main(){
 					rho_new[i] = rho[i] * 10.0;
 					//std::cout << "rho[i] > 1e6" << std::endl;
 					//std::exit(1);
+				}
 				// to avoid -inf or int
 				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
 					rho_new[i] = 1e-6;
