@@ -197,7 +197,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((Dcc-sigma_ss)/0.02 + 0.5);
+		nstep = int((Dcc-sigma_ss)/0.0025 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -249,6 +249,14 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nrmesh = num[17];
 	//nrmesh = 180/9;
+	if ( nrmesh == 0 ) {
+		nrmesh = int((Dcc-sigma_ss)/0.005 + 0.5);
+		if ( nrmesh%2 == 1 ){
+			nrmesh = nrmesh + 1;
+		}
+		std::cout << "--------------------------------------------------" << std::endl;
+		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
+	}
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (Dcc-sigma_ss); // pore width [nm]
