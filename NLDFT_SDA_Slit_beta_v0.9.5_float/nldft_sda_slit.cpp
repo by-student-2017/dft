@@ -33,12 +33,12 @@ float H;    //distace of slit [nm]
 float sigma_ss; // sigma_ss = 0.34 [nm]
 int nstep;   // number of mesh on z axis
 float w_pw; // w_pw = (H-sigma_ss), pore width [nm]
-float dr;   // dr = (H-sigma_ss)/double(nstep-1)
+float dr;   // dr = (H-sigma_ss)/float(nstep-1)
 // ---------- ----------- ------------ ------------
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
 int nrmesh; //rho_si and xi function
-float drc; //float drc = rc/double(nrmesh-1);
+float drc; //float drc = rc/float(nrmesh-1);
 // ---------- ----------- ------------ ------------
 // iteration of rho
 int cycle_max;  //int cycle_max = 50;
@@ -189,8 +189,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
-	dr = (H-sigma_ss)/double(nstep-1);
-	drc = rc/double(nrmesh-1); // rho_si(), calc_alpha(), xi()
+	dr = (H-sigma_ss)/float(nstep-1);
+	drc = rc/float(nrmesh-1); // rho_si(), calc_alpha(), xi()
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
@@ -297,7 +297,7 @@ float rho_si_int_k(float *r, float *rho_si_int_ijrj){
 	//float rho_si_int_j[nstep];
 	float tmp_rho_si_int_k[nrmesh];
 	//
-	// drc = rc/double(nrmesh-1);
+	// drc = rc/float(nrmesh-1);
 	float tpidrc = 2.0*M_PI*drc;
 	//
 	for (i=0; i<3; i++) {
@@ -307,11 +307,11 @@ float rho_si_int_k(float *r, float *rho_si_int_ijrj){
 				raj = (r[j]-r[jr]);
 				tmp_rho_si_int_k[0] = 0.0;
 				for (k=1; k<nrmesh; k++) {
-					rak = drc*double(k);
+					rak = drc*float(k);
 					ra =  rak*rak + raj*raj;
 					ra = std::sqrt(ra);
 					//
-					tmp_rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
+					tmp_rho_si_int_k[k] = wi(ra,i)*(tpidrc*float(k));
 				}
 				//integral_simpson(float *f, int n, float dx)
 				rho_si_int_ijrj[i*nstep*nstep+jr*nstep+j] = integral_simpson(tmp_rho_si_int_k, nrmesh-1, drc);
@@ -332,18 +332,18 @@ float rho_si(float *rho, float *r, int jr, int i, float *rho_si_int_ijrj){
 	float rho_si_int_j[nstep];
 	//float rho_si_int_k[nrmesh];
 	//
-	// drc = rc/double(nrmesh-1);
+	// drc = rc/float(nrmesh-1);
 	float tpidrc = 2.0*M_PI*drc;
 	//rho_si_int_k[0] = 0.0;
 	//
 	for (j=0; j<nstep; j++) {
 		//raj = (r[j]-r[jr]);
 		//for (k=1; k<nrmesh; k++) {
-		//	rak = drc*double(k);
+		//	rak = drc*float(k);
 		//	ra =  rak*rak + raj*raj;
 		//	ra = std::sqrt(ra);
 		//	//
-		//	rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
+		//	rho_si_int_k[k] = wi(ra,i)*(tpidrc*float(k));
 		//}
 		//integral_simpson(float *f, int n, float dx)
 		//rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, nrmesh-1, drc);
@@ -497,7 +497,7 @@ float calc_alpha(float *r){
 	float alpha_int_j[nstep];
 	float alpha_int_k[nrmesh];
 	//
-	//float drc = rc/double(nrmesh-1);
+	//float drc = rc/float(nrmesh-1);
 	float tpidrc = 2.0*M_PI*drc;
 	alpha_int_k[0] = 0.0;
 	//
@@ -505,11 +505,11 @@ float calc_alpha(float *r){
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
 			for (k=1; k<nrmesh; k++) {
-				rak = drc*double(k);
+				rak = drc*float(k);
 				ra = raj*raj + rak*rak;
 				ra = std::sqrt(ra);
 				//
-				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*double(k));
+				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*float(k));
 			}
 			//integral_simpson(float *f, int n, float dx)
 			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh-1, drc);
@@ -530,7 +530,7 @@ float phi_att_int(float *r, float *phi_att_int_ij){
 	//
 	float phi_int_k[nrmesh];
 	//
-	//float drc = rc/double(nrmesh-1);
+	//float drc = rc/float(nrmesh-1);
 	float tpidrc = 2.0*M_PI*drc;
 	phi_int_k[0] = 0.0;
 	//
@@ -538,12 +538,12 @@ float phi_att_int(float *r, float *phi_att_int_ij){
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
 			for (k=1; k<nrmesh; k++) {
-				rak = drc*double(k);
+				rak = drc*float(k);
 				ra =  rak*rak + raj*raj;
 				ra = std::sqrt(ra);
 				//
-				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
-				phi_int_k[k]  = phi_att(ra)*(tpidrc*double(k));
+				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(float(k)*drc));
+				phi_int_k[k]  = phi_att(ra)*(tpidrc*float(k));
 			}
 			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh-1, drc);
 		}
@@ -564,19 +564,19 @@ float xi(float *rho, float *r, int i, float rho_b, float *rho_sj, float *rho_s0j
 	float rho_dfex_int_j[nstep];
 	float rho_dfex_int_k[nrmesh];
 	//
-	// drc = rc/double(nrmesh-1);
+	// drc = rc/float(nrmesh-1);
 	float tpidrc = 2.0*M_PI*drc;
 	rho_dfex_int_k[0] = 0.0;
 	//
 	for (j=0; j<nstep; j++) {
 		raj = (r[i]-r[j]);
 		for (k=1; k<nrmesh; k++) {
-			rak = drc*double(k);
+			rak = drc*float(k);
 			ra =  rak*rak + raj*raj;
 			ra = std::sqrt(ra);
 			//
 			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(tpidrc*double(k));
+			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(tpidrc*float(k));
 		}
 		//integral_simpson(float *f, int n, float dx)
 		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, nrmesh-1, drc);
@@ -624,7 +624,7 @@ float Maxwell_construction(void){
 	std::ofstream ofs("./Maxwell_construction_data.txt");
 	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
-		rho_b0_out = drhob0*double(i+1.0);
+		rho_b0_out = drhob0*float(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0_out)/epsilon_ff;
 		//ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0_out*std::pow(d_hs,3.0) << std::endl;
 		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
@@ -632,7 +632,7 @@ float Maxwell_construction(void){
 	}
 	// Maxwell equal area rule
 	for (j=0; j<iter_max_dmue; j++){
-		mu_e_per_epsilon_ff = dmue*double(j+1.0) - 12.0;
+		mu_e_per_epsilon_ff = dmue*float(j+1.0) - 12.0;
 		diff = 0.0;
 		flag = 0;
 		for (i=0; i<iter_max_drhob0; i++){
@@ -647,7 +647,7 @@ float Maxwell_construction(void){
 			//std::cout << diffp << std::endl;
 		}
 		//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
-		rho_b0_out = drhob0*double(j+1.0);
+		rho_b0_out = drhob0*float(j+1.0);
 		if (std::abs(diff) <= threshold_diff) {
 			//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
 			break;
@@ -656,7 +656,7 @@ float Maxwell_construction(void){
 	// find rho_b0
 	flag = 0;
 	for (i=0; i<iter_max_drhob0; i++){
-		rho_b0_out = drhob0*double(i+1.0);
+		rho_b0_out = drhob0*float(i+1.0);
 		//if ( std::abs(mu_b(rho_b0_out)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
 		//	 0.05 <= rho_b0_out*std::pow(d_hs,3.0) &&  rho_b0_out*std::pow(d_hs,3.0) <= 0.75) {
 		if ( std::abs(mu_b(rho_b0_out)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find ) {
@@ -721,7 +721,7 @@ int main(){
 	float rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		r[i] = sigma_ss/2.0 + dr*double(i); // dr = (H-sigma_ss)/double(nstep+1);
+		r[i] = sigma_ss/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -757,7 +757,7 @@ int main(){
 	}
 	std::cout << "phi_ext_i calculation was finished" << std::endl;
 	//float phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
-	float *phi_att_int_ij = (float *)malloc(sizeof(double)*((nstep+1)*nstep));
+	float *phi_att_int_ij = (float *)malloc(sizeof(float)*((nstep+1)*nstep));
 	if (phi_att_int_ij == NULL) {
 		printf("Memory cannot be allocated.");
 		std::exit(1);
@@ -767,7 +767,7 @@ int main(){
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	std::cout << "phi_att_int calculation was finished" << std::endl;
 	//
-	float *rho_si_int_ijrj = (float *)malloc(sizeof(double)*(2*nstep*nstep+nstep*nstep+nstep));
+	float *rho_si_int_ijrj = (float *)malloc(sizeof(float)*(2*nstep*nstep+nstep*nstep+nstep));
 	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
@@ -810,9 +810,9 @@ int main(){
 		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
+		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
 	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
@@ -820,6 +820,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
 			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
+				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				xio = xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T);
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
@@ -844,7 +845,8 @@ int main(){
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//float threshold = 0.5/100*nstep;
-			if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 		}
@@ -882,9 +884,9 @@ int main(){
 		rho_b = rho_b0 * rho_b_k[k];
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
+		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
 	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
+		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		for (j=0; j<cycle_max; j++){
@@ -892,6 +894,7 @@ int main(){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
 			for (i=0; i<=(nstep-2)/2; i++){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
+				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				xio = xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T);
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
@@ -916,7 +919,8 @@ int main(){
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//float threshold = 0.5/100*nstep;
-			if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 		}
