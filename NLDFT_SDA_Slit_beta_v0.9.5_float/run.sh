@@ -5,7 +5,7 @@
 #)
 
 if [ ! -e nldft_sda_slit.exe ]; then
-	c++ -O2 nldft_sda_slit.cpp -o nldft_sda_slit.exe
+	c++ nldft_sda_slit.cpp -o nldft_sda_slit.exe
 fi
 
 if [ ! -d results ]; then
@@ -13,7 +13,7 @@ if [ ! -d results ]; then
 fi
 
 #for w in "${items[@]}"; do
-for ((i=42;i<=1000;i+=2))
+for ((i=30;i<=1000;i+=2))
 do
 	w=`echo $i | awk '{printf "%4.2f", $1/100}'`
 	#echo $w

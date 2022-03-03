@@ -1148,7 +1148,7 @@ MPI::Init();
 	double press_b, press_b0, pp0;
 	double rho_b;
 	double v_mmol_per_cm3;
-	double v_cm3STP_per_g;
+	double v_cm3STP_per_cm3;
 	double grand_potential;
 	//
 	read_parameters();
@@ -1209,9 +1209,12 @@ MPI::Init();
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
 	//
+	double diff_old2 = 1.0;
+	double diff_old1 = 1.0;
 	double diff;
 	double diff0;
 	double mixing;
+	double threshold = 0.5/100*nstep;
 	//
 	double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
@@ -1280,6 +1283,8 @@ MPI::Init();
 					rho[i] = 1e-9;
 				}
 			}
+			diff_old2 = diff_old1;
+			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
@@ -1291,7 +1296,10 @@ MPI::Init();
 				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
+			//double threshold = 0.5/100*nstep;
+			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -1312,8 +1320,7 @@ MPI::Init();
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
-		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -1332,8 +1339,8 @@ MPI::Init();
 		grand_potential = omega(rho, r, fex_i, rho_phi_int, rho_b);
 		//
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	// reverse
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
@@ -1383,6 +1390,8 @@ MPI::Init();
 					rho[i] = 1e-18;
 				}
 			}
+			diff_old2 = diff_old1;
+			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
@@ -1394,7 +1403,10 @@ MPI::Init();
 				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			if ( (diff/nstep*100.0) < 5.0 && j >= 100) {
+			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
+			//double threshold = 0.5/100*nstep;
+			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -1415,8 +1427,7 @@ MPI::Init();
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
-		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -1436,8 +1447,8 @@ MPI::Init();
 		grand_potential = omega(rho, r, fex_i, rho_phi_int, rho_b);
 		//
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	free(phi_att_int_ij);
 MPI::Finalize();
