@@ -1,0 +1,17 @@
+00_H=XXX
+01_sigma_ss=0.34    #[nm] J.Jagiello et al., Carbon 91 (2015) 330-337.
+02_nstep=0
+03_cycle_max=100001
+04_wmixing=0.01
+05_epsilon_ff=227.9 #[K]  J.Jagiello et al., Carbon 91 (2015) 330-337.
+06_sigma_ff=0.349   #[nm] J.Jagiello et al., Carbon 91 (2015) 330-337.
+07_d_hs=0.349       #[nm] J.Jagiello et al., Carbon 91 (2015) 330-337.
+08_rc=0.0
+09_nrmesh=80
+10_epsilon_sf=79.9  #[K]  J.Jagiello et al., 91 (2015) 330-337.
+11_sigma_sf=0.344   #[nm] J.Jagiello et al., 91 (2015) 330-337.
+12_delta=0.335
+13_rho_ss=114.0
+14_m=4.65173e-26
+15_T=273.0
+16_rho_b0=0.0658    #unkown

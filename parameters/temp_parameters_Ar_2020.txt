@@ -1,0 +1,17 @@
+00_H=XXX            #ZTC (Attension!!!  this code is not work)
+01_sigma_ss=0.34    #[nm] J.Jagiello et al., Carbon 169 (2020) 205-213.
+02_nstep=0
+03_cycle_max=100001
+04_wmixing=0.01
+05_epsilon_ff=109.6 #[K], (N2 94.22)  J.Jagiello et al., Carbon 169 (2020) 205-213.
+06_sigma_ff=0.338   #[nm],(N2 0.3577) J.Jagiello et al., Carbon 169 (2020) 205-213.
+07_d_hs=0.338       #[nm],(N2 0.3577) J.Jagiello et al., Carbon 169 (2020) 205-213.
+08_rc=0.0
+09_nrmesh=80
+10_epsilon_sf=55.0  #[K], (N2 53.5)   J.Jagiello et al., Carbon 169 (2020) 205-213.
+11_sigma_sf=0.339   #[nm],(N2 0.3577) J.Jagiello et al., Carbon 169 (2020) 205-213.
+12_delta=0.335
+13_rho_ss=114.0
+14_m=4.65173e-26
+15_T=77.347
+16_rho_b0=0.0658    #unkown

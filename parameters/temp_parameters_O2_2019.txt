@@ -1,0 +1,17 @@
+00_H=XXX            #(Attension!!!  this code is not work)
+01_sigma_ss=0.34    #[nm] J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+02_nstep=0
+03_cycle_max=100001
+04_wmixing=0.01
+05_epsilon_ff=113.7 #[K],  J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+06_sigma_ff=0.314   #[nm], J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+07_d_hs=0.314       #[nm], J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+08_rc=0.0
+09_nrmesh=80
+10_epsilon_sf=56.43 #[K],  J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+11_sigma_sf=0.340   #[nm], J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+12_delta=0.335
+13_rho_ss=114.0
+14_m=4.65173e-26
+15_T=77.347
+16_rho_b0=0.0658    #unkown

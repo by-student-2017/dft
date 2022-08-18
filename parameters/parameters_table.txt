@@ -1,0 +1,140 @@
+-----------------------------------------------------------------------
+H2, 77.3 K, 87,4 K and 298 K, NDLFT (Slit), J. Jagiello et al., J. Phys. Chem. B 110 (2006) 4531-4534.
+epsilon_ff/kB = 34.3 [K]
+epsilon_sf/kB = 31.8 [K]
+sigma_ff = 0.304 [nm]
+sigma_sf = 0.322 [nm]
+-----------------------------------------------------------------------
+H2, 77.3 K and 87.4 K, NDLFT (Slit), J. Jagiello et al., Carbon 45 (2007) 1066-1071.
+epsilon_ff/kB = 34.3 [K]
+epsilon_sf/kB = 31.8 [K]
+sigma_ff = 0.304 [nm]
+sigma_sf = 0.322 [nm]
+w = H - 0.34 [nm]
+-----------------------------------------------------------------------
+H2, 77 K, 2D-HS-FH-NDLFT, J. Jagiello et al., Carbon 160 (2020) 164-175.
+epsilon_ff/kB = 36.70 [K]
+epsilon_sf/kB = 32.86 [K]
+sigma_ff = 0.296 [nm] = d_HS
+sigma_sf = 0.318 [nm]
+-----------------------------------------------------------------------
+N2, 77.347 K, NDLFT (Slit), C. Lastoskie et al., J. Phys. Chem. 97 (1993) 4786-4796.
+
+(local theory)
+epsilon_ff/kB = 93.98 [K]
+epsilon_sf/kB = 74.23 [K]
+sigma_ff = 0.3572 [nm] = d_HS
+sigma_sf = 0.3494 [nm]
+-----
+(nonlocal theory)
+epsilon_ff/kB = 93.98 [K]
+epsilon_sf/kB = 53.22 [K]
+sigma_ff = 0.3572 [nm] = d_HS
+sigma_sf = 0.3494 [nm]
+-----
+rho_s = 0.114 [A^-3]
+delta = 0.035 [nm]
+-----------------------------------------------------------------------
+N2, 77 K, 2D-HS-NDLFT, J. Jagiello et al., Carbon 160 (2020) 164-175.
+epsilon_ff/kB = 93.62 [K]
+epsilon_sf/kB = 53.50 [K]
+sigma_ff = 0.358 [nm] = d_HS
+sigma_sf = 0.349 [nm]
+-----------------------------------------------------------------------
+N2, QSLFT, A. V. Neimark et al., Carbon 47 (2009) 1617-1628.
+epsilon_ff/kB = 95.77 [K]
+epsilon_sf/kB = 150 [K]
+sigma_ff = 0.3549 [nm] = d_HS
+sigma_sf = 0.269 [nm]
+rho_s = 0.114 [A^-3]
+h_0 = 2*0.34 [nm]
+hard sphere diameter of carbon atoms is 2.217*10^-10 [m]
+roughness parameter, delta = 0.13 nm
+-----------------------------------------------------------------------
+N2, 2D-NLDFT, J. Jagiello et al., Carbon 55 (2013) 70-80.
+
+(a) Common parameters
+sigma_ff = 0.3577 [nm] (Standard model)
+epsilon/kB = 94.422 [K] (EH model)
+sigma_sf = 0.3489 [nm] (GC model)
+
+(b) Model parameters
+-----
+(Standard model)
+epsilon_sf/kB = 53.5 [K]
+-----
+(EH model)
+epsilon_sf/kB = 52 [K]
+epsilon/kB = 52 [K]
+Estep L=8, delta=0.3
+En L=8, s=0.35
+-----
+(GC model)
+epsilon/kB = 52 [K]
+epsilon/kB = 52 [K]
+lambda=5, alpha=0.4
+-----------------------------------------------------------------------
+N2, NDLFT (ZTC), J.Jagiello et al., Carbon 169 (2020) 205-213.
+epsilon_ff/kB = 94.22 [K]
+epsilon_sf/kB = 53.5 [K]
+sigma_ff = 0.3577 [nm] = d_HS
+sigma_sf = 0.3577 [nm]
+-----------------------------------------------------------------------
+Ar, QSLFT, A. V. Neimark et al., Carbon 47 (2009) 1617-1628.
+epsilon_ff/kB = 111.95 [K]
+epsilon_sf/kB = 162.18 [K]
+sigma_ff = 0.3358 [nm] = d_HS
+sigma_sf = 0.2595 [nm]
+-----------------------------------------------------------------------
+Ar, 87 K, 2D-HS-NDLFT, J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+epsilon_ff/kB = 109.6 [K]
+epsilon_sf/kB = 55.0 [K]
+sigma_ff = 0.338 [nm] = d_HS
+sigma_sf = 0.339 [nm]
+(Heterogeneity parameters)
+beta1=0.0002
+beta2=0.498
+alpha=0.45
+lambda=6.0
+-----------------------------------------------------------------------
+Ar, NDLFT (ZTC), J.Jagiello et al., Carbon 169 (2020) 205-213.
+epsilon_ff/kB = 109.6 [K]
+epsilon_sf/kB = 55.0 [K]
+sigma_ff = 0.338 [nm] = d_HS
+sigma_sf = 0.339 [nm]
+-----------------------------------------------------------------------
+O2, 77 K, 2D-HS-NDLFT, J. Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
+epsilon_ff/kB = 113.7 [K]
+epsilon_sf/kB = 56.43 [K]
+sigma_ff = 0.314 [nm] = d_HS
+sigma_sf = 0.340 [nm]
+(Heterogeneity parameters)
+beta1=-0.007
+beta2=0.421
+-----------------------------------------------------------------------
+CO2, 273 K, 2D-NDLFT (Slit), J. Jagiello et al., Carbon 91 (2015) 330-337.
+epsilon_ff/kB = 227.9 [K]
+epsilon_sf/kB = 79.9 [K]
+sigma_ff = 0.349 [nm] = d_HS
+sigma_sf = 0.344 [nm]
+beta1=0.0678 (Energy heterogeneity parameters, Eq.(2))
+beta2=0.756 (Energy heterogeneity parameters, Eq.(2))
+lambda=6.0 (Energy heterogeneity parameters, Eq.(2))
+alpha=0.45 (Surface corrugation parameters, Eq.(1))
+lambda=6.0 (Surface corrugation parameters, Eq.(1))
+
+carbon-carbon interactions in graphite
+epsilon_s/kB = 28 [K]
+sigma_s = 0.34 [nm]
+
+w = H - 0.34 [nm]
+
+P/P0 = 10^-7 - 0.3
+-----------------------------------------------------------------------
+Si, 2D-NLDFT, J. Jagiello et al., J. Coll. Inter. Sci. 532 (2018) 588-597.
+epsilon_ff/kB = 109.6 [K]
+epsilon_sf/kB = 21.5 [K]
+sigma_ff = 0.338 [nm] = d_HS
+sigma_sf = 0.300 [nm]
+lambda/sigma_ff = 3.5
+-----------------------------------------------------------------------
