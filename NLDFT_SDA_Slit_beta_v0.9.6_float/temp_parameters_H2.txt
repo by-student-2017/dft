@@ -1,0 +1,17 @@
+00_H=XXX
+01_sigma_ss=0.34
+02_nstep=0
+03_cycle_max=100001
+04_wmixing=0.02
+05_epsilon_ff=34.3
+06_sigma_ff=0.304
+07_d_hs=0.304
+08_rc=0.0
+09_nrmesh=0
+10_epsilon_sf=32.595 #1.000: 31.8, 1.025: 32.595 (Ref: J. Jagiello et al., J. Phys. Chem. B 110 (2006) 4531. )
+11_sigma_sf=0.322
+12_delta=0.335
+13_rho_ss=114.0
+14_m=4.65173e-26
+15_T=77.347
+16_rho_b0=-10.0 # 0.0:auto, <0.0:Pa, <=-10.0:atm, Memo:N2 0.0658

@@ -1,0 +1,43 @@
+#!/usr/bin/gnuplot
+
+set key outside
+#set nokey
+
+#set logscale x
+
+#set xrange[1e-9:1e0]
+#set xrange[1e-4:1e0]
+#set format x "10^{%L}"
+set xrange[0:1]
+
+set terminal win font "Arial,12"
+set xlabel "Pressure, atm"
+set mxtics 5
+#set noxtics
+
+set ylabel "Density, [mmol/cm^3]"
+set mytics 5
+#set noytics
+set yrange[0:45]
+
+set title "NLDFT, H_2 on Graphitized carbon black, ADS"
+
+#plot pore_size."_data_vs.txt" u 1:3 w l t pore_size." [nm] (vapor-like spinodal)", pore_size."_data_ls.txt" u 1:3 w l t pore_size." [nm] (liquid-like spinodal)"
+plot "0.30_data_vs.txt" u 1:3 w lp t "3 A", \
+     "0.40_data_vs.txt" u 1:3 w lp t "4 A", \
+     "0.50_data_vs.txt" u 1:3 w lp t "5 A", \
+     "0.70_data_vs.txt" u 1:3 w lp t "7 A", \
+     "0.86_data_vs.txt" u 1:3 w lp t "8.6 A", \
+     "1.00_data_vs.txt" u 1:3 w lp t "10 A", \
+     "1.50_data_vs.txt" u 1:3 w lp t "15 A", \
+     "2.00_data_vs.txt" u 1:3 w lp t "20 A"
+#pause -1
+
+#set terminal png transparent crop
+set terminal png
+set out "H2_Carbon_mmol_ads.png"
+replot
+
+#set terminal postscript color enhanced lw 2
+#set out "mmol.ps"
+#replot
