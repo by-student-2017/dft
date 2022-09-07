@@ -17,21 +17,24 @@ touch temp.txt
 set i
 ra="1.1,1.2"
 nm=""
+i=1
 #for w in "${items[@]}"; do # old version
 for file_name in *${search_file}; do # new version
+	echo $file_name" "$i
 	w=${file_name%%_*} # new version
 	sed -e '1,2d' ${file_name} > temp.txt
-	i=$(( $i+1 ))
 	if [ $i == 1 ]; then
 	  cp temp.txt kernel.csv
 	elif [ $i == 2 ]; then
-	  join -o 1.1,1.3,2.3 kernel.csv temp.txt > kernel_temp.csv
+	  join -t, -1 1 -2 1 -o 1.1,1.3,2.3 kernel.csv temp.txt > kernel_temp.csv
+	  mv kernel_temp.csv kernel.csv
 	else
 	  ra=${ra}",1."${i}
 	  ra2=${ra}",2.3"
-	  join -o ${ra2} kernel.csv temp.txt > kernel_temp.csv
+	  join -t, -1 1 -2 1 -o ${ra2} kernel.csv temp.txt > kernel_temp.csv
 	  mv kernel_temp.csv kernel.csv
 	fi
+	i=$(( $i+1 ))
 	nm=${nm}","${w}
 done
 sed -i "1s/^/${nm}\n/" kernel.csv
