@@ -12,6 +12,6 @@
 11_sigma_sf=0.3286  #[nm] J.Jagiello et al., Carbon 160 (2020) 164-175.
 12_delta=0.335
 13_rho_ss=114.0
-14_m=4.65173e-26
+14_m=3.3471154e-27
 15_T=77.347
 16_rho_b0=0.0658    #unkown

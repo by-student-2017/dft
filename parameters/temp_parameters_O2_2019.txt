@@ -12,6 +12,6 @@
 11_sigma_sf=0.340   #[nm], J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
 12_delta=0.335
 13_rho_ss=114.0
-14_m=4.65173e-26
+14_m==5.3133929e-26
 15_T=77.347
 16_rho_b0=0.0658    #unkown
