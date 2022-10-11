@@ -840,14 +840,18 @@ int main(){
 	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	string Punit;
+	string Punits;
 	if(flag_P==0.0){
 		Punit = "P/P0";
+		Punits = "PP0";
 	} else if(flag_P<=-10.0){
 		Punit = "atm";
+		Punits= "atm";
 	} else{
 		Punit = "Pa";
+		Punits= "Pa";
 	}
-	std::ofstream ofsppov_vs("./"+Punit+"_vs_Vgamma_data_vs.txt");
+	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -933,7 +937,7 @@ int main(){
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	// reverse
-	std::ofstream ofsppov_ls("./"+Punit+"_vs_Vgamma_data_ls.txt");
+	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_ls << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
