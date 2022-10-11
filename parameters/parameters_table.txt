@@ -35,6 +35,25 @@ sigma_sf = 0.3494 [nm]
 rho_s = 0.114 [A^-3]
 delta = 0.035 [nm]
 -----------------------------------------------------------------------
+N2, 77.4 K, NDLFT (Slit), P. I. Ravikovitch et al., Langmuir 16 (2000) 2311-2320.
+epsilon_ff/kB = 94.45 [K]
+epsilon_sf/kB = 53.22 [K]
+sigma_ff = 0.3575 [nm] =d_HS
+sigma_sf = 0.3494 [nm]
+-----------------------------------------------------------------------
+N2, 77.4 K, NDLFT (Slit), P. I. Ravikovitch et al., Phys. Rev. E 64 (2001) 011602.
+epsilon_ff/kB = 94.45 [K]
+sigma_ff = 0.3575 [nm] =d_HS
+
+Solid-fluid
+Carbon, rho_s = 0.819 [A^-2]
+epsilon_sf/kB = 53.22 [K]
+sigma_sf = 0.3494 [nm]
+
+Silica, rho_s = 0.153 [A^-2]
+epsilon_sf/kB = 147.3 [K]
+sigma_sf = 0.317 [nm]
+-----------------------------------------------------------------------
 N2, 77 K, 2D-HS-NDLFT, J. Jagiello et al., Carbon 160 (2020) 164-175.
 epsilon_ff/kB = 93.62 [K]
 epsilon_sf/kB = 53.50 [K]
@@ -80,11 +99,25 @@ epsilon_sf/kB = 53.5 [K]
 sigma_ff = 0.3577 [nm] = d_HS
 sigma_sf = 0.3577 [nm]
 -----------------------------------------------------------------------
+Ar, 77.4 and 87.3 K, NDLFT (Slit), P. I. Ravikovitch et al., Langmuir 16 (2000) 2311-2320.
+epsilon_ff/kB = 118.05 [K]
+epsilon_sf/kB = 55.0 [K]
+sigma_ff = 0.3305 [nm], d_HS = 0.339 [nm]
+sigma_sf = 0.335 [nm]
+
+P0: In the case of Ar at liquid N2 boiling temperature, 77.4 K.
+-----------------------------------------------------------------------
 Ar, QSLFT, A. V. Neimark et al., Carbon 47 (2009) 1617-1628.
 epsilon_ff/kB = 111.95 [K]
 epsilon_sf/kB = 162.18 [K]
 sigma_ff = 0.3358 [nm] = d_HS
 sigma_sf = 0.2595 [nm]
+-----------------------------------------------------------------------
+Ar, QSLFT, P. I. Ravikovitech et al., Langmuir 22 (2009) 11171-11179.
+epsilon_ff/kB = 111.95 [K]
+epsilon_sf/kB = 160.5 [K]
+sigma_ff = 0.3358 [nm] = d_HS
+sigma_sf = 0.3104 [nm]
 -----------------------------------------------------------------------
 Ar, 87 K, 2D-HS-NDLFT, J.Jagiello et al., J. Coll. Inter. Sci. 542 (2019) 151-158.
 epsilon_ff/kB = 109.6 [K]
@@ -131,10 +164,58 @@ w = H - 0.34 [nm]
 
 P/P0 = 10^-7 - 0.3
 -----------------------------------------------------------------------
+CO2, 273.2 K, NDLFT (Slit), P. I. Ravikovitch et al., Langmuir 16 (2000) 2311-2320.
+epsilon_ff/kB = 235.9 [K]
+epsilon_sf/kB = 81.5 [K]
+sigma_ff = 0.3454 [nm], d_HS = 0.3495 [nm]
+sigma_sf = 0.343 [nm]
+-----------------------------------------------------------------------
+CO2, 273.2 K, NDLFT (Slit), P. I. Ravikovitch et al., Phys. Rev. E 64 (2001) 011602.
+epsilon_ff/kB = 235.9 [K]
+sigma_ff = 0.3454 [nm], d_HS = 0.3495 [nm]
+
+Solid-fluid
+Carbon, rho_s = 0.819 [A^-2]
+epsilon_sf/kB = 81.5 [K]
+sigma_sf = 0.343 [nm]
+
+Silica, rho_s = 0.153 [A^-2]
+epsilon_sf/kB = 147.1 [K]
+sigma_sf = 0.330 [nm]
+-----------------------------------------------------------------------
 Si, 2D-NLDFT, J. Jagiello et al., J. Coll. Inter. Sci. 532 (2018) 588-597.
 epsilon_ff/kB = 109.6 [K]
 epsilon_sf/kB = 21.5 [K]
 sigma_ff = 0.338 [nm] = d_HS
 sigma_sf = 0.300 [nm]
 lambda/sigma_ff = 3.5
+-----------------------------------------------------------------------
+CH4, NDLFT (Slit), P. I. Ravikovitch et al., Phys. Rev. E 64 (2001) 011602.
+epsilon_ff/kB = 148.2 [K]
+sigma_ff = 0.382 [nm] =d_HS
+
+Solid-fluid
+Carbon, rho_s = 0.819 [A^-2]
+epsilon_sf/kB = 64.4 [K]
+sigma_sf = 0.360 [nm]
+-----------------------------------------------------------------------
+Xe and Kr, NDLFT (on CaNaX), P. I. Ravikovitch et al., Langmuir 22 (2006) 10864-10868.
+
+Xe
+epsilon_ff/kB = 227.6 [K]
+epsilon_sf/kB = 128.2 [K]
+sigma_ff = 0.3901 [nm]
+sigma_sf = 0.3586 [nm]
+
+Kr
+epsilon_ff/kB = 162.6 [K]
+epsilon_sf/kB = 109.6 [K]
+sigma_ff = 0.3627 [nm]
+sigma_sf = 0.3450 [nm]
+-----------------------------------------------------------------------
+Kr, QSLFT, P. I. Ravikovitech et al., Langmuir 22 (2009) 11171-11179.
+epsilon_ff/kB = 155.90 [K]
+epsilon_sf/kB = 189.4 [K]
+sigma_ff = 0.3589 [nm] = d_HS
+sigma_sf = 0.3220 [nm]
 -----------------------------------------------------------------------

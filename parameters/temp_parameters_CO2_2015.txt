@@ -8,7 +8,7 @@
 07_d_hs=0.349       #[nm] J.Jagiello et al., Carbon 91 (2015) 330-337.
 08_rc=0.0           # 0.0:auto
 09_nrmesh=80        # 0.0:auto
-10_epsilon_sf=79.9  #[K]  J.Jagiello et al., 91 (2015) 330-337.
+10_epsilon_sf=79.9  #79.0 ? [K]  J.Jagiello et al., 91 (2015) 330-337.
 11_sigma_sf=0.344   #[nm] J.Jagiello et al., 91 (2015) 330-337.
 12_delta=0.335
 13_rho_ss=114.0
