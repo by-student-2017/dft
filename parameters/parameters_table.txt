@@ -105,7 +105,7 @@ epsilon_sf/kB = 55.0 [K]
 sigma_ff = 0.3305 [nm], d_HS = 0.339 [nm]
 sigma_sf = 0.335 [nm]
 
-P0: In the case of Ar at liquid N2 boiling temperature, 77.4 K.
+P0: supercooled liquid (about 230 Torr)
 -----------------------------------------------------------------------
 Ar, QSDFT, A. V. Neimark et al., Carbon 47 (2009) 1617-1628.
 epsilon_ff/kB = 111.95 [K]
