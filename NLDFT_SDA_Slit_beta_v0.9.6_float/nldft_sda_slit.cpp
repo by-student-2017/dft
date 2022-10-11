@@ -190,6 +190,7 @@ void read_parameters(void){
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	rho_b0 = num[16];
+	// ---------- ----------- ------------ ------------
 	p0 = num[17]; // [Pa]
 	// ---------- ----------- ------------ ------------
 	
@@ -756,7 +757,7 @@ int main(){
 	pp0 = press_b0*kb*1e27;
 	std::cout << "rho_b0 = " << rho_b0 << std::endl;
 	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
-	std::cout << "Ref. Pressure: " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
+	std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization

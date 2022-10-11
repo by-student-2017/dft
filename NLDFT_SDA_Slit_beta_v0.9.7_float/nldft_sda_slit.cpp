@@ -95,6 +95,9 @@ float alpha;
 // rho_b0 is related with P0
 float rho_b0;
 // ---------- ----------- ------------ ------------
+// P0
+float p0;
+// ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
 float d_bh_calc(float epsilon, float sigma){
@@ -190,6 +193,8 @@ void read_parameters(void){
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	rho_b0 = num[16];
+	// ---------- ----------- ------------ ------------
+	p0 = num[17]; // [Pa]
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -747,7 +752,7 @@ int main(){
 		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
 		a = -0.5*alpha;
 		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
-		c = -1.0*101325.0/(kb*1e27);
+		c = -1.0*p0/(kb*1e27);
 		rho_b1 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
 		if ( rho_b0==-10.0 ) {
 			// change [Pa] to [atm]
@@ -764,7 +769,8 @@ int main(){
 	std::cout << "rho_b0 = " << rho_b0 << std::endl;
 	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
 	if ( flag_P==-10.0 ) {
-		std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		//std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
 	} else if ( flag_P<=-100.0 ) {
 		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
@@ -847,7 +853,7 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=0; k<=181; k++){
+	for (k=1; k<=181; k++){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
@@ -916,7 +922,7 @@ int main(){
 		if(flag_P==0.0){
 			pp0 = press_b/press_b0;
 		} else if (flag_P<=-10.0){
-			pp0 = press_b*kb*1e27/101325.0;
+			pp0 = press_b*kb*1e27/p0;
 		} else {
 			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
 			pp0 = press_b*kb*1e27;
@@ -933,7 +939,7 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=181; k>=0; k--){
+	for (k=181; k>=1; k--){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
@@ -1002,7 +1008,7 @@ int main(){
 		if(flag_P==0.0){
 			pp0 = press_b/press_b0;
 		} else if (flag_P<=-10.0){
-			pp0 = press_b*kb*1e27/101325.0;
+			pp0 = press_b*kb*1e27/p0;
 		} else {
 			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
 			pp0 = press_b*kb*1e27;
