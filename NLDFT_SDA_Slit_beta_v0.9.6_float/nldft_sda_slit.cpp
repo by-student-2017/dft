@@ -7,8 +7,8 @@
 
 using namespace std;
 
-//non-local smoothed density approximationÔºöSDA
-//non-local density functional theoryÔºàNLDFT)
+//non-local smoothed density approximationÅFSDA
+//non-local density functional theoryÅiNLDFT)
 //Reference: https://www.j-ad.org/adsorption_news/30_1.pdf
 
 // Note
@@ -92,6 +92,9 @@ float alpha;
 // ---------- ----------- ------------ ------------
 // rho_b0 is related with P0
 float rho_b0;
+// ---------- ----------- ------------ ------------
+// P0
+float p0;
 // ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
@@ -187,6 +190,7 @@ void read_parameters(void){
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	rho_b0 = num[16];
+	p0 = num[17]; // [Pa]
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -232,7 +236,7 @@ float phi_att(float r){
 	if (r < rm){
 		e = - epsilon_ff;
 	}else if (rm <= r && r <= rc){
-		// Lennard-JonesÔºàLJ) potential
+		// Lennard-JonesÅiLJ) potential
 		//e = 4.0*epsilon_ff*( std::pow((sigma_ff/r),12.0) - std::pow((sigma_ff/r),6.0) );
 		e = std::pow((sigma_ff/r),6.0);
 		e = 4.0*epsilon_ff*( e*e - e );
@@ -745,14 +749,14 @@ int main(){
 		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
 		a = -0.5*alpha;
 		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
-		c = -1.0*101325.0/(kb*1e27);
+		c = -1.0*p0/(kb*1e27);
 		rho_b0 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
 	}
 	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 	pp0 = press_b0*kb*1e27;
 	std::cout << "rho_b0 = " << rho_b0 << std::endl;
 	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
-	std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+	std::cout << "Ref. Pressure: " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization
@@ -834,6 +838,7 @@ int main(){
 	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=0; k<=181; k++){
 		rho_b = rho_b0 * rho_b_k[k];
+		//rho_b = rho_b0 * rho_b_k[k]*exp(-log(rho_b_k[k])/2.5)*0.9284; // CO2
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
 		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
@@ -896,7 +901,7 @@ int main(){
 		if(flag_P==0.0){
 			pp0 = press_b/press_b0;
 		} else if (flag_P==-10.0){
-			pp0 = press_b*kb*1e27/101325.0;
+			pp0 = press_b*kb*1e27/p0;
 		} else {
 			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
 			pp0 = press_b*kb*1e27;
@@ -915,6 +920,7 @@ int main(){
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=181; k>=0; k--){
 		rho_b = rho_b0 * rho_b_k[k];
+		//rho_b = rho_b0 * rho_b_k[k]*exp(-log(rho_b_k[k])/2.5)*0.9284; // CO2
 		// Hill Equation
 		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
 		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
@@ -977,7 +983,7 @@ int main(){
 		if(flag_P==0.0){
 			pp0 = press_b/press_b0;
 		} else if (flag_P==-10.0){
-			pp0 = press_b*kb*1e27/101325.0;
+			pp0 = press_b*kb*1e27/p0;
 		} else {
 			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
 			pp0 = press_b*kb*1e27;
