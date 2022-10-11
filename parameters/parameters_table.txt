@@ -145,25 +145,6 @@ sigma_sf = 0.340 [nm]
 beta1=-0.007
 beta2=0.421
 -----------------------------------------------------------------------
-CO2, 273 K, 2D-NDLFT (Slit), J. Jagiello et al., Carbon 91 (2015) 330-337.
-epsilon_ff/kB = 227.9 [K]
-epsilon_sf/kB = 79.9 [K]
-sigma_ff = 0.349 [nm] = d_HS
-sigma_sf = 0.344 [nm]
-beta1=0.0678 (Energy heterogeneity parameters, Eq.(2))
-beta2=0.756 (Energy heterogeneity parameters, Eq.(2))
-lambda=6.0 (Energy heterogeneity parameters, Eq.(2))
-alpha=0.45 (Surface corrugation parameters, Eq.(1))
-lambda=6.0 (Surface corrugation parameters, Eq.(1))
-
-carbon-carbon interactions in graphite
-epsilon_s/kB = 28 [K]
-sigma_s = 0.34 [nm]
-
-w = H - 0.34 [nm]
-
-P/P0 = 10^-7 - 0.3
------------------------------------------------------------------------
 CO2, 273.2 K, NDLFT (Slit), P. I. Ravikovitch et al., Langmuir 16 (2000) 2311-2320.
 epsilon_ff/kB = 235.9 [K]
 epsilon_sf/kB = 81.5 [K]
@@ -182,6 +163,25 @@ sigma_sf = 0.343 [nm]
 Silica, rho_s = 0.153 [A^-2]
 epsilon_sf/kB = 147.1 [K]
 sigma_sf = 0.330 [nm]
+-----------------------------------------------------------------------
+CO2, 273 K, 2D-NDLFT (Slit), J. Jagiello et al., Carbon 91 (2015) 330-337.
+epsilon_ff/kB = 227.9 [K]
+epsilon_sf/kB = 79.9 [K]
+sigma_ff = 0.349 [nm] = d_HS
+sigma_sf = 0.344 [nm]
+beta1=0.0678 (Energy heterogeneity parameters, Eq.(2))
+beta2=0.756 (Energy heterogeneity parameters, Eq.(2))
+lambda=6.0 (Energy heterogeneity parameters, Eq.(2))
+alpha=0.45 (Surface corrugation parameters, Eq.(1))
+lambda=6.0 (Surface corrugation parameters, Eq.(1))
+
+carbon-carbon interactions in graphite
+epsilon_s/kB = 28 [K]
+sigma_s = 0.34 [nm]
+
+w = H - 0.34 [nm]
+
+P/P0 = 10^-7 - 0.3
 -----------------------------------------------------------------------
 Si, 2D-NLDFT, J. Jagiello et al., J. Coll. Inter. Sci. 532 (2018) 588-597.
 epsilon_ff/kB = 109.6 [K]
