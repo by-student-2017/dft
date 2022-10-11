@@ -841,7 +841,7 @@ int main(){
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	string Punit;
 	string Punits;
-	if(flag_P==0.0){
+	if(flag_P>=0.0){
 		Punit = "P/P0";
 		Punits = "PP0";
 	} else if(flag_P<=-10.0){
