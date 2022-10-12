@@ -143,7 +143,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.01 + 0.5);
+		nstep = int((H-sigma_ss)/0.0075 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -814,7 +814,6 @@ int main(){
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
 	float threshold = 0.5/100*nstep;
 	//
 	float xio;
@@ -894,15 +893,13 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
-				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//float threshold = 0.5/100*nstep;
 			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
 		}
@@ -980,15 +977,13 @@ int main(){
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
-				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//float threshold = 0.5/100*nstep;
 			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
 		}
@@ -998,7 +993,7 @@ int main(){
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		v_cm3STP_per_cm3 = v_mmol_per_cm3 / 22.414;
+		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
