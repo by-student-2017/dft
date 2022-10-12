@@ -614,12 +614,12 @@ float press_hs(float rho_b){
 
 float Maxwell_construction(void){
 	int i,j;
-	int iter_max_drhob0 = 250000;
-	int iter_max_dmue = 1500;
-	float drhob0 = 0.0001;
-	float dmue = 0.01;
-	float threshold_diff = 0.3;
-	float threshold_find = 0.3;
+	int iter_max_drhob0 = 500000;
+	int iter_max_dmue = 50000;
+	float drhob0 = 0.00005;
+	float dmue = 0.0005;
+	float threshold_diff = 0.055;
+	float threshold_find = 0.055;
 	//
 	float mu_b_per_epsilon_ff[iter_max_drhob0];
 	float mu_e_per_epsilon_ff;
