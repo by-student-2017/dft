@@ -1276,22 +1276,17 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			//diff_old2 = diff_old1;
+			//
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//float threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//
 			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
@@ -1383,22 +1378,16 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			//diff_old2 = diff_old1;
+			//
 			diff_old1 = diff;
 			diff = 0.0;
-			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//float threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//
 			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}

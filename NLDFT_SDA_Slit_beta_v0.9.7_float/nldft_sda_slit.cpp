@@ -863,13 +863,7 @@ int main(){
 		} else {
 			rho_b = rho_b0 * rho_b_k[k];
 		}
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
@@ -887,7 +881,7 @@ int main(){
 					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			//diff_old2 = diff_old1;
+			//
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
@@ -896,9 +890,7 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//float threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//
 			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
@@ -947,13 +939,7 @@ int main(){
 		} else {
 			rho_b = rho_b0 * rho_b_k[k];
 		}
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
@@ -971,7 +957,7 @@ int main(){
 					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			//diff_old2 = diff_old1;
+			//
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
@@ -980,9 +966,7 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//float threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//
 			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
