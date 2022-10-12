@@ -810,7 +810,7 @@ int main(){
 	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
-	float diff_old2 = 1.0;
+	//float diff_old2 = 1.0;
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
@@ -887,7 +887,7 @@ int main(){
 					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
@@ -971,7 +971,7 @@ int main(){
 					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
