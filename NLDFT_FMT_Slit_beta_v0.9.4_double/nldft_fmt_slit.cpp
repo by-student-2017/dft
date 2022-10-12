@@ -982,12 +982,12 @@ double press_hs(double rho_b){
 
 double Maxwell_construction(void){
 	int i,j;
-	int iter_max_drhob0 = 250000;
-	int iter_max_dmue = 1500;
-	double drhob0 = 0.0001;
-	double dmue = 0.01;
-	double threshold_diff = 0.3;
-	double threshold_find = 0.3;
+	int iter_max_drhob0 = 500000;
+	int iter_max_dmue = 50000;
+	double drhob0 = 0.00005;
+	double dmue = 0.0005;
+	double threshold_diff = 0.05;
+	double threshold_find = 0.05;
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
 	double mu_e_per_epsilon_ff;
@@ -1202,7 +1202,7 @@ int main(){
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
 	//
-	double diff_old2 = 1.0;
+	//double diff_old2 = 1.0;
 	double diff_old1 = 1.0;
 	double diff;
 	double diff0;
@@ -1276,23 +1276,23 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//double threshold = 0.5/100*nstep;
 			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;
@@ -1383,23 +1383,23 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//double threshold = 0.5/100*nstep;
 			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
 			//std::cout << "--------------------------------------------------" << std::endl;

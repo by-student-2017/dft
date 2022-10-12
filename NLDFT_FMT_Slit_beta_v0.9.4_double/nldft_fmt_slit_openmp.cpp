@@ -1205,7 +1205,7 @@ int main(){
 	double c1;
 	double fex_i[nstep];  // For grand potential, Omega
 	//
-	double diff_old2 = 1.0;
+	//double diff_old2 = 1.0;
 	double diff_old1 = 1.0;
 	double diff;
 	double diff0;
@@ -1279,16 +1279,16 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
@@ -1386,16 +1386,16 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}

@@ -751,12 +751,12 @@ double press_hs(double rho_b){
 
 double Maxwell_construction(void){
 	int i,j;
-	int iter_max_drhob0 = 250000;
-	int iter_max_dmue = 1500;
-	double drhob0 = 0.0001;
-	double dmue = 0.01;
-	double threshold_diff = 0.3;
-	double threshold_find = 0.3;
+	int iter_max_drhob0 = 500000;
+	int iter_max_dmue = 50000;
+	double drhob0 = 0.00005;
+	double dmue = 0.005;
+	double threshold_diff = 0.05;
+	double threshold_find = 0.05;
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
 	double mu_e_per_epsilon_ff;
@@ -927,7 +927,7 @@ int main(){
 	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
-	double diff_old2 = 1.0;
+	//double diff_old2 = 1.0;
 	double diff_old1 = 1.0;
 	double diff;
 	double diff0;
@@ -990,15 +990,15 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//double threshold = 0.5/100*nstep;
@@ -1070,15 +1070,15 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			diff_old2 = diff_old1;
+			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				mixing = wmixing + wmixing/(0.5+diff0);
+				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
 			//double threshold = 0.5/100*nstep;

@@ -1458,12 +1458,12 @@ double press_hs(double rho_b){
 
 double Maxwell_construction(void){
 	int i,j;
-	int iter_max_drhob0 = 250000;
-	int iter_max_dmue = 1500;
-	double drhob0 = 0.0001;
-	double dmue = 0.01;
-	double threshold_diff = 0.3;
-	double threshold_find = 0.3;
+	int iter_max_drhob0 = 500000;
+	int iter_max_dmue = 50000;
+	double drhob0 = 0.00005;
+	double dmue = 0.0005;
+	double threshold_diff = 0.05;
+	double threshold_find = 0.05;
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
 	double mu_e_per_epsilon_ff;
@@ -1735,9 +1735,9 @@ int main(){
 			for (i=0; i<nstep; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+diff);
+				//mixing = wmixing + wmixing/(1.0+diff);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			diff = diff0/diff1;
 			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
@@ -1764,8 +1764,8 @@ int main(){
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
-		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		//v_cm3STP_per_g = v_mmol_per_cm3 * 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_g = v_mmol_per_cm3 * 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -1838,9 +1838,9 @@ int main(){
 			for (i=0; i<nstep; i++){
 				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
 				diff1 = diff1 + rho[i];
-				mixing = wmixing + wmixing/(1.0+diff);
+				//mixing = wmixing + wmixing/(1.0+diff);
 				//std::cout << i << ", " << mixing << std::endl;
-				rho[i] = mixing*rho_new[i] + (1.0-mixing)*rho[i];
+				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			diff = diff0/diff1;
 			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
@@ -1866,8 +1866,8 @@ int main(){
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
-		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		//v_cm3STP_per_g = v_mmol_per_cm3 * 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_g = v_mmol_per_cm3 * 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
