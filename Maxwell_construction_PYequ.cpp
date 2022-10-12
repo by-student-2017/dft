@@ -301,12 +301,12 @@ double press_hs(double rho_b){
 
 double Maxwell_construction(void){
 	int i,j;
-	int iter_max_drhob0 = 250000;
-	int iter_max_dmue = 1500;
-	double drhob0 = 0.0001;
-	double dmue = 0.01;
-	double threshold_diff = 0.3;
-	double threshold_find = 0.3;
+	int iter_max_drhob0 = 500000;
+	int iter_max_dmue = 50000;
+	double drhob0 = 0.00005;
+	double dmue = 0.0005;
+	double threshold_diff = 0.05;
+	double threshold_find = 0.05;
 	//
 	double mu_b_per_epsilon_ff[iter_max_drhob0];
 	double mu_e_per_epsilon_ff;
