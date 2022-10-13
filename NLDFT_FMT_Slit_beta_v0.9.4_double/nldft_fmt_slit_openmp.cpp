@@ -1001,7 +1001,7 @@ double Maxwell_construction(void){
 	//
 	// rho_b vs. mu_b/epsilon_ff
 	std::ofstream ofs("./Maxwell_construction_data.txt");
-	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
+	ofs << "# Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0_out = drhob0*double(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0_out)/epsilon_ff;
@@ -1241,13 +1241,7 @@ int main(){
 	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=0; k<=181; k++){
 		rho_b = rho_b0 * rho_b_k[k];
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
@@ -1279,22 +1273,17 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			//diff_old2 = diff_old1;
+			//
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//double threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//
 			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
@@ -1348,13 +1337,7 @@ int main(){
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=181; k>=0; k--){
 		rho_b = rho_b0 * rho_b_k[k];
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
@@ -1386,22 +1369,17 @@ int main(){
 					rho[i] = 1e-6;
 				}
 			}
-			//diff_old2 = diff_old1;
+			//
 			diff_old1 = diff;
 			diff = 0.0;
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
-				//mixing = wmixing + wmixing/(0.5+diff0);
 				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
-				//rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
-				//diff = diff + 2.0*std::abs((rho_new[i]-rho[i])/rho[i]);
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//double threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
+			//
 			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}

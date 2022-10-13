@@ -768,7 +768,7 @@ float Maxwell_construction(void){
 	//
 	// rho_b vs. mu_b/epsilon_ff
 	std::ofstream ofs("./Maxwell_construction_data.txt");
-	ofs << "Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
+	ofs << "# Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
 		rho_b0_out = drhob0*float(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0_out)/epsilon_ff;
