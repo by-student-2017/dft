@@ -1552,10 +1552,10 @@ int main(){
 	}
 	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(f)/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(f)/epsilon_ff[1/nm2]" << std::endl;
 	//for (k=0; k<100; k++){
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
@@ -1632,11 +1632,11 @@ int main(){
 		}
 		// 1 [K/nm3] = 1.38064878e-23/(10^-9)^3 [Nm/m3] = 13806.4878 [Pa]
 		// grand ppotential, Omega(ff+sf part)
-		//for (i=0; i<nstep; i++){
-		//	fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
-		//}
-		//grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
-		grand_potential = 1.0;		//grand_potential = 1.0;
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
+		//grand_potential = 1.0;		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
@@ -1645,7 +1645,7 @@ int main(){
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_ls << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(f)/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
@@ -1720,11 +1720,11 @@ int main(){
 		}
 		// 1 [K/nm3] = 1.38064878e-23/(10^-9)^3 [Nm/m3] = 13806.4878 [Pa]
 		// grand ppotential, Omega(ff+sf part)
-		//for (i=0; i<nstep; i++){
-		//	fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
-		//}
-		//grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
-		grand_potential = 1.0;
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
+		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
