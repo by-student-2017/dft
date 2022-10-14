@@ -76,7 +76,7 @@
 	Maxwell constraction routine is not good !
 
 
-## 2D-NLDFT (SDA) beta version 0.1.0 (August/17/2021)
+## 2D-NLDFT (SDA) alpha version 0.1.0 (August/17/2021)
 	sudo apt update
 	sudo apt -y g++
 	cd 2D-NLDFT_SDA_Slit_Disk_beta_v.0.1.0
