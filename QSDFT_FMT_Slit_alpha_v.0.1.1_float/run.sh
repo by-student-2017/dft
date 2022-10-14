@@ -5,8 +5,8 @@
 #)
 
 if [ ! -e qsdft_fmt_slit.exe ]; then
-	//c++ -O2 qsdft_fmt_slit.cpp -o qsdft_fmt_slit.exe
-	c++ -O2 qsdft_fmt_slit_steele -o qsdft_fmt_slit.exe
+	#c++ -O2 qsdft_fmt_slit.cpp -o qsdft_fmt_slit.exe
+	c++ -O2 qsdft_fmt_slit_steele.cpp -o qsdft_fmt_slit.exe
 fi
 
 if [ ! -d results ]; then
