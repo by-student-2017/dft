@@ -1,8 +1,8 @@
-00_H=0.53            # Memo: (2.0*ze) = 0.195 [nm]
+00_H=0.55            # Memo: (2.0*ze) = 0.195 [nm]
 01_sigma_ss=0.34     #[nm] (not use for QSDFT)
 02_nstep=0           # 0.0:auto, for mesh of slit width
 03_cycle_max=100001  # Number of max cycles
-04_wmixing=0.0075     # mixing parameter
+04_wmixing=0.0075    # mixing parameter
 05_epsilon_ff=95.77  #[K]
 06_sigma_ff=0.3549   #[nm]
 07_d_hs=0.3549       #[nm]
