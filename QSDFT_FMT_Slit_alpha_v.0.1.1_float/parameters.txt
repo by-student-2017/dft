@@ -1,4 +1,4 @@
-00_H=0.55            # Memo: (2.0*ze) = 0.195 [nm]
+00_H=0.555           # Memo: (2.0*ze) = 0.195 [nm]
 01_sigma_ss=0.34     #[nm] (not use for QSDFT)
 02_nstep=0           # 0.0:auto, for mesh of slit width
 03_cycle_max=100001  # Number of max cycles
