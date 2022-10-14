@@ -123,6 +123,7 @@ float alpha;
 // ---------- ----------- ------------ ------------
 // rho_b0 is related with P0
 float rho_b0;
+float p0;
 // ---------- ----------- ------------ ------------
 // The edge position ze of the solid wall
 float h0;
@@ -249,6 +250,14 @@ void read_parameters(void){
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
+	if ( nstep == 0 ) {
+		nstep = int((H-sigma_ss)/0.005 + 0.5);
+		if ( nstep%2 == 1 ){
+			nstep = nstep + 1;
+		}
+		std::cout << "--------------------------------------------------" << std::endl;
+		std::cout << "autoset nstep = " << nstep << std::endl;
+	}
 	// move below (ze)
 	// ---------- ----------- ------------ ------------
 	cycle_max = int(num[3]);
@@ -264,11 +273,15 @@ void read_parameters(void){
 	// move below (T)
 	// ---------- ----------- ------------ ------------
 	rc = num[8]; // [nm], cut off
+	if ( rc == 0.0 ) { 
+		rc = 5.0*sigma_ff;
+		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
+	}
 	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
 	nrmesh = int(num[9]);
 	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.08 + 0.5);
+		nrmesh = int(rc/0.04 + 0.5);
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
 		}
@@ -293,6 +306,7 @@ void read_parameters(void){
 	rho_ss = num[13]; // [nm^-3], [mulecules/nm3]
 	// ---------- ----------- ------------ ------------
 	m = num[14]; // [kg], fluid
+	//m = m/(6.02214076e23)/1000; //H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
 	if ( d_hs == 0.0 ) { 
@@ -303,13 +317,16 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rho_b0 = num[16];
 	// ---------- ----------- ------------ ------------
-	h0 = num[17]; // [nm]
+	p0 = num[17]; // [Pa]
 	// ---------- ----------- ------------ ------------
-	Ris = num[18]; // [nm], the hard-sphere radius of solid
+	h0 = num[18]; // [nm]
+	// ---------- ----------- ------------ ------------
+	Ris = num[19]; // [nm], the hard-sphere radius of solid
 	std::cout << "The hard-sphere radius of solid =" << Ris << " [nm]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
-	ms = num[19]; // [kg], solid
+	ms = num[20]; // [kg], solid
+	//ms = ms/(6.02214076e23)/1000; //H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
 	// ---------- ----------- ------------ ------------
 	
 	ze = calc_ze(2000);
@@ -537,13 +554,14 @@ float phi_sf(float z){
 	float sigma_sf2 = sigma_sf*sigma_sf;
 	float sfpz = (sigma_sf/z);
 	float sfpz2 = sfpz*sfpz;
-	float dez = (0.61*delta+z);
-	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
+	float deltas = 0.335; // For NLDFT, 0.6708/2.0=0.3354 [nm]
+	float dez = (0.61*deltas+z);
+	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*deltas*
 	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
-	//			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
-	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*(sigma_sf2)*delta*
+	//			(3.0*deltas*std::pow((0.61*deltas+z),3.0)) );
+	phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*(sigma_sf2)*deltas*
 				( (2.0/5.0)*std::pow(sfpz2,5.0)-(sfpz2*sfpz2)-(sigma_sf2*sigma_sf2)/
-				(3.0*delta*(dez*dez*dez)) );
+				(3.0*deltas*(dez*dez*dez)) );
 	return phi_sf_out;
 }
 
@@ -1392,10 +1410,37 @@ int main(){
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
+	float y, a, b, c;
+	float flag_P; flag_P = 0.0;
+	float rho_b1; rho_b1 = 0.0;
 	if ( rho_b0 != 0.0 ){
 		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else {
+	} else if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
+	} else {
+		// rho_b0 < 0.0
+		flag_P = -1.0;
+		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+		a = -0.5*alpha;
+		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+		c = -1.0*p0/(kb*1e27);
+		rho_b1 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+		if ( rho_b0==-10.0 ) {
+			// change [Pa] to [atm]
+			flag_P=-10.0;
+			c = -1.0*101325.0*(flag_P*-1.0)/(kb*1e27);
+		}
+		rho_b0 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+	}
+	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	pp0 = press_b0*kb*1e27;
+	std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
+	if ( flag_P>-100.0 ) {
+		//std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
+	} else if ( flag_P<=-100.0 ) {
+		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
 	//std::cout << rho_b0 << std::endl;
@@ -1405,17 +1450,18 @@ int main(){
 		rho_new[i] = 0.0;
 	}
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
-	ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
-	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
+	//std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
+	//ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//ofsppov_vs << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
+	//std::cout << "--------------------------------------------------" << std::endl;
+	//std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//std::cout << "P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
 	//float rho_sj[nstep];
 	//float rho_s0j[nstep];
 	//float rho_s1j[nstep];
 	//float rho_s2j[nstep];
 	//float phi_att_ff_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
+	std::cout << "--------------------------------------------------" << std::endl;
 	float *phi_att_ff_int_ij = (float *)malloc(sizeof(float)*((nstep+1)*nstep));
 	if (phi_att_ff_int_ij == NULL) {
 		printf("Memory cannot be allocated.");
@@ -1452,12 +1498,19 @@ int main(){
 	float c1;
 	float fex_i[nstep]; // For grand potential, Omega
 	//
-	//float diff_old2 = 1.0;
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
+	//float mixing;
 	float threshold = 0.5/100*nstep;
+	//
+	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
+	ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_vs << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	std::cout << "P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega(ff+sf part)/epsilon_ff[1/nm2](now dummy)" << std::endl;
 	//
 	float xio;
 	for (k=0; k<100; k++){
@@ -1480,27 +1533,25 @@ int main(){
 					rho_new[i] = 1e-6;
 				} else {
 					// overflow about std::exp(730)
-				    // to avoid overflow
+					// to avoid overflow
 					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				//mixing = wmixing + wmixing/(0.5+diff0);
-				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold) {
+			//std::cout << "diff=" << diff << std::endl;
+			if (diff < threshold && diff_old1 < threshold && j>=200) {
 				break;
 			}
 		}
 		//for (i=0; i<nstep; i++){
-		//	std::cout << "i=" << i << ", r=" << r[i] << ", rho_new=" << rho_new[i] << ", rho=" << rho[i] << ", mixing=" << mixing << ", (diff/nstep*100.0)=" << (diff/nstep*100.0) << std::endl;
+		//	std::cout << "i=" << i << ", r=" << r[i] << ", rho_new=" << rho_new[i] << ", rho=" << rho[i] << ", (diff/nstep*100.0)=" << (diff/nstep*100.0) << std::endl;
 		//}
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
@@ -1567,18 +1618,15 @@ int main(){
 					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			//diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				//mixing = wmixing + wmixing/(0.5+diff0);
-				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>200) {
 				break;
 			}
 		}
