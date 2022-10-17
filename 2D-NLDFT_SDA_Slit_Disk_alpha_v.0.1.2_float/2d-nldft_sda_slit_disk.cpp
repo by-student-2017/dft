@@ -1028,7 +1028,7 @@ int main(){
 	//
 	float z[nzstep];
 	float x[nxstep]; // x = y
-	//float rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
+	//float rho[nxstep][nzstep]; // [(nxstep+1)*nzstep)], a[x][z]= a[x*n+z] for a[][n]
 	float *rho     = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep));
 	float *rho_new = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep));
 	//
@@ -1084,19 +1084,19 @@ int main(){
 	
 	std::cout << "--------------------------------------------------" << std::endl;
 	//float rho[nxstep][nzstep]; // [(nxstep+1)*nzstep)], a[x][z]= a[x*n+z] for a[][n]
-	float *rho_s_ixiz  = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep)); // rho_s_jxjz in xi()
-	float *rho_s0_ixiz = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep));
-	float *rho_s1_ixiz = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep)); // rho_s1_jxjz in xi()
-	float *rho_s2_ixiz = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep)); // rho_s2_jxjz in xi()
+	float *rho_s_ixiz  = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep)); // rho_s_jxjz in xi()
+	float *rho_s0_ixiz = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep));
+	float *rho_s1_ixiz = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep)); // rho_s1_jxjz in xi()
+	float *rho_s2_ixiz = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep)); // rho_s2_jxjz in xi()
 	//
 	//float phi_att_ff_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
 	//Memo: a[i][j][k]= a[i*n*o+j*n+k] for a[][n][o], a[i][j][k][l]= a[i*n*o*p+j*o*p+k*p+l] for a[][n][o][p]
-	float *phi_att_ff_int_ixizjxjz = (float *)malloc(sizeof(float)*(nxstep*nzstep*nxstep*nzstep+nzstep*nxstep*nzstep+nxstep*nzstep+nzstep));
+	float *phi_att_ff_int_ixizjxjz = (float *)malloc(sizeof(float)*(nxstep*nzstep*nxstep*nzstep + nzstep*nxstep*nzstep + nxstep*nzstep + nzstep));
 	phi_att_ff_int(x, z, phi_att_ff_int_ixizjxjz); // calculate integral phi_att_ff at r[i]
 	std::cout << "phi_att_ff_int calculation was finished" << std::endl;
 	//
 	//float rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	float *rhos_phi_sf_int_ixiz  = (float *)malloc(sizeof(float)*(nxstep*nzstep+nzstep));
+	float *rhos_phi_sf_int_ixiz  = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep));
 	phi_att_sf_int(x, z, rhos_phi_sf_int_ixiz); // calculate integral phi_att_sf at r[i] -> rhos * phi_att_sf
 	std::cout << "phi_att_sf_int calculation was finished" << std::endl;
 	//
@@ -1116,11 +1116,11 @@ int main(){
 	}
 	//
 	//float rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
-	float *rho_dfex_int_ixiz  = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep));
-	float *rho_phi_ff_int_ixiz = (float *)malloc(sizeof(float)*((nxstep+1)*nzstep));
+	float *rho_dfex_int_ixiz  = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep));
+	float *rho_phi_ff_int_ixiz = (float *)malloc(sizeof(float)*(nxstep*nzstep + nzstep));
 	//
 	// rho_si_int_t_iixizjxjz[i*nxstep*nzstep*nxstep*nzstep+ix*nzstep*nxstep*nzstep+iz*nxstep*nzstep+jx*nzstep+jz]
-	float *rho_si_int_t_iixizjxjz = (float *)malloc(sizeof(float)*(2*nxstep*nzstep*nxstep*nzstep+nxstep*nzstep*nxstep*nzstep+nzstep*nxstep*nzstep+nxstep*nzstep+nzstep));
+	float *rho_si_int_t_iixizjxjz = (float *)malloc(sizeof(float)*(2*nxstep*nzstep*nxstep*nzstep + nxstep*nzstep*nxstep*nzstep + nzstep*nxstep*nzstep + nxstep*nzstep + nzstep));
 	rho_si_int_t(rho_si_int_t_iixizjxjz, x, z);
 	std::cout << "rho_si_int_t calculation was finished" << std::endl;
 	//
