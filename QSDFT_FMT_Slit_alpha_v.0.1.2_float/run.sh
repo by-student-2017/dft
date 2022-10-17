@@ -14,7 +14,7 @@ if [ ! -d results ]; then
 fi
 
 #for w in "${items[@]}"; do
-for ((i=36;i<=1000;i+=2)); do
+for ((i=38;i<=1000;i+=2)); do
 	w=`echo $i | awk '{printf "%4.2f", $1/100}'`
 	#echo $w
 	cp temp_parameters.txt parameters.txt
