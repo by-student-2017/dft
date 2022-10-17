@@ -98,6 +98,9 @@ double alpha;
 // rho_b0 is related with P0
 double rho_b0;
 // ---------- ----------- ------------ ------------
+// P0
+float p0;
+// ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
 double d_bh_calc(double epsilon, double sigma){

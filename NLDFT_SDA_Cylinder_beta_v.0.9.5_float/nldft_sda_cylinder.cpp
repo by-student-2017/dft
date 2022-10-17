@@ -101,6 +101,9 @@ float alpha;
 // rho_b0 is related with P0
 float rho_b0;
 // ---------- ----------- ------------ ------------
+// P0
+float p0;
+// ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
 float d_bh_calc(float epsilon, float sigma){
@@ -203,6 +206,8 @@ void read_parameters(void){
 		nrmesh = int(nstep/1.0);
 		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
 	}
+	// ---------- ----------- ------------ ------------
+	p0 = num[18];
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (Dcc-sigma_ss); // pore width, [nm]

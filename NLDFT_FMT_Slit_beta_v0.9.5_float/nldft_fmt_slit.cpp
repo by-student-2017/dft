@@ -109,6 +109,9 @@ float alpha;
 // rho_b0 is related with P0
 float rho_b0;
 // ---------- ----------- ------------ ------------
+// P0
+float p0;
+// ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
 	float sum;

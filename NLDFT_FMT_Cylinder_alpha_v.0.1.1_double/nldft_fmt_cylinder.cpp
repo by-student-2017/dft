@@ -113,6 +113,9 @@ double alpha;
 // rho_b0 is related with P0
 double rho_b0;
 // ---------- ----------- ------------ ------------
+// P0
+float p0;
+// ---------- ----------- ------------ ------------
 
 double integral_trapezoidal(double *f, int n, double dx){
 	double sum;
@@ -257,6 +260,8 @@ void read_parameters(void){
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
 	}
+	// ---------- ----------- ------------ ------------
+	p0 = num[18];
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (Dcc-sigma_ss); // pore width [nm]
