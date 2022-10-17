@@ -1040,10 +1040,40 @@ int main(){
 	// alpha = calc_alpha(x,z);
 	
 	// set rho_b0
-	if ( rho_b0 != 0.0 ){
+	float y, a, b, c;
+	float flag_P; flag_P = 0.0;
+	float rho_b1; rho_b1 = 0.0;
+	if ( rho_b0 > 0.0 ){
 		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else {
+	} else if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
+	} else {
+		// rho_b0 < 0.0
+		flag_P = -1.0;
+		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+		a = -0.5*alpha;
+		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+		c = -1.0*p0/(kb*1e27);
+		rho_b1 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+		if ( rho_b0==-10.0 ) {
+			// change [Pa] to [atm]
+			flag_P=-10.0;
+		} else if ( rho_b0<=-100.0 ) {
+			// change High pressure range to 1-100 [atm]
+			flag_P=rho_b0;
+			c = -1.0*101325.0*(flag_P*-1.0)/(kb*1e27);
+		}
+		rho_b0 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+	}
+	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	pp0 = press_b0*kb*1e27;
+	std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
+	if ( flag_P>-100.0 ) {
+		//std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
+	} else if ( flag_P<=-100.0 ) {
+		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -1088,10 +1118,11 @@ int main(){
 	rho_si_int_t(rho_si_int_t_iixizjxjz, x, z);
 	std::cout << "rho_si_int_t calculation was finished" << std::endl;
 	//
-	double trho;
-	double diff=1.0;
-	double diff0;
-	double mixing;
+	float diff_old1 = 1.0;
+	float diff;
+	float diff0;
+	float threshold = 0.5/100*nzstep*nxstep;
+	float trho = 0.0;
 	//
 	double rho_int_ix[nxstep];
 	double rho_int_iz[((nzstep-2)/2)];
@@ -1103,6 +1134,7 @@ int main(){
 	double grand_potential;
 	//
 	int j,k;
+	float xio;
 	double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
@@ -1124,56 +1156,51 @@ int main(){
 						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
 	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
+	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_vs << "# P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	//
 	for (k=0; k<=181; k++){
-		rho_b = rho_b0 * rho_b_k[k];
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//rho_b = rho_b0 * rho_b_k[k];
+		if(flag_P<=-100.0){
+			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
+		} else {
+			rho_b = rho_b0 * rho_b_k[k];
+		}
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dz*nzstep/2. 
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, rho_si_int_t_iixizjxjz);
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					rho_new[ix*nzstep+iz] = std::exp(xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz, rhos_phi_sf_int_ixiz)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-					//std::cout << "ix=" << ix << ", iz=" << iz << ", " << rho_new[ix*nzstep+iz] << ", " << -rhos_phi_sf_int_ixiz[ix*nzstep+iz]/(kb1*T) << std::endl;
+					xio = xi(rho, x, z, ix, iz, rho_b, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, phi_att_ff_int_ixizjxjz, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz, rhos_phi_sf_int_ixiz)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
 					//
-					// overflow about std::exp(730)
-					// to avoid overflow
-					if (rho_new[ix*nzstep+iz] > 1e6){
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] * 10.0;
-						//std::cout << "rho_new[ix*nzstep+iz] > 1e6" << std::endl;
-						//std::exit(1);
-					}
-					// to avoid -inf or int
-					if (rho_new[ix*nzstep+iz] < 1e-6 && rho[ix*nzstep+iz] < 1e-6){
+					if (-14 < xio && xio < 12){
+						rho_new[ix*nzstep+iz] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+					} else if (xio < -14){
 						rho_new[ix*nzstep+iz] = 1e-6;
-						rho[ix*nzstep+iz] = 1e-6;
+					} else {
+						// overflow about std::exp(730)
+				    	// to avoid overflow
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] / 10.0;
 					}
 				}
 			}
-			trho = 0.0;
+			diff_old1 = diff;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					trho = trho + rho[ix*nzstep+iz];
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff = diff + diff0;
-					mixing = wmixing + wmixing/(0.5+diff0);
-					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
+					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff/trho < 0.005 && j >= 100) {
+			//
+			if (diff < threshold && diff_old1 < threshold && j>=10) {
 				break;
 			}
 			//
@@ -1221,21 +1248,20 @@ int main(){
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
 	}
 	// reverse
-	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
+	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_ls << "# P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=181; k>=0; k--){
-		rho_b = rho_b0 * rho_b_k[k];
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(double(k),4.2323)/(std::pow(double(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//rho_b = rho_b0 * rho_b_k[k];
+		if(flag_P<=-100.0){
+			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
+		} else {
+			rho_b = rho_b0 * rho_b_k[k];
+		}
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dz*nzstep/2. 
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, rho_si_int_t_iixizjxjz);
@@ -1258,19 +1284,18 @@ int main(){
 					}
 				}
 			}
-			trho = 0.0;
+			diff_old1 = diff;
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					trho = trho + rho[ix*nzstep+iz];
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff = diff + diff0;
-					mixing = wmixing + wmixing/(0.5+diff0);
-					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
+					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			if ( diff/trho < 0.005 && j >= 100) {
+			//
+			if (diff < threshold && diff_old1 < threshold && j>=10) {
 				break;
 			}
 		}

@@ -1040,10 +1040,40 @@ int main(){
 	// alpha = calc_alpha(x,z);
 	
 	// set rho_b0
-	if ( rho_b0 != 0.0 ){
+	float y, a, b, c;
+	float flag_P; flag_P = 0.0;
+	float rho_b1; rho_b1 = 0.0;
+	if ( rho_b0 > 0.0 ){
 		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else {
+	} else if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
+	} else {
+		// rho_b0 < 0.0
+		flag_P = -1.0;
+		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+		a = -0.5*alpha;
+		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+		c = -1.0*p0/(kb*1e27);
+		rho_b1 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+		if ( rho_b0==-10.0 ) {
+			// change [Pa] to [atm]
+			flag_P=-10.0;
+		} else if ( rho_b0<=-100.0 ) {
+			// change High pressure range to 1-100 [atm]
+			flag_P=rho_b0;
+			c = -1.0*101325.0*(flag_P*-1.0)/(kb*1e27);
+		}
+		rho_b0 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+	}
+	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	pp0 = press_b0*kb*1e27;
+	std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
+	if ( flag_P>-100.0 ) {
+		//std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
+	} else if ( flag_P<=-100.0 ) {
+		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -1127,21 +1157,21 @@ int main(){
 						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
 	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
+	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	//
 	for (k=0; k<=181; k++){
-		rho_b = rho_b0 * rho_b_k[k];
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//rho_b = rho_b0 * rho_b_k[k];
+		if(flag_P<=-100.0){
+			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
+		} else {
+			rho_b = rho_b0 * rho_b_k[k];
+		}
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dz*nzstep/2. 
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, rho_si_int_t_iixizjxjz);
@@ -1220,21 +1250,20 @@ int main(){
 		std::cout << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	// reverse
-	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
+	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_ls << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	for (k=181; k>=0; k--){
-		rho_b = rho_b0 * rho_b_k[k];
-		// Hill Equation
-		//rho_b = rho_b0 * (0.0 + (1.0 - -0.0))*
-		//	(std::pow(float(k),4.2323)/(std::pow(float(k),4.2323)+std::pow(62.997,4.2323)));
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+		//rho_b = rho_b0 * rho_b_k[k];
+		if(flag_P<=-100.0){
+			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
+		} else {
+			rho_b = rho_b0 * rho_b_k[k];
+		}
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dz*nzstep/2. 
 			rho_s(rho, x, z, rho_s_ixiz, rho_s0_ixiz, rho_s1_ixiz, rho_s2_ixiz, rho_si_int_t_iixizjxjz);
