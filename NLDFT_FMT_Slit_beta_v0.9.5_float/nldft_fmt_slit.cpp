@@ -1238,13 +1238,12 @@ int main(){
 	float c1;
 	float fex_i[nstep];  // For grand potential, Omega
 	//
-	//float diff_old2 = 1.0;
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
 	float threshold = 0.5/100*nstep;
 	//
+	float xio;
 	float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
@@ -1278,12 +1277,13 @@ int main(){
 		Punit = "Pa";
 		Punits= "Pa";
 	}
-	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
+	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_vs << "# PP[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	//
 	for (k=0; k<=181; k++){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
@@ -1301,27 +1301,17 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				xio = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
-				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
-				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
-				//
-				// overflow about std::exp(730)
-				// to avoid overflow
-				if (rho_new[i] > 1e6){
-					rho_new[i] = rho[i] * 10.0;
-					//std::cout << "rho[i] > 1e6" << std::endl;
-					//std::exit(1);
-				}
-				// to avoid -inf or int
-				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
-					rho_new[i] = 1e-6;
-					rho[i] = 1e-6;
-				}
+					if (-14 < xio && xio < 12){
+						rho_new[ix*nzstep+iz] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+					} else if (xio < -14){
+						rho_new[ix*nzstep+iz] = 1e-6;
+					} else {
+						// overflow about std::exp(730)
+				    	// to avoid overflow
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] / 10.0;
+					}
 			}
 			//
 			diff_old1 = diff;
@@ -1383,9 +1373,9 @@ int main(){
 	}
 	// reverse
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
+	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_ls << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
@@ -1406,27 +1396,17 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
+				xio = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
 				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
-				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
-				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
-				//
-				// overflow about std::exp(730)
-				// to avoid overflow
-				if (rho_new[i] > 1e6){
-					rho_new[i] = rho[i] * 10.0;
-					//std::cout << "rho[i] > 1e6" << std::endl;
-					//std::exit(1);
-				}
-				// to avoid -inf or int
-				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
-					rho_new[i] = 1e-6;
-					rho[i] = 1e-6;
-				}
+					if (-14 < xio && xio < 12){
+						rho_new[ix*nzstep+iz] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+					} else if (xio < -14){
+						rho_new[ix*nzstep+iz] = 1e-6;
+					} else {
+						// overflow about std::exp(730)
+				    	// to avoid overflow
+						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] / 10.0;
+					}
 			}
 			//
 			diff_old1 = diff;
