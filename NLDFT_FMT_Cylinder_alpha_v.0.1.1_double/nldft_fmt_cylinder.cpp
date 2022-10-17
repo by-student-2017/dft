@@ -1533,7 +1533,7 @@ double Maxwell_construction(void){
 	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
 	//press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 	press_b0 = press_hs(rho_b0_out) - 0.5*(rho_b0_out*rho_b0_out)*alpha;
-	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0_out << ")" <<std::endl;
+	std::cout << "Bulk pressure, P0 = " << press_b0*kb*1e27 << " [Pa] = " << press_b0*kb*1e27/101325.0 << " [atm], (rho_b0 = " << rho_b0_out << ")" <<std::endl;
 	std::cout << std::endl;
 	std::cout << "gas phase   : rho_b0_gas        = " << rho_b0_gas        << ", rho_b0_gas*d_hs^3        = " << rho_b0_gas*std::pow(d_hs,3.0)        << std::endl;
 	std::cout << "metastable  : rho_b0_metastable = " << rho_b0_metastable << ", rho_b0_metastable*d_hs^3 = " << rho_b0_metastable*std::pow(d_hs,3.0) << std::endl;
@@ -1636,10 +1636,40 @@ int main(){
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
-	if ( rho_b0 != 0.0 ){
+	float y, a, b, c;
+	float flag_P; flag_P = 0.0;
+	float rho_b1; rho_b1 = 0.0;
+	if ( rho_b0 > 0.0 ){
 		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else {
+	} else if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
+	} else {
+		// rho_b0 < 0.0
+		flag_P = -1.0;
+		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+		a = -0.5*alpha;
+		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+		c = -1.0*p0/(kb*1e27);
+		rho_b1 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+		if ( rho_b0==-10.0 ) {
+			// change [Pa] to [atm]
+			flag_P=-10.0;
+		} else if ( rho_b0<=-100.0 ) {
+			// change High pressure range to 1-100 [atm]
+			flag_P=rho_b0;
+			c = -1.0*101325.0*(flag_P*-1.0)/(kb*1e27);
+		}
+		rho_b0 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+	}
+	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	pp0 = press_b0*kb*1e27;
+	std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
+	if ( flag_P>-100.0 ) {
+		//std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
+	} else if ( flag_P<=-100.0 ) {
+		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
 	//std::cout << rho_b0 << std::endl;
@@ -1648,13 +1678,7 @@ int main(){
 		rho[i] = rho_b0/(nstep*dr);
 		rho_new[i] = 0.0;
 	}
-	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
-	ofsppov_vs << "# w = (2.0*Rcc-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "w = (2.0*Rcc-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	//
 	//double rho_sj[nstep];
 	//double rho_s0j[nstep];
 	//double rho_s1j[nstep];
@@ -1690,11 +1714,62 @@ int main(){
 	double fex_i[nstep];  // For grand potential, Omega
 	double rho_r[nstep];
 	double check_c1xi;
-	for (k=0; k<100; k++){
-		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+	//
+	float diff_old1 = 1.0;
+	float diff;
+	float diff0;
+	float threshold = 0.5/100*nstep;
+	//
+	float xio;
+	float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
+						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
+						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
+						0.004594237,0.005915211,0.007526184,0.009468211,0.011783671,0.014515526,0.017706579,0.021398421,0.025631184,0.030442237,
+						0.035865395,0.041930789,0.048663553,0.056083947,0.064206711,0.073040395,0.082588289,0.092847105,0.103808026,0.115456447,
+						0.127772237,0.140730263,0.154301316,0.168452632,0.183144737,0.198336842,0.213988158,0.230053947,0.246484211,0.263235526,
+						0.280259211,0.297506579,0.314930263,0.332486842,0.350127632,0.367810526,0.385494737,0.403138158,0.420705263,0.438159211,
+						0.455467105,0.472598684,0.489525000,0.506219737,0.522661842,0.538827631,0.554700000,0.570261842,0.585498684,0.600400000,
+						0.614953947,0.629153947,0.642990789,0.656461842,0.669563158,0.682292105,0.694648684,0.706632895,0.718247368,0.729494737,
+						0.740377632,0.750900000,0.761068421,0.770886842,0.780363158,0.789501316,0.798311842,0.806798684,0.814971053,0.822838158,
+						0.830405263,0.837682895,0.844677632,0.851397368,0.857852632,0.864050000,0.869998684,0.875705263,0.881178947,0.886427632,
+						0.891459211,0.896281579,0.900901316,0.905326316,0.909563158,0.913619737,0.917503947,0.921219737,0.924775000,0.928177632,
+						0.931430263,0.934542105,0.937517105,0.940361842,0.943080263,0.945678947,0.948161842,0.950534211,0.952801316,0.954965789,
+						0.957034211,0.959009211,0.960896053,0.962697368,0.964417105,0.966059211,0.967626316,0.969122368,0.970550000,0.971913158,
+						0.973214474,0.974455263,0.975640789,0.976771053,0.977848684,0.978877632,0.979859211,0.980796053,0.981689474,0.982542105,
+						0.983353947,0.984128947,0.984868421,0.985573684,0.986247368,0.986888158,0.987500000,0.988082895,0.988639474,0.989169737,
+						0.989676316,0.990157895,0.990618421,0.991056579,0.991475000,0.991873684,0.992253947,0.992615789,0.992961842,0.993290789,
+						0.993603947,0.993903947,0.994189474,0.994461842,0.994721053,0.994968421,0.995203947,0.995428947,0.995642105,0.995846053,
+						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
+	//
+	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	string Punit;
+	string Punits;
+	if(flag_P>=0.0){
+		Punit = "P/P0";
+		Punits = "PP0";
+	} else if(flag_P<=-10.0){
+		Punit = "atm";
+		Punits= "atm";
+	} else{
+		Punit = "Pa";
+		Punits= "Pa";
+	}
+
+	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
+	ofsppov_vs << "# w = (2.0*Rcc-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_vs << "# P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "w = (2.0*Rcc-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	std::cout << "P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	//
+	for (k=0; k<=181; k++){
+		//rho_b = rho_b0 * rho_b_k[k];
+		if(flag_P<=-100.0){
+			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
+		} else {
+			rho_b = rho_b0 * rho_b_k[k];
+		}
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
@@ -1704,48 +1779,28 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//std::cout << c1 << std::endl;
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_c1xi = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T);
-				//std::cout << "i = " << i << ", c1 = " << c1 << ", c1+xi = " << check_c1xi << std::endl;
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
-				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
-				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
-				//
-				// overflow about std::exp(730)
-				// to avoid overflow
-				if (rho_new[i] > 1e6){
-					rho_new[i] = rho[i] * 10.0;
-					//std::cout << "rho[i] > 1e6" << std::endl;
-					//std::exit(1);
-				}
-				// to avoid -inf or int
-				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+				xio = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
+				if (-14 < xio && xio < 12){
+					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+				} else if (xio < -14){
 					rho_new[i] = 1e-6;
-					rho[i] = 1e-6;
+				} else {
+					// overflow about std::exp(730)
+				    // to avoid overflow
+					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			old_diff = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
+			diff_old1 = diff;
+			diff = 0.0;
 			for (i=0; i<nstep; i++){
-				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
-				diff1 = diff1 + rho[i];
-				//mixing = wmixing + wmixing/(1.0+diff);
-				//std::cout << i << ", " << mixing << std::endl;
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			//
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
 		//for (i=0; i<nstep; i++){
 		//	std::cout << "--------------------------------------------------" << std::endl;
@@ -1773,9 +1828,15 @@ int main(){
 		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
-		//std::cout << "P= " << press_b << std::endl;
-		//std::cout << "P0= " << press_b0 << std::endl;
-		pp0 = press_b/press_b0;
+		//
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
 		//
 		// grand ppotential, Omega
 		for (i=0; i<nstep; i++){
@@ -1789,17 +1850,20 @@ int main(){
 	}
 	// reverse
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
-	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
+	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_ls << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*double(k+1.0)/10.0));
-		rho_b = rho_b0 * std::exp(-(20.0-2.0*double(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
+	for (k=181; k>=0; k--){
+		//rho_b = rho_b0 * rho_b_k[k];
+		if(flag_P<=-100.0){
+			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
+		} else {
+			rho_b = rho_b0 * rho_b_k[k];
+		}
+		//
 		for (j=0; j<cycle_max; j++){
 			// Since it is mirror-symmetric with respect to the z-axis, this routine calculates up to z/2 = dr*nstep/2. 
 			//rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j);
@@ -1809,46 +1873,28 @@ int main(){
 			//for (i=0; i<=(nstep-2)/2; i++){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
-				//std::cout << c1 << std::endl;
-				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
-				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//check_c1xi = c1 + xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T);
-				//std::cout << j << ", " << i << ", " << c1 << ", " << check_c1xi << ", " << rho_new[i] << std::endl;
-				//std::cout << "num of cycle i, r[i], rho_new[i], rho[i]" << std::endl;
-				//std::cout << i << ", " << r[i] << ", "<< rho_new[i] << ", " << rho[i] << std::endl;
-				//std::cout << i << ", " << rho[i] << ", " << rho_sj[i] << ", " << rho_s0j[i] << ", " << rho_s1j[i] << ", " << rho_s2j[i] << std::endl;
-				//
-				// overflow about std::exp(730)
-				// to avoid overflow
-				if (rho_new[i] > 1e6){
-					rho_new[i] = rho[i] * 10.0;
-					//std::cout << "rho[i] > 1e6" << std::endl;
-					//std::exit(1);
-				}
-				// to avoid -inf or int
-				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+				xio = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int, phi_ext_i)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
+				if (-14 < xio && xio < 12){
+					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+				} else if (xio < -14){
 					rho_new[i] = 1e-6;
-					rho[i] = 1e-6;
+				} else {
+					// overflow about std::exp(730)
+				    // to avoid overflow
+					rho_new[i] = rho[i] / 10.0;
 				}
 			}
-			old_diff = diff;
-			diff0 = 0.0;
-			diff1 = 0.0;
+			diff_old1 = diff;
+			diff = 0.0;
 			for (i=0; i<nstep; i++){
-				diff0 = diff0 + std::abs(rho_new[i]-rho[i]);
-				diff1 = diff1 + rho[i];
-				//mixing = wmixing + wmixing/(1.0+diff);
-				//std::cout << i << ", " << mixing << std::endl;
+				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				diff = diff + diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
-			diff = diff0/diff1;
-			if ( diff <= 0.005 || (diff/old_diff >= 0.995 && j > int(0.995/wmixing)) ) {
+			//
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
-			//for (i=0; i<nstep; i++){
-			//	std::cout << j << ", " << i << ", " << rho_new[i] << ", " << rho[i] << ", " << mixing << ", " << diff << ", " << diff/old_diff << std::endl;
-			//}
 		}
 		//for (i=0; i<nstep; i++){
 		//	std::cout << "--------------------------------------------------" << std::endl;
@@ -1876,9 +1922,15 @@ int main(){
 		// press_hs(rho_b) from Percus-Yevick (PY) equation of state for FMT
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
-		//std::cout << "P= " << press_b << std::endl;
-		//std::cout << "P0= " << press_b0 << std::endl;
-		pp0 = press_b/press_b0;
+		//
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
 		//
 		// grand ppotential, Omega
 		for (i=0; i<nstep; i++){

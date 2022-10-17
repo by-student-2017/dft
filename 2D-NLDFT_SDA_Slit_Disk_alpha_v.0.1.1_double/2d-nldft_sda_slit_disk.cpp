@@ -969,7 +969,7 @@ double Maxwell_construction(void){
 	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
 	//press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 	press_b0 = press_hs(rho_b0_out) - 0.5*(rho_b0_out*rho_b0_out)*alpha;
-	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0_out << ")" <<std::endl;
+	std::cout << "Bulk pressure, P0 = " << press_b0*kb*1e27 << " [Pa] = " << press_b0*kb*1e27/101325.0 << " [atm], (rho_b0 = " << rho_b0_out << ")" <<std::endl;
 	std::cout << std::endl;
 	std::cout << "gas phase   : rho_b0_gas        = " << rho_b0_gas        << ", rho_b0_gas*d_hs^3        = " << rho_b0_gas*std::pow(d_hs,3.0)        << std::endl;
 	std::cout << "metastable  : rho_b0_metastable = " << rho_b0_metastable << ", rho_b0_metastable*d_hs^3 = " << rho_b0_metastable*std::pow(d_hs,3.0) << std::endl;
@@ -1206,7 +1206,15 @@ int main(){
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		//
-		pp0 = press_b/press_b0;
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
+		//
 		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
@@ -1290,7 +1298,15 @@ int main(){
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		//
-		pp0 = press_b/press_b0;
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
+		//
 		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;

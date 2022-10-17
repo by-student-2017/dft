@@ -1421,7 +1421,7 @@ float Maxwell_construction(void){
 	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
 	//press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 	press_b0 = press_hs(rho_b0_out) - 0.5*(rho_b0_out*rho_b0_out)*alpha;
-	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0_out << ")" <<std::endl;
+	std::cout << "Bulk pressure, P0 = " << press_b0*kb*1e27 << " [Pa] = " << press_b0*kb*1e27/101325.0 << " [atm], (rho_b0 = " << rho_b0_out << ")" <<std::endl;
 	std::cout << std::endl;
 	std::cout << "gas phase   : rho_b0_gas        = " << rho_b0_gas        << ", rho_b0_gas*d_hs^3        = " << rho_b0_gas*std::pow(d_hs,3.0)        << std::endl;
 	std::cout << "metastable  : rho_b0_metastable = " << rho_b0_metastable << ", rho_b0_metastable*d_hs^3 = " << rho_b0_metastable*std::pow(d_hs,3.0) << std::endl;
@@ -1693,13 +1693,8 @@ int main(){
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
-		//float check_data;
-	for (k=1; k<=181; k++){
+	//
+	for (k=0; k<=181; k++){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
@@ -1784,15 +1779,8 @@ int main(){
 	ofsppov_ls << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_ls << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
-	//for (k=0; k<100; k++){
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
-		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << "rho_b = " << rho_b << std::endl;
-		//float check_data;
-	for (k=181; k>=1; k--){
+	//
+	for (k=181; k>=0; k--){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;

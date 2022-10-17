@@ -969,7 +969,7 @@ float Maxwell_construction(void){
 	std::cout << "density, rho_b0*d_hs^3 = " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
 	//press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 	press_b0 = press_hs(rho_b0_out) - 0.5*(rho_b0_out*rho_b0_out)*alpha;
-	std::cout << "Bulk pressure, P0 = " << press_b0 << " (rho_b0 = " << rho_b0_out << ")" <<std::endl;
+	std::cout << "Bulk pressure, P0 = " << press_b0*kb*1e27 << " [Pa] = " << press_b0*kb*1e27/101325.0 << " [atm], (rho_b0 = " << rho_b0_out << ")" <<std::endl;
 	std::cout << std::endl;
 	std::cout << "gas phase   : rho_b0_gas        = " << rho_b0_gas        << ", rho_b0_gas*d_hs^3        = " << rho_b0_gas*std::pow(d_hs,3.0)        << std::endl;
 	std::cout << "metastable  : rho_b0_metastable = " << rho_b0_metastable << ", rho_b0_metastable*d_hs^3 = " << rho_b0_metastable*std::pow(d_hs,3.0) << std::endl;
@@ -1088,11 +1088,9 @@ int main(){
 	rho_si_int_t(rho_si_int_t_iixizjxjz, x, z);
 	std::cout << "rho_si_int_t calculation was finished" << std::endl;
 	//
-	float diff_old2 = 1.0;
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
 	float threshold = 0.5/100*nzstep*nxstep;
 	float trho = 0.0;
 	//
@@ -1164,24 +1162,18 @@ int main(){
 					}
 				}
 			}
-			diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
-			trho = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					trho = trho + rho[ix*nzstep+iz];
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff = diff + diff0;
-					mixing = wmixing + wmixing/(0.5+diff0);
-					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
+					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//float threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
-			if (diff < threshold && diff_old1 < threshold) {
+			//
+			if (diff < threshold && diff_old1 < threshold && j>=10) {
 				break;
 			}
 			//
@@ -1212,11 +1204,16 @@ int main(){
 		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
-		// 1 [K/nm3] = 1.38064878e-23/(10^-9)^3 [Nm/m3] = 13806.4878 [Pa]
-		press_b_Pa = press_b*13806.4878; // [Pa]
-		//press_b0_Pa = press_b0*13806.4878; // [Pa]
 		//
-		pp0 = press_b/press_b0;
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
+		//
 		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
@@ -1258,24 +1255,18 @@ int main(){
 					}
 				}
 			}
-			diff_old2 = diff_old1;
 			diff_old1 = diff;
 			diff = 0.0;
-			trho = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					trho = trho + rho[ix*nzstep+iz];
 					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
 					diff = diff + diff0;
-					mixing = wmixing + wmixing/(0.5+diff0);
-					rho[ix*nzstep+iz] = mixing*rho_new[ix*nzstep+iz] + (1.0-mixing)*rho[ix*nzstep+iz];
+					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
 			}
-			//if (diff/nstep < 0.005 && diff_old/nstep < 0.005 && j >= 20) {
-			//float threshold = 0.5/100*nstep;
-			//if (diff < threshold && diff_old1 < threshold && diff_old2 < threshold) {
-			if (diff < threshold && diff_old1 < threshold) {
+			//
+			if (diff < threshold && diff_old1 < threshold && j>=10) {
 				break;
 			}
 		}
@@ -1301,11 +1292,16 @@ int main(){
 		// press_hs(rho_b) from Carnahan-Starling (CS) equation of state
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
-		// 1 [K/nm3] = 1.38064878e-23/(10^-9)^3 [Nm/m3] = 13806.4878 [Pa]
-		press_b_Pa = press_b*13806.4878; // [Pa]
-		//press_b0_Pa = press_b0*13806.4878; // [Pa]
 		//
-		pp0 = press_b/press_b0;
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
+		//
 		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_ls << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;

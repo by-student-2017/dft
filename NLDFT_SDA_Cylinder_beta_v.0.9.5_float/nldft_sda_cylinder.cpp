@@ -891,11 +891,41 @@ int main(){
 		rho_b0 = Maxwell_construction();
 	}
 	
-	//std::cout << rho_b0 << std::endl;
-	// initialization
-	for (i=0; i<nstep; i++){
-		rho[i] = rho_b0/(nstep*dr);
-		rho_new[i] = 0.0;
+	// set rho_b0
+	float y, a, b, c;
+	float flag_P; flag_P = 0.0;
+	float rho_b1; rho_b1 = 0.0;
+	if ( rho_b0 > 0.0 ){
+		std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	} else if ( rho_b0 == 0.0 ) {
+		rho_b0 = Maxwell_construction();
+	} else {
+		// rho_b0 < 0.0
+		flag_P = -1.0;
+		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
+		a = -0.5*alpha;
+		b = kb1*T*(1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
+		c = -1.0*p0/(kb*1e27);
+		rho_b1 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+		if ( rho_b0==-10.0 ) {
+			// change [Pa] to [atm]
+			flag_P=-10.0;
+		} else if ( rho_b0<=-100.0 ) {
+			// change High pressure range to 1-100 [atm]
+			flag_P=rho_b0;
+			c = -1.0*101325.0*(flag_P*-1.0)/(kb*1e27);
+		}
+		rho_b0 = (-b+std::pow((b*b-4.0*a*c),0.5))/(2.0*a);
+	}
+	press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
+	pp0 = press_b0*kb*1e27;
+	std::cout << "rho_b0 = " << rho_b0 << std::endl;
+	std::cout << "Pressure     : " << pp0 << " [Pa]" << std::endl;
+	if ( flag_P>-100.0 ) {
+		//std::cout << "Ref. Pressure: 101325 [Pa] = 1 [atm]" << std::endl;
+		std::cout << "P0           : " << p0 << " [Pa] = " << p0/101325.0 << " [atm]" << std::endl;
+	} else if ( flag_P<=-100.0 ) {
+		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -927,11 +957,9 @@ int main(){
 	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
-	//float diff_old2 = 1.0;
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
 	float threshold = 0.5/100*nstep;
 	//
 	float rho_r[nstep];
@@ -957,6 +985,18 @@ int main(){
 						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
 	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	string Punit;
+	string Punits;
+	if(flag_P>=0.0){
+		Punit = "P/P0";
+		Punits = "PP0";
+	} else if(flag_P<=-10.0){
+		Punit = "atm";
+		Punits= "atm";
+	} else{
+		Punit = "Pa";
+		Punits= "Pa";
+	}
 	std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
@@ -990,7 +1030,6 @@ int main(){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
@@ -1021,7 +1060,15 @@ int main(){
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		//
-		pp0 = press_b/press_b0;
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
+		//
 		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
@@ -1061,7 +1108,6 @@ int main(){
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + 2.0*diff0;
-				//std::cout << i << ", " << mixing << std::endl;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
@@ -1091,7 +1137,15 @@ int main(){
 		press_b = press_hs(rho_b) - 0.5*std::pow(rho_b,2.0)*alpha;
 		press_b0 = press_hs(rho_b0) - 0.5*std::pow(rho_b0,2.0)*alpha;
 		//
-		pp0 = press_b/press_b0;
+		if(flag_P==0.0){
+			pp0 = press_b/press_b0;
+		} else if (flag_P<=-10.0){
+			pp0 = press_b*kb*1e27/p0;
+		} else {
+			// kb1=1, kb = 1.38e-23 [J/K], T [K], rho_b [N/nm^3], 1 [atm] = 101325 [Pa]
+			pp0 = press_b*kb*1e27;
+		}
+		//
 		grand_potential = omega(rho, r, rho_dfex_int, rho_phi_int);
 		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
