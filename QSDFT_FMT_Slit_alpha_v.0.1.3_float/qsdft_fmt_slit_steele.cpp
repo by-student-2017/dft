@@ -1650,7 +1650,6 @@ int main(){
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
 	float threshold = 0.5/100*nstep;
 	//
 	float xio;

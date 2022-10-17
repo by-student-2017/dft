@@ -1035,11 +1035,11 @@ int main(){
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
-				diff = diff + 2.0*diff0;
+				diff = diff + diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
 		}
@@ -1113,11 +1113,11 @@ int main(){
 			diff = 0.0;
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
-				diff = diff + 2.0*diff0;
+				diff = diff + diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=500) {
 				break;
 			}
 		}
