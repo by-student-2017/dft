@@ -194,7 +194,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rho_ss = num[13]; // The surface number density of the adsorption centers [nm^-2]
 	// ---------- ----------- ------------ ------------
-	m = num[14]; // [kg]
+	m = num[14]; //[g/mol], H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
+	m = m/(6.02214076e23)/1000; //[Kg]
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }

@@ -12,6 +12,7 @@
 11_sigma_sf=0.3508   #[nm]
 12_delta=0.335       #[nm]
 13_rho_ss=114.0      #[nm^-3], density of graphite
-14_m=4.65173e-26     #[kg]
+14_m=28.0134         #[g/mol] H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
 15_T=77.347          #[K] N2:77.347, Ar:87.3, CO2:273.2
 16_rho_b0=0.098214   # 0.0:auto, for mesh of circular
+17_p0=101325.0       #[Pa] (N2, H2 or Ar):101325.0, CO2:34.4 atm
