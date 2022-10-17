@@ -197,20 +197,23 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rho_ss = num[13]; // [nm^-3], [mulecules/nm3]
 	// ---------- ----------- ------------ ------------
-	m = num[14]; // [kg]
+	m = num[14]; //[g/mol], H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
+	m = m/(6.02214076e23)/1000; //[kg]
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
 	if ( d_hs == 0.0 ) { d_hs = d_bh_calc(epsilon_ff, sigma_ff); }
 	// ---------- ----------- ------------ ------------
 	rho_b0 = num[16];
 	// ---------- ----------- ------------ ------------
-	h0 = num[17];
+	p0 = num[17];
+	// ---------- ----------- ------------ ------------
+	h0 = num[18];
 	// ---------- ----------- ------------ ------------
 	double DH;
-	DH = num[18]; // D/H ratio
+	DH = num[19]; // D/H ratio
 	D = DH * H;
 	// ---------- ----------- ------------ ------------
-	nxstep = int(num[19]);
+	nxstep = int(num[20]);
 	if ( nxstep == 0 ) {
 		nxstep = int((D/2.0)/0.02 + 0.5);
 		if ( nxstep%2 == 1 ){
@@ -1104,9 +1107,9 @@ int main(){
 		for (iz=0; iz<nzstep; iz++){
 			pre_rho = rho_b0*-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/2000.0;
 			if ( pre_rho <= 0.0 ) {
-				rho[iz*nxstep+ix] = 0.0;
+				rho[ix*nzstep+iz] = 0.0;
 			} else {
-				rho[iz*nxstep+ix] = pre_rho;
+				rho[ix*nzstep+iz] = pre_rho;
 			}
 			rho_new[ix*nzstep+iz] = 0.0;
 		}

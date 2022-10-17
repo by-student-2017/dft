@@ -1107,9 +1107,9 @@ int main(){
 		for (iz=0; iz<nzstep; iz++){
 			pre_rho = rho_b0*-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/2000.0;
 			if ( pre_rho <= 0.0 ) {
-				rho[iz*nxstep+ix] = 0.0;
+				rho[ix*nzstep+iz] = 0.0;
 			} else {
-				rho[iz*nxstep+ix] = pre_rho;
+				rho[ix*nzstep+iz] = pre_rho;
 			}
 			rho_new[ix*nzstep+iz] = 0.0;
 		}
