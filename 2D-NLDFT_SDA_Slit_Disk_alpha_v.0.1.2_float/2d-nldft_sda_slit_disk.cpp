@@ -1022,6 +1022,14 @@ float omega(float *rho, float *x, float *z, float *rho_dfex_int_ixiz, float *rho
 
 int main(){
 	//
+	int i,j,k;
+	float v_gamma;
+	float press_b, press_b0, pp0;
+	float press_b_Pa, press_b0_Pa;
+	float v_mmol_per_cm3;
+	float v_cm3STP_per_cm3;
+	float grand_potential;
+	//
 	float rho_b;
 	// from parameters.txt
 	read_parameters();
@@ -1133,14 +1141,6 @@ int main(){
 	float rho_int_ix[nxstep];
 	float rho_int_iz[((nzstep-2)/2)];
 	//
-	float v_gamma;
-	float press_b, press_b0, pp0;
-	float press_b_Pa, press_b0_Pa;
-	float v_mmol_per_cm3;
-	float v_cm3STP_per_cm3;
-	float grand_potential;
-	//
-	int j,k;
 	float xio;
 	float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
@@ -1163,6 +1163,18 @@ int main(){
 						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
 	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	string Punit;
+	string Punits;
+	if(flag_P>=0.0){
+		Punit = "P/P0";
+		Punits = "PP0";
+	} else if(flag_P<=-10.0){
+		Punit = "atm";
+		Punits= "atm";
+	} else{
+		Punit = "Pa";
+		Punits= "Pa";
+	}
 	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
