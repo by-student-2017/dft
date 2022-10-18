@@ -970,6 +970,7 @@ int main(){
 	//
 	float rho_r[nstep];
 	//
+	float xio;
 	float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
@@ -1015,19 +1016,15 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
 			for (i=0; i<nstep; i++){
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//
-				// overflow about std::exp(730)
-				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					rho_new[i] = rho[i] * 10.0;
-					//std::cout << "rho[i] > 1e9" << std::endl;
-					//std::exit(1);
-				}
-				// to avoid -inf or int
-				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+				xio = xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
+				if (-14 < xio && xio < 12){
+					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+				} else if (xio < -14){
 					rho_new[i] = 1e-6;
-					rho[i] = 1e-6;
+				} else {
+					// overflow about std::exp(730)
+				    // to avoid overflow
+					rho_new[i] = rho[i] / 10.0;
 				}
 			}
 			//
@@ -1093,19 +1090,15 @@ int main(){
 		for (j=0; j<cycle_max; j++){
 			rho_s(rho, r, rho_sj, rho_s0j, rho_s1j, rho_s2j, rho_si_int_ijrj);
 			for (i=0; i<nstep; i++){
-				rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-				//
-				// overflow about std::exp(730)
-				// to avoid overflow
-				if (rho_new[i] > 1e9){
-					rho_new[i] = rho[i] * 10.0;
-					//std::cout << "rho[i] > 1e9" << std::endl;
-					//std::exit(1);
-				}
-				// to avoid -inf or int
-				if (rho_new[i] < 1e-6 && rho[i] < 1e-6){
+				xio = xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
+				if (-14 < xio && xio < 12){
+					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+				} else if (xio < -14){
 					rho_new[i] = 1e-6;
-					rho[i] = 1e-6;
+				} else {
+					// overflow about std::exp(730)
+				    // to avoid overflow
+					rho_new[i] = rho[i] / 10.0;
 				}
 			}
 			//
