@@ -7,7 +7,7 @@
 06_sigma_ff=0.3575   #[nm]
 07_d_hs=0.3575       #[nm]
 08_rc=0.0            # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
-09_nhmesh=80         # 0.0:auto, for mesh between center and graphite wall
+09_nhmesh=0          # 0.0:auto, for mesh between center and graphite wall
 10_epsilon_sf=53.22  #[K]
 11_sigma_sf=0.3494   #[nm]
 12_delta=0.335       #[nm]
