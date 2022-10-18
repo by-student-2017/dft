@@ -1212,8 +1212,8 @@ int main(){
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
-					diff = diff + diff0;
+					diff0 = std::abs((rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
+					diff = diff + 2.0*diff0;
 					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
@@ -1223,9 +1223,9 @@ int main(){
 				break;
 			}
 			//
-			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", diff=" << diff << ", trho=" << trho << std::endl;
+			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", diff=" << diff << ", trho=" << trho << std::endl;
 			//for (ix=0; ix<nxstep; ix++){
-			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", mixing=" << mixing << ", tdiff=" << (diff/(nxstep*nzstep/2)*100.0) << std::endl;
+			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", tdiff=" << (diff/(nxstep*nzstep/2)*100.0) << std::endl;
 			//}
 		}
 		//
@@ -1306,8 +1306,8 @@ int main(){
 			diff = 0.0;
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
-					diff0 = std::abs(rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz]);
-					diff = diff + diff0;
+					diff0 = std::abs((rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
+					diff = diff + 2.0*diff0;
 					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
