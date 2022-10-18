@@ -1711,10 +1711,6 @@ int main(){
 		printf("Memory has been allocated. The address is %p\n", phi_att_int_ij);
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
-	float diff = 1.0;
-	float old_diff;
-	float diff0, diff1;
-	float mixing;
 	//
 	float c1;
 	float fex_i[nstep];  // For grand potential, Omega
