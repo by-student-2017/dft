@@ -1514,7 +1514,7 @@ MPI::Init();
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			//std::cout << "diff=" << diff << std::endl;
-			if (diff < threshold && diff_old1 < threshold && j>=50) {
+			if (diff < threshold && diff_old1 < threshold && j>200) {
 				break;
 			}
 		}
@@ -1600,7 +1600,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>50) {
+			if (diff < threshold && diff_old1 < threshold && j>200) {
 				break;
 			}
 		}
