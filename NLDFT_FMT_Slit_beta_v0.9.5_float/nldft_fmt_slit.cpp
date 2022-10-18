@@ -1150,6 +1150,7 @@ int main(){
 	float v_cm3STP_per_cm3;
 	float grand_potential;
 	//
+	// from parameters.txt
 	read_parameters();
 	float r[nstep];
 	float rho[nstep], rho_new[nstep];
@@ -1302,16 +1303,15 @@ int main(){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
 				xio = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-					if (-14 < xio && xio < 12){
-						rho_new[ix*nzstep+iz] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
-					} else if (xio < -14){
-						rho_new[ix*nzstep+iz] = 1e-6;
-					} else {
-						// overflow about std::exp(730)
-				    	// to avoid overflow
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] / 10.0;
-					}
+				if (-14 < xio && xio < 12){
+					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+				} else if (xio < -14){
+					rho_new[i] = 1e-6;
+				} else {
+					// overflow about std::exp(730)
+				    // to avoid overflow
+					rho_new[i] = rho[i] / 10.0;
+				}
 			}
 			//
 			diff_old1 = diff;
@@ -1397,16 +1397,15 @@ int main(){
 			for (i=0; i<nstep; i++){
 				c1 = dfex(r, i, n0, n1, n2, n3, nv1, nv2);
 				xio = c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T); // xi include kb1*T*(std::log(rho_b)) type.
-				rho_new[i] = std::exp(c1+xi(rho,r,i,rho_b, phi_att_int_ij, rho_phi_int)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
-					if (-14 < xio && xio < 12){
-						rho_new[ix*nzstep+iz] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
-					} else if (xio < -14){
-						rho_new[ix*nzstep+iz] = 1e-6;
-					} else {
-						// overflow about std::exp(730)
-				    	// to avoid overflow
-						rho_new[ix*nzstep+iz] = rho[ix*nzstep+iz] / 10.0;
-					}
+				if (-14 < xio && xio < 12){
+					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
+				} else if (xio < -14){
+					rho_new[i] = 1e-6;
+				} else {
+					// overflow about std::exp(730)
+				    // to avoid overflow
+					rho_new[i] = rho[i] / 10.0;
+				}
 			}
 			//
 			diff_old1 = diff;
