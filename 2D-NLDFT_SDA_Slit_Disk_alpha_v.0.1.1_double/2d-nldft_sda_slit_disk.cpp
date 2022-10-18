@@ -1022,6 +1022,14 @@ double omega(double *rho, double *x, double *z, double *rho_dfex_int_ixiz, doubl
 
 int main(){
 	//
+	int i,j,k;
+	float v_gamma;
+	float press_b, press_b0, pp0;
+	float press_b_Pa, press_b0_Pa;
+	float v_mmol_per_cm3;
+	float v_cm3STP_per_cm3;
+	float grand_potential;
+	//
 	double rho_b;
 	// from parameters.txt
 	read_parameters();
@@ -1117,7 +1125,7 @@ int main(){
 	//
 	//double rho[nxstep][nzstep]; // [(nzstep+1)*nxstep], a[x][z]= a[x*n+z] for a[][n]
 	double *rho_dfex_int_ixiz  = (double *)malloc(sizeof(double)*(nxstep*nzstep + nzstep));
-	double *rho_phi_ff_int_ixiz = (double *)malloc(sizeof(double)*(nxstep*nzstep + nzstep);
+	double *rho_phi_ff_int_ixiz = (double *)malloc(sizeof(double)*(nxstep*nzstep + nzstep));
 	//
 	// rho_si_int_t_iixizjxjz[i*nxstep*nzstep*nxstep*nzstep+ix*nzstep*nxstep*nzstep+iz*nxstep*nzstep+jx*nzstep+jz]
 	double *rho_si_int_t_iixizjxjz = (double *)malloc(sizeof(double)*(2*nxstep*nzstep*nxstep*nzstep + nxstep*nzstep*nxstep*nzstep + nzstep*nxstep*nzstep + nxstep*nzstep + nzstep));
@@ -1133,13 +1141,6 @@ int main(){
 	double rho_int_ix[nxstep];
 	double rho_int_iz[((nzstep-2)/2)];
 	//
-	double v_gamma;
-	double press_b, press_b0, pp0;
-	double v_mmol_per_cm3;
-	double v_cm3STP_per_g;
-	double grand_potential;
-	//
-	int j,k;
 	float xio;
 	double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 						7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
@@ -1162,6 +1163,18 @@ int main(){
 						0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
 	//
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
+	string Punit;
+	string Punits;
+	if(flag_P>=0.0){
+		Punit = "P/P0";
+		Punits = "PP0";
+	} else if(flag_P<=-10.0){
+		Punit = "atm";
+		Punits= "atm";
+	} else{
+		Punit = "Pa";
+		Punits= "Pa";
+	}
 	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P[" << Punit << "], V[mmol/cm3], V[cm3(STP)/g], Omega/epsilon_ff[1/nm2]" << std::endl;
@@ -1228,8 +1241,7 @@ int main(){
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
-		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -1250,8 +1262,8 @@ int main(){
 		//
 		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		ofsppov_vs << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	// reverse
 	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
@@ -1318,8 +1330,7 @@ int main(){
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
-		//v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*(1e7*1e7*1e7)/(6.02214076*1e23)); // [cm3(STP)/g], 2.226 [g/cm3]
-		v_cm3STP_per_g = v_mmol_per_cm3 / 22.414 / (rho_ss*12.0107*10.0/6.02214076); // [cm3(STP)/g], 2.226 [g/cm3]
+		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
 		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
@@ -1340,8 +1351,8 @@ int main(){
 		//
 		grand_potential = omega(rho, x, z, rho_dfex_int_ixiz, rho_phi_ff_int_ixiz);
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_g << ", " << grand_potential << std::endl;
+		ofsppov_ls << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		std::cout << pp0 << ", " << press_b_Pa << ", " << v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	free(rho_s_ixiz);
 	free(rho_s0_ixiz);
