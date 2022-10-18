@@ -151,7 +151,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((Dcc-sigma_ss)/0.01 + 0.5);
+		nstep = int(((Dcc-sigma_ss)/2.0)/0.0075 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -212,7 +212,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (Dcc-sigma_ss); // pore width, [nm]
-	dr = (Dcc-sigma_ss)/2.0/float(nstep);
+	dr = ((Dcc-sigma_ss)/2.0)/float(nstep+1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	dh = 2.0*d_hs/float(nhmesh-1);
 	
@@ -882,7 +882,7 @@ int main(){
 	float rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		r[i] = dr*(0.5+float(i)); // dr = (Dcc-sigma_ss)/float(nstep+1);
+		r[i] = dr*(0.5+float(i)); // dr = ((Dcc-sigma_ss)/2.0)/float(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -891,19 +891,12 @@ int main(){
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
-	if ( rho_b0 != 0.0 ){
-		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else {
-		rho_b0 = Maxwell_construction();
-	}
-	
-	// set rho_b0
 	float y, a, b, c;
 	float flag_P; flag_P = 0.0;
 	float rho_b1; rho_b1 = 0.0;
 	if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
-	} else if ( rho_b0 < 0.0 ) {
+	} else if ( rho_b0 < 0.0  ){
 		// rho_b0 < 0.0
 		flag_P = -1.0;
 		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
@@ -1034,9 +1027,10 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold && j>=500) {
+			if (diff < threshold && diff_old1 < threshold && j>=50) {
 				break;
 			}
+			//std::cout << "j=" << j << ", diff=" << diff << ", threshold=" << threshold  << std::endl;
 		}
 		//
 		for (i=0; i<nstep; i++){
@@ -1108,9 +1102,9 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold && j>=500) {
+			if (diff < threshold && diff_old1 < threshold && j>=50) {
 				break;
-			}
+			} 
 		}
 		//
 		for (i=0; i<nstep; i++){
