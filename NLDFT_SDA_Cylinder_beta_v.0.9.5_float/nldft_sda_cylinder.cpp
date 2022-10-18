@@ -179,7 +179,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nhmesh = int(num[9]);
 	if ( nhmesh == 0 ) {
-		nhmesh = int(rc/0.08 + 0.5);
+		nhmesh = int(rc/0.02 + 0.5);
 		if ( nhmesh%2 == 1 ){
 			nhmesh = nhmesh + 1;
 		}
@@ -204,7 +204,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nrmesh = num[17];
 	if ( nrmesh == 0 ){
-		nrmesh = int(nstep/1.0);
+		nrmesh = int(nhmesh/1.0);
 		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
