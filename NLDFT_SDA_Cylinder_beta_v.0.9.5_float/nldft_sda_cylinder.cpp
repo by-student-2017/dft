@@ -901,11 +901,9 @@ int main(){
 	float y, a, b, c;
 	float flag_P; flag_P = 0.0;
 	float rho_b1; rho_b1 = 0.0;
-	if ( rho_b0 > 0.0 ){
-		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else if ( rho_b0 == 0.0 ) {
+	if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
-	} else {
+	} else if ( rho_b0 < 0.0 ) {
 		// rho_b0 < 0.0
 		flag_P = -1.0;
 		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
