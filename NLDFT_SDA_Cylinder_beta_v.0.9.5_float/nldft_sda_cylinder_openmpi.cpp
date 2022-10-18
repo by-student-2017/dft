@@ -2,6 +2,8 @@
 #include <iostream>  // for cout
 #include <cmath>     // for log, exp
 #include <sstream>   // for read parameters
+#include <omp.h>     // OpenMP (c++ nldft_sda_cylinder_openmp.cpp -fopenmp) (set OMP_NUM_THREADS=4)
+#include <mpi.h>     // OpenMPI (mpic++ nldft.cpp) (set OMP_NUM_THREADS=1)
 
 //#include "maxwell_construction.h"
 
@@ -340,6 +342,7 @@ float rho_si_int_k(float *r, float *rho_si_int_ijrj){
 				for (k=0; k<nhmesh; k++) {
 					rak = dh*float(k);
 					//rho_si_int_k[k] = 0.0;
+#pragma omp parallel for
 					for (t=0; t<nrmesh; t++) {
 						x = r[j]*std::cos(drad*float(t));
 						y = r[j]*std::sin(drad*float(t));
@@ -666,6 +669,7 @@ float phi_att_int(float *r, float *phi_att_int_ij){
 			for (k=0; k<nhmesh; k++) {
 				rak = dh*float(k);
 				//rho_phi_int_k[k] = 0.0;
+#pragma omp parallel for
 				for (t=0; t<nrmesh; t++) {
 					x = r[j]*std::cos(drad*float(t));
 					y = r[j]*std::sin(drad*float(t));
@@ -707,6 +711,7 @@ float xi(float *rho, float *r, int i, float rho_b, float *rho_sj, float *rho_s0j
 	for (j=0; j<nstep; j++) {
 		for (k=0; k<nhmesh; k++) {
 			rak = dh*float(k);
+#pragma omp parallel for
 			for (t=0; t<nrmesh; t++) {
 				x = r[j]*std::cos(drad*float(t));
 				y = r[j]*std::sin(drad*float(t));
@@ -849,6 +854,7 @@ float omega(float *rho, float *r, float *rho_dfex_int, float *rho_phi_int){
 	float rho_x_rho_dfex_int[nstep];
 	float rho_x_rho_phi_int[nstep];
 	float tpidr = 2.0*M_PI*dr;
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		rhor[i] = rho[i] * tpidr*r[i];
 		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i] * tpidr*r[i];
@@ -866,7 +872,10 @@ float omega(float *rho, float *r, float *rho_dfex_int, float *rho_phi_int){
 	return omega_out;
 }
 
+//int main(int argc, char **argv){
+//MPI::Init(argc,argv);
 int main(){
+MPI::Init();
 	int i,j,k;
 	float v_gamma;
 	float press_b, press_b0, pp0;
@@ -881,6 +890,7 @@ int main(){
 	float r[nstep];
 	float rho[nstep], rho_new[nstep];
 	//
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		r[i] = dr*(0.5+float(i)); // dr = ((Dcc-sigma_ss)/2.0)/float(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
@@ -927,6 +937,7 @@ int main(){
 	
 	//std::cout << rho_b0 << std::endl;
 	// initialization
+#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		rho[i] = rho_b0/(nstep*dr);
 		rho_new[i] = 0.0;
@@ -941,7 +952,6 @@ int main(){
 	float rho_dfex_int[nstep];
 	float rho_phi_int[nstep];
 	float phi_ext_i[nstep];
-#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		phi_ext_i[i] = phi_ext(r[i]);
 		//std::cout << "phi_ext_i[" << i << "] = " << phi_ext_i[i] << std::endl;
@@ -1029,7 +1039,6 @@ int main(){
 			//
 			diff_old1 = diff;
 			diff = 0.0;
-#pragma omp parallel for
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
@@ -1042,7 +1051,6 @@ int main(){
 			//std::cout << "j=" << j << ", diff=" << diff << ", threshold=" << threshold  << std::endl;
 		}
 		//
-#pragma omp parallel for
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
@@ -1106,7 +1114,6 @@ int main(){
 			//
 			diff_old1 = diff;
 			diff = 0.0;
-#pragma omp parallel for
 			for (i=0; i<nstep; i++){
 				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
 				diff = diff + diff0;
@@ -1118,7 +1125,6 @@ int main(){
 			} 
 		}
 		//
-#pragma omp parallel for
 		for (i=0; i<nstep; i++){
 			rho_r[i] = rho[i]*2.0*M_PI*r[i];
 		}
@@ -1156,5 +1162,6 @@ int main(){
 	}
 	free(phi_att_int_ij);
 	free(rho_si_int_ijrj);
+MPI::Finalize();
 	return 0;
 }
