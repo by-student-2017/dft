@@ -1111,9 +1111,9 @@ int main(){
 	//std::cout << rho_b0 << std::endl;
 	// initialization
 	float pre_rho;
-	for (ix=0; ix<nxstep; ix++){
-		for (iz=0; iz<nzstep; iz++){
-			pre_rho = rho_b0*-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/2000.0;
+	for (iz=0; iz<nzstep; iz++){
+		for (ix=0; ix<nxstep; ix++){
+			pre_rho = rho_b0*-rhos_phi_sf_int_ixiz[ix*nzstep+iz]/2000.0*exp(-2.0*ix/nxstep);
 			if ( pre_rho <= 0.0 ) {
 				rho[ix*nzstep+iz] = 0.0;
 			} else {
@@ -1215,7 +1215,7 @@ int main(){
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					diff0 = std::abs((rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-					diff = diff + diff0;
+					diff = diff + 2.0*diff0;
 					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}
@@ -1225,10 +1225,9 @@ int main(){
 				break;
 			}
 			//
-			//std::cout << "j=" << j << ", ix=" << int(nxstep/2) << ", rho=" << rho[int(nxstep/2)*nzstep+int(nzstep/2)] << ", diff=" << diff << ", trho=" << trho << std::endl;
-			//for (ix=0; ix<nxstep; ix++){
-			//	std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", tdiff=" << (diff/(nxstep*nzstep)*100.0) << std::endl;
-			//}
+			for (ix=0; ix<nxstep; ix++){
+				std::cout << "j=" << j << ", ix=" << ix << ", rho=" << rho[ix*nzstep+int(nzstep/2)] << ", diff=" << (diff/(nxstep*nzstep)*100.0) << std::endl;
+			}
 		}
 		//
 		float spr2 = M_PI*(dx/2.0)*(dx/2.0) / (2.0*M_PI*x[0]);
@@ -1307,7 +1306,7 @@ int main(){
 			for (ix=0; ix<nxstep; ix++){
 				for (iz=0; iz<=(nzstep-2)/2; iz++){
 					diff0 = std::abs((rho_new[ix*nzstep+iz] - rho[ix*nzstep+iz])/rho[ix*nzstep+iz]);
-					diff = diff + diff0;
+					diff = diff + 2.0*diff0;
 					rho[ix*nzstep+iz] = wmixing*rho_new[ix*nzstep+iz] + (1.0-wmixing)*rho[ix*nzstep+iz];
 					rho[ix*nzstep+((nzstep-1)-iz)] = rho[ix*nzstep+iz]; // The rest is filled with mirror symmetry. 
 				}

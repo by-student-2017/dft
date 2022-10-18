@@ -1,22 +1,21 @@
-00_H=0.74            # Memo
+00_H=0.68             # Memo
 01_sigma_ss=0.34     #[nm]
-02_nzstep=0          # 0.0:auto, for mesh of slit width
+02_nzstep=40         # 0.0:auto, for mesh of slit width
 03_cycle_max=10001   # Number of max cycles
-04_wmixing=0.01      # mixing parameter
+04_wmixing=0.0075    # mixing parameter
 05_epsilon_ff=94.45  #[K]
 06_sigma_ff=0.3575   #[nm]
 07_d_hs=0.3575       #[nm]
 08_rc=0.0            # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
-09_ntmesh=0          # 0.0:auto, for mesh of radial
+09_ntmesh=60         # 0.0:auto, for mesh of radial
 10_epsilon_sf=53.22  #[K]
 11_sigma_sf=0.3494   #[nm]
 12_delta=0.335       #[nm]
 13_rho_ss=114.0      #[nm^-3], density of graphite
 14_m=28.0134         #[g/mol] N2=28.0134
 15_T=77.347          #[K] N2:77.347, Ar:87.3, CO2:273.2
-16_rho_b0=0.098214   # 0.0:auto, <0.0:Pa, <=-10.0:atm, <=-100:100atm, <=-XXX.X:XXX.Xatm(for <=-100.0)
+16_rho_b0=0.098214   # 0.0:auto, <0.0:Pa, <=-10.0:atm, <=-100:100atm, <=-0.68.X:0.68.Xatm(for <=-100.0)
 17_p0=101325.0       #[Pa] H2:101325.0, CO2:101325.0*34.4*0.3
 18_h0=0.68           # thickness of graphite wall
 19_DH=4              # Diameter / slit width
-20_nxstep=0          # 0.0:auto, for mesh of radial
-
+20_nxstep=60         # 0.0:auto, for mesh of radial
