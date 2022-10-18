@@ -200,7 +200,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((Dcc-sigma_ss)/0.0025 + 0.5);
+		nstep = int(((Dcc-sigma_ss)/2.0)/0.005 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -228,7 +228,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nhmesh = int(num[9]);
 	if ( nhmesh == 0 ) {
-		nhmesh = int(rc/0.08 + 0.5);
+		nhmesh = int(rc/0.02 + 0.5);
 		if ( nhmesh%2 == 1 ){
 			nhmesh = nhmesh + 1;
 		}
@@ -254,7 +254,7 @@ void read_parameters(void){
 	nrmesh = num[17];
 	//nrmesh = 180/9;
 	if ( nrmesh == 0 ) {
-		nrmesh = int((Dcc-sigma_ss)/0.005 + 0.5);
+		nrmesh = int(((Dcc-sigma_ss)/2.0)/0.01 + 0.5);
 		if ( nrmesh%2 == 1 ){
 			nrmesh = nrmesh + 1;
 		}
@@ -266,8 +266,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (Dcc-sigma_ss); // pore width [nm]
-	//dr = (Dcc-sigma_ss)/2.0/double(nstep-1);
-	dr = (Dcc-sigma_ss)/2.0/double(nstep);
+	dr = ((Dcc-sigma_ss)/2.0)/double(nstep+1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
