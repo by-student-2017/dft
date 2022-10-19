@@ -1045,7 +1045,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold && j>=50) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 			//std::cout << "j=" << j << ", diff=" << diff << ", threshold=" << threshold  << std::endl;
@@ -1120,7 +1120,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold && j>=50) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			} 
 		}

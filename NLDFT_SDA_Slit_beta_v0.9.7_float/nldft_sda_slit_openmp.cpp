@@ -897,7 +897,7 @@ int main(){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold && j>=500) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 		}
@@ -973,7 +973,7 @@ int main(){
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			//
-			if (diff < threshold && diff_old1 < threshold && j>=500) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 		}
