@@ -4,9 +4,9 @@ items=( 0.40 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
  1.02 1.18 1.35 1.61 1.93 2.31 2.90 3.63 4.75 6.51 10.0
 )
 
-if [ ! -e nldft_sda_cylinder.exe ]; then
-	c++ nldft_sda_cylinder.cpp -o nldft_sda_cylinder.exe
-fi
+#if [ ! -e nldft_sda_cylinder.exe ]; then
+	c++ -O2 nldft_sda_cylinder.cpp -o nldft_sda_cylinder.exe
+#fi
 
 if [ ! -d results ]; then
 	mkdir results

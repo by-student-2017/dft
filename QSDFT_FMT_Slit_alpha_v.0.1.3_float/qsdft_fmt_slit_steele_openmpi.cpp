@@ -1737,7 +1737,7 @@ MPI::Init();
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			//std::cout << "diff=" << diff << std::endl;
-			if (diff < threshold && diff_old1 < threshold && j>200) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 		}
@@ -1778,7 +1778,7 @@ MPI::Init();
 		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b, rhos, rhos_phi_ss_int_i);
 		//grand_potential = 1.0;		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	// reverse
@@ -1823,7 +1823,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>200) {
+			if (diff < threshold && diff_old1 < threshold) {
 				break;
 			}
 		}
@@ -1860,7 +1860,7 @@ MPI::Init();
 		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b, rhos, rhos_phi_ss_int_i);
 		//grand_potential = 1.0;
 		//std::cout << "P/P0= " << pp0 << std::endl;
-		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	free(phi_att_ff_int_ij);
