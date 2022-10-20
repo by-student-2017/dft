@@ -2,6 +2,7 @@
 
 export OMP_NUM_THREADS=$1
 
+#old version
 #items=( 0.34 0.38 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
 # 1.02 1.18 1.35 1.61 1.93 2.31 2.90 3.63 4.75 6.51 10.0
 #)
@@ -14,10 +15,9 @@ if [ ! -d results ]; then
 	mkdir results
 fi
 
-#for w in "${items[@]}"; do
-for ((i=34;i<=1000;i+=2))
-do
-	w=`echo $i | awk '{printf "%4.2f", $1/100}'`
+#for w in "${items[@]}"; do  #old version
+for ((i=30;i<=1000;i+=1)); do  #new version
+	w=`echo $i | awk '{printf "%4.2f", $1/100}'`  #new version
 	#echo $w
 	cp temp_parameters.txt parameters.txt
 	echo "Pore width = ${w} [nm]"
