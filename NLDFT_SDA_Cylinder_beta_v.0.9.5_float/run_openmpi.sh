@@ -16,7 +16,6 @@ if [ ! -d results ]; then
 fi
 
 run_command="mpirun -np $1 ./nldft_sda_cylinder_openmpi.exe"
-
 #for w in "${items[@]}"; do  #old version
 for ((i=40;i<=1000;i+=1)); do  #new version
 	w=`echo $i | awk '{printf "%4.2f", $1/100}'`  #new version
