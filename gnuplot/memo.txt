@@ -1,0 +1,11 @@
+vs = ads
+ls = des
+eq = equilibrium
+
+"run_make_eq.sh" and "make_eq.cpp"
+
+"create_kernel_vs.sh" and "plot_kernel_vs.gpl"
+
+"create_kernel_eq.sh" and "plot_kernel_eq.gpl"
+  This codes select lower grand potentials.
+  Please, check results on "plot_omega.gpl".
