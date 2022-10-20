@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#old version
 #items=( 0.34 0.42 0.56 0.60 0.75 0.80 0.89 0.99 1.00
 # 1.18 1.35 1.61 1.93 2.31 2.90 3.63 4.75 6.51 10.0
 #)
@@ -12,9 +13,9 @@ if [ ! -d results ]; then
 	mkdir results
 fi
 
-#for w in "${items[@]}"; do
-for ((i=42;i<=1000;i+=2)); do
-	w=`echo $i | awk '{printf "%4.2f", $1/100}'`
+#for w in "${items[@]}"; do  #old version
+for ((i=42;i<=1000;i+=2)); do  #new version
+	w=`echo $i | awk '{printf "%4.2f", $1/100}'`  #new version
 	#echo $w
 	cp temp_parameters.txt parameters.txt
 	echo "Pore width = ${w} [nm]"
