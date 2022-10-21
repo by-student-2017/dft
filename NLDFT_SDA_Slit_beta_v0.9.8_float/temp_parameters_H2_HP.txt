@@ -1,0 +1,18 @@
+00_H=XXX             # Memo
+01_sigma_ss=0.34     #[nm]
+02_nstep=0           # 0.0:auto, for mesh of slit width
+03_cycle_max=100001  # Number of max cycles
+04_wmixing=0.003     # mixing parameter
+05_epsilon_ff=34.3   #[K]
+06_sigma_ff=0.304    #[nm]
+07_d_hs=0.304        #[nm]
+08_rc=0.0            # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
+09_nrmesh=0          # 0.0:auto, for mesh of radial
+10_epsilon_sf=32.595 #1.000: 31.8, 1.025: 32.595 (Ref: J. Jagiello et al., J. Phys. Chem. B 110 (2006) 4531. )
+11_sigma_sf=0.322    #[nm]
+12_delta=0.335       #[nm]
+13_rho_ss=114.0      #[nm^-3], density of graphite
+14_m=2.01568         #[g/mol] H2=2.01568
+15_T=298.16          #[K] N2:77.347, Ar:87.3, CO2:273.2
+16_rho_b0=-200.0     # 0.0:auto, <0.0:Pa, <=-10.0:atm, <=-100:100atm, <=-XXX.X:XXX.Xatm(for <=-100.0)
+17_p0=101325.0       #[Pa] H2:101325.0, CO2:101325.0*34.4*0.3
