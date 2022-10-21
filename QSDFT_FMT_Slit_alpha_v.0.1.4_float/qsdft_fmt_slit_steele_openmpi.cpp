@@ -148,6 +148,10 @@ float deltas;
 float epsilon_s = 52.84; //[K] (solid)
 float sigma_s = 0.343; //[nm] (solid)
 // ---------- ----------- ------------ ------------
+int min_iter = 10; //Minimum number of iterations
+float thr_times = 10.0; //change threshold
+float wmx_times = 3.0; //change weight
+// ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
 	float sum;
@@ -347,6 +351,15 @@ void read_parameters(void){
 	epsilon_sfs = num[21]; //[K]  graphite wall (Steele)
 	sigma_sfs = num[22];   //[nm] graphite wall (Steele)
 	deltas = num[23];      //[nm] graphite wall (Steele)
+	// ---------- ----------- ------------ ------------
+	min_iter = int(num[24]); //Minimum number of iterations
+	thr_times = num[25]; //divied threshold value by thr_times after min_iter cycles and 1st threshold condition.
+	wmx_times = num[26]; //multiply weight value by wmx_times after min_iter cycles and 1st threshold condition.
+	std::cout << "Convergence conditions" << std::endl;
+	std::cout << "Minimum number of iterations:" << min_iter << " cycles" << std::endl;
+	std::cout << "divied threshold value by thr_times=" << thr_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "multiply weight value by wmx_times=" << wmx_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	
 	ze = calc_ze(2000);
@@ -1436,8 +1449,6 @@ MPI::Init();
 	float diff;
 	float diff0;
 	//
-	float thr_times = 10.0;
-	float wmx_times = 3.0;
 	float threshold_origin = 0.5/100*nstep;
 	float threshold = threshold_origin * thr_times;
 	float wmixing_origin = wmixing;
@@ -1519,7 +1530,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>=10) {
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
@@ -1614,7 +1625,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>=10) {
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
