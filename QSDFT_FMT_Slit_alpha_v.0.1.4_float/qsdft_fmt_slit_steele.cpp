@@ -1413,8 +1413,10 @@ int main(){
 	float diff;
 	float diff0;
 	//
+	float thr_times = 10.0;
+	float wmx_times = 3.0;
 	float threshold_origin = 0.5/100*nstep;
-	float threshold = threshold_origin * 2.0;
+	float threshold = threshold_origin * thr_times;
 	float wmixing_origin = wmixing;
 	int chk = 0;
 	//
@@ -1493,17 +1495,16 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			//std::cout << "diff=" << diff << std::endl;
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=10) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
-					threshold = threshold_origin * 2.0;
+					threshold = threshold_origin * thr_times;
 					wmixing = wmixing_origin;
 					break;
 				}
-				threshold = threshold / 2.0;
-				wmixing = wmixing * 2.0;
+				threshold = threshold / thr_times;
+				wmixing = wmixing * wmx_times;
 				chk++;
 			}
 		}
@@ -1588,16 +1589,16 @@ int main(){
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold) {
+			if (diff < threshold && diff_old1 < threshold && j>=10) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
-					threshold = threshold_origin * 2.0;
+					threshold = threshold_origin * thr_times;
 					wmixing = wmixing_origin;
 					break;
 				}
-				threshold = threshold / 2.0;
-				wmixing = wmixing * 2.0;
+				threshold = threshold / thr_times;
+				wmixing = wmixing * wmx_times;
 				chk++;
 			}
 		}
