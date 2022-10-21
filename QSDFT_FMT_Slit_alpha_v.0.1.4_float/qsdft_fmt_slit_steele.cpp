@@ -1414,7 +1414,7 @@ int main(){
 	float diff0;
 	//
 	float threshold_origin = 0.5/100*nstep;
-	float threshold = threshold_origin;
+	float threshold = threshold_origin * 2.0;
 	float wmixing_origin = wmixing;
 	int chk = 0;
 	//
@@ -1498,7 +1498,7 @@ int main(){
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
-					threshold = threshold_origin;
+					threshold = threshold_origin * 2.0;
 					wmixing = wmixing_origin;
 					break;
 				}
@@ -1592,7 +1592,7 @@ int main(){
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
-					threshold = threshold_origin;
+					threshold = threshold_origin * 2.0;
 					wmixing = wmixing_origin;
 					break;
 				}
