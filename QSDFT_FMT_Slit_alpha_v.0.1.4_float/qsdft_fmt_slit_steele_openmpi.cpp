@@ -1435,7 +1435,11 @@ MPI::Init();
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float threshold = 0.5/100*nstep;
+	//
+	float threshold_origin = 0.5/100*nstep;
+	float threshold = threshold_origin;
+	float wmixing_origin = wmixing;
+	int chk = 0;
 	//
 	float xio;
 	float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
@@ -1515,7 +1519,16 @@ MPI::Init();
 			}
 			//std::cout << "diff=" << diff << std::endl;
 			if (diff < threshold && diff_old1 < threshold) {
-				break;
+				//std::cout << "j=" << j << std::endl;
+				if (chk == 1) {
+					chk = 0;
+					threshold = threshold_origin;
+					wmixing = wmixing_origin;
+					break;
+				}
+				threshold = threshold / 2.0;
+				wmixing = wmixing * 2.0;
+				chk++;
 			}
 		}
 		//for (i=0; i<nstep; i++){
@@ -1601,7 +1614,16 @@ MPI::Init();
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
 			if (diff < threshold && diff_old1 < threshold) {
-				break;
+				//std::cout << "j=" << j << std::endl;
+				if (chk == 1) {
+					chk = 0;
+					threshold = threshold_origin;
+					wmixing = wmixing_origin;
+					break;
+				}
+				threshold = threshold / 2.0;
+				wmixing = wmixing * 2.0;
+				chk++;
 			}
 		}
 		//
