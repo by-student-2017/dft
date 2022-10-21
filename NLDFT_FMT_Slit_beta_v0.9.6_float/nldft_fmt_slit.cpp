@@ -112,6 +112,10 @@ float rho_b0;
 // P0
 float p0;
 // ---------- ----------- ------------ ------------
+int min_iter = 10; //Minimum number of iterations
+float thr_times = 10.0; //change threshold
+float wmx_times = 3.0; //change weight
+// ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
 	float sum;
@@ -171,7 +175,7 @@ float d_bh_calc_v2(float epsilon, float sigma){
 void read_parameters(void){
 	std::ifstream ifs("parameters.txt");
 	std::string str;
-	float num[20];
+	float num[25];
 	int i,j;
 	j = 0;
 	while(getline(ifs,str)){
@@ -247,6 +251,15 @@ void read_parameters(void){
 	rho_b0 = num[16];
 	// ---------- ----------- ------------ ------------
 	p0 = num[17];
+	// ---------- ----------- ------------ ------------
+	min_iter = int(num[18]); //Minimum number of iterations
+	thr_times = num[19]; //divied threshold value by thr_times after min_iter cycles and 1st threshold condition.
+	wmx_times = num[20]; //multiply weight value by wmx_times after min_iter cycles and 1st threshold condition.
+	std::cout << "Convergence conditions" << std::endl;
+	std::cout << "Minimum number of iterations:" << min_iter << " cycles" << std::endl;
+	std::cout << "divied threshold value by thr_times=" << thr_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "multiply weight value by wmx_times=" << wmx_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -1241,8 +1254,6 @@ int main(){
 	float diff;
 	float diff0;
 	//
-	float thr_times = 10.0;
-	float wmx_times = 3.0;
 	float threshold_origin = 0.5/100*nstep;
 	float threshold = threshold_origin * thr_times;
 	float wmixing_origin = wmixing;
@@ -1325,7 +1336,7 @@ int main(){
 				diff = diff + diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
-			if (diff < threshold && diff_old1 < threshold && j>=10) {
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
@@ -1427,7 +1438,7 @@ int main(){
 				diff = diff + diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 			}
-			if (diff < threshold && diff_old1 < threshold && j>=10) {
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;

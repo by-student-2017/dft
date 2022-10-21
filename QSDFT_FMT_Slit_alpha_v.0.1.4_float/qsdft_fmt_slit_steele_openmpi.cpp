@@ -245,7 +245,7 @@ float calc_ze(int ze_nstep){
 void read_parameters(void){
 	std::ifstream ifs("parameters.txt");
 	std::string str;
-	float num[25];
+	float num[30];
 	int i,j;
 	j = 0;
 	while(getline(ifs,str)){

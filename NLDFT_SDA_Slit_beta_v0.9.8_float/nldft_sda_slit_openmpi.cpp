@@ -100,6 +100,10 @@ float rho_b0;
 // P0
 float p0;
 // ---------- ----------- ------------ ------------
+int min_iter = 10; //Minimum number of iterations
+float thr_times = 10.0; //change threshold
+float wmx_times = 3.0; //change weight
+// ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
 float d_bh_calc(float epsilon, float sigma){
@@ -197,6 +201,15 @@ void read_parameters(void){
 	rho_b0 = num[16];
 	// ---------- ----------- ------------ ------------
 	p0 = num[17]; // [Pa]
+	// ---------- ----------- ------------ ------------
+	min_iter = int(num[18]); //Minimum number of iterations
+	thr_times = num[19]; //divied threshold value by thr_times after min_iter cycles and 1st threshold condition.
+	wmx_times = num[20]; //multiply weight value by wmx_times after min_iter cycles and 1st threshold condition.
+	std::cout << "Convergence conditions" << std::endl;
+	std::cout << "Minimum number of iterations:" << min_iter << " cycles" << std::endl;
+	std::cout << "divied threshold value by thr_times=" << thr_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "multiply weight value by wmx_times=" << wmx_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -823,8 +836,6 @@ MPI::Init();
 	float diff;
 	float diff0;
 	//
-	float thr_times = 10.0;
-	float wmx_times = 3.0;
 	float threshold_origin = 0.5/100*nstep;
 	float threshold = threshold_origin * thr_times;
 	float wmixing_origin = wmixing;
@@ -906,7 +917,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>=10) {
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;
@@ -990,7 +1001,7 @@ MPI::Init();
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>=10) {
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
 					chk = 0;

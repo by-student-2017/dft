@@ -16,3 +16,6 @@
 15_T=77.347          #[K] N2:77.347, Ar:87.3, CO2:273.2
 16_rho_b0=0.098214   # 0.0:auto, for mesh of circular
 17_p0=101325.0       #[Pa] (N2, H2 or Ar):101325.0, CO2:34.4 atm
+18_min_iter=10       # Minimum number of iterations
+19_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
+20_wmx_times=3.0     # change weight after min_iter cycle and 1st threshold condition.
