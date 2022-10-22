@@ -24,4 +24,4 @@
 23_deltas=0.335      #[nm] graphite wall (Steele)
 24_min_iter=20       # Minimum number of iterations
 25_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
-26_wmx_times=1.0     # change weight after min_iter cycle and 1st threshold condition.
+26_wmx_times=1.3     # change weight after min_iter cycle and 1st threshold condition.
