@@ -270,7 +270,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.005 + 0.5) + 20;
+		nstep = int((H-sigma_ss)/0.0025 + 0.5) + 20;
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -381,8 +381,10 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	w_pw = (H-(2.0*ze)); // pore width [nm]
-	dr = (H-(2.0*ze))/float(nstep-1);
+	//w_pw = (H-(2.0*ze)); // pore width [nm]
+	w_pw = (H-sigma_ss); // pore width [nm]
+	//dr = (H-(2.0*ze))/float(nstep-1);
+	dr = (H-sigma_ss)/float(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
@@ -1338,7 +1340,8 @@ int main(){
 	//
 #pragma omp parallel for
 	for (i=0; i<nstep; i++){
-		r[i] = (2.0*ze)/2.0 + dr*float(i);
+		//r[i] = (2.0*ze)/2.0 + dr*float(i);
+		r[i] = sigma_ss/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1514,7 +1517,7 @@ int main(){
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = press_b0/dr + rho[i]*0.9;
 				}
 			}
 			diff_old1 = diff;
@@ -1545,7 +1548,8 @@ int main(){
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		//v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
@@ -1609,7 +1613,7 @@ int main(){
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = press_b0/dr + rho[i]*0.9;
 				}
 			}
 			diff_old1 = diff;
@@ -1637,7 +1641,8 @@ int main(){
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		//v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]

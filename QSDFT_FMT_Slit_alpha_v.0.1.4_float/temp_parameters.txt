@@ -7,7 +7,7 @@
 06_sigma_ff=0.3549   #[nm]
 07_d_hs=0.3549       #[nm]
 08_rc=0              # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
-09_nrmesh=80         # 0.0:auto, for mesh of radial
+09_nrmesh=120        # 0.0:auto, for mesh of radial
 10_epsilon_sf=150    #[K]
 11_sigma_sf=0.269    #[nm]
 12_delta=0.13        #[nm] (delta < 0.3*sigma_ff for QSDFT)
@@ -17,10 +17,10 @@
 16_rho_b0=0.098214   # 0.0:auto, <0.0:Pa, <=-10.0:atm, <=-100:100atm, <=-XXX.X:XXX.Xatm(for <=-100.0)
 17_p0=101325.0       #[Pa] (N2, H2 or Ar):101325.0, CO2:34.4 atm
 18_h0=0.0            #[nm] (The thickness of the solid wall)(not use for steele) 
-19_Ris=0.1108511     #[nm] (The hard-sphere radius of solid)
+19_Ris=0.11085       #[nm] (The hard-sphere radius of solid) D=2.217e-10 [m]
 20_ms=12.0107        #[g/mol] (solid), C=12.0107
-21_epsilon_sfs=53.72 #[K]  graphite wall (Steele)
-22_sigma_sfs=0.3508  #[nm] graphite wall (Steele)
+21_epsilon_sfs=53.72 #[K]  graphite wall (Steele) 53.72
+22_sigma_sfs=0.3508  #[nm] graphite wall (Steele) 0.3508
 23_deltas=0.335      #[nm] graphite wall (Steele)
 24_min_iter=10       # Minimum number of iterations
 25_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
