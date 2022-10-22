@@ -22,6 +22,6 @@
 21_epsilon_sfs=53.72 #[K]  graphite wall (Steele) 53.72
 22_sigma_sfs=0.3508  #[nm] graphite wall (Steele) 0.3508
 23_deltas=0.335      #[nm] graphite wall (Steele)
-24_min_iter=10       # Minimum number of iterations
+24_min_iter=20       # Minimum number of iterations
 25_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
-26_wmx_times=3.0     # change weight after min_iter cycle and 1st threshold condition.
+26_wmx_times=1.0     # change weight after min_iter cycle and 1st threshold condition.
