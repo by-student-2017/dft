@@ -900,7 +900,7 @@ int main(){
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = (press_b0*dr + rho[i])*1.1;
 				}
 			}
 			//
@@ -984,7 +984,7 @@ int main(){
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = (press_b0*dr + rho[i])*1.1;
 				}
 			}
 			//

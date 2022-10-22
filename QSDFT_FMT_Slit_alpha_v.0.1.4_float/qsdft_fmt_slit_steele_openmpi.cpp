@@ -271,7 +271,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.005 + 0.5) + 20;
+		nstep = int((H-sigma_ss)/0.002 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -1521,7 +1521,7 @@ MPI::Init();
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
-					rho_new[i] = press_b0/dr + rho[i]*0.9;
+					rho_new[i] = (press_b0*dr + rho[i])*1.1;
 				}
 			}
 			diff_old1 = diff;
@@ -1617,7 +1617,7 @@ MPI::Init();
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = press_b0/dr + rho[i]*0.9;
+					rho_new[i] = (press_b0*dr + rho[i])*1.1;
 				}
 			}
 			diff_old1 = diff;
