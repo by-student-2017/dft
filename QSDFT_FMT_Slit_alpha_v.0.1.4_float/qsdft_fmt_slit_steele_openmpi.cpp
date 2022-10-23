@@ -1517,11 +1517,11 @@ MPI::Init();
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-6;
+					rho_new[i] = 1e-7;
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
-					rho_new[i] = (press_b0*dr + rho[i])*1.2;
+					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
 				}
 			}
 			diff_old1 = diff;
@@ -1613,11 +1613,11 @@ MPI::Init();
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-6;
+					rho_new[i] = 1e-7;
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = (press_b0*dr + rho[i])*1.2;
+					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
 				}
 			}
 			diff_old1 = diff;
