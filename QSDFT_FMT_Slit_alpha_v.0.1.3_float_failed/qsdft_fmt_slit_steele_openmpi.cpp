@@ -1518,7 +1518,7 @@ MPI::Init();
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
 				}
 			}
 			diff_old1 = diff;
@@ -1613,7 +1613,7 @@ MPI::Init();
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
 				}
 			}
 			diff_old1 = diff;
