@@ -255,14 +255,22 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
-	nstep = int(num[2]);
-	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.0075 + 0.5);
+	nstep = num[2];
+	if ( nstep <= 0 ) {
+		if ( nstep < 0 ) {
+			nstep = int(H/nstep + 0.5);
+		} else {
+			nstep = int(H/0.006 + 0.5);
+		}
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nstep = " << nstep << std::endl;
+	} else {
+		nstep = int(nstep);
+		std::cout << "--------------------------------------------------" << std::endl;
+		std::cout << "nstep = " << nstep << std::endl;
 	}
 	// move below (ze)
 	// ---------- ----------- ------------ ------------
@@ -285,13 +293,20 @@ void read_parameters(void){
 	}
 	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
-	nrmesh = int(num[9]);
-	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.02 + 0.5);
+	nrmesh = num[9];
+	if ( nrmesh <= 0 ) {
+		if ( nrmesh < 0 ){
+			nrmesh = int(rc/nrmesh + 0.5);
+		} else {
+			nrmesh = int(rc/0.02 + 0.5);
+		}
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
 		}
 		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
+	} else {
+		nrmesh = int(nrmesh);
+		std::cout << "nrmesh = " << nrmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
