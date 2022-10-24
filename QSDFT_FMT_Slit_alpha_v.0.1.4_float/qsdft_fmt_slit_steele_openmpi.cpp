@@ -2,7 +2,7 @@
 #include <iostream>  // for cout
 #include <cmath>     // for log, exp
 #include <sstream>   // for read parameters
-#include <omp.h>     // OpenMP (c++ nldft.cpp -fopenmp) (set OMP_NUM_THREADS=4)
+//#include <omp.h>     // OpenMP (c++ nldft.cpp -fopenmp) (set OMP_NUM_THREADS=4)
 #include <mpi.h>     // OpenMPI (mpic++ nldft.cpp) (set OMP_NUM_THREADS=1)
 
 //#include "maxwell_construction.h"
@@ -195,19 +195,6 @@ float d_bh_calc(float epsilon, float sigma){
 	return d_bh_out;
 }
 
-//Barker-Henderson (BH) perturbation theory
-//float d_bh_calc(float epsilon, float sigma){
-//	//float epsilon = 94.45;
-//	//float sigma = 0.3575;
-//	//Lstoskie et al.,
-//	float d_bh_out;
-//	float Ts = kb1*T/epsilon;
-//	d_bh_out = (1.0+0.2977*Ts)/(1.0+0.331637*Ts+0.00104771*Ts*Ts)*sigma;
-//	std::cout << "--------------------------------------------------" << std::endl;
-//	std::cout << "d = d_hs = " << d_bh_out << " [nm] at " << T << " [K] from Barker-Henderson (BH) perturbation theory" << std::endl;
-//	return d_bh_out;
-//}
-
 float rho_ssq(float z){
 	float rho_ssq_out;
 	//float h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
@@ -382,10 +369,10 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	//w_pw = (H-(2.0*ze)); // pore width [nm]
-	w_pw = (H-sigma_ss); // pore width [nm]
-	//dr = (H-(2.0*ze))/float(nstep-1);
-	dr = (H-sigma_ss)/float(nstep-1);
+	w_pw = (H-(2.0*ze)); // pore width [nm]
+	//w_pw = (H-sigma_ss); // pore width [nm]
+	dr = (H-(2.0*ze))/float(nstep-1);
+	//dr = (H-sigma_ss)/float(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
@@ -566,7 +553,8 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	float n0, n1, n2, n3, nv1, nv2;
 	//
 	int nwstep = 500;
-	float dw = (ze)/nwstep;
+	//float dw = (ze)/nwstep;
+	float dw = (h0+2.0*delta)/nwstep;
 	//
 	float n0_wall_w[nwstep];
 	float n1_wall_w[nwstep];
@@ -1282,7 +1270,6 @@ float omega(float *rho, float *r, float *fex_i, float *rho_phi_ff_int_i, float *
 	//float delta = 0.13; // [nm] (the roughness parameter) (the half-width of the density ramp)
 	//
 	// fluid
-#pragma omp parallel for
 	for (i=0; i<nstep; i++){
 		fidf[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0); //fluid
 		rho_x_rho_phi_ff_int[i] = rho[i] * rho_phi_ff_int_i[i];
@@ -1291,7 +1278,6 @@ float omega(float *rho, float *r, float *fex_i, float *rho_phi_ff_int_i, float *
 		//
 	}
 	// solid
-#pragma omp parallel for
 	for (i=0; i<nsteps; i++){
 		fids[i] = 2.0*rhos[i]*(std::log(rhos[i]*lams*lams*lams)-1.0);
 		rho_x_rhos_phi_ss_int[i] = 2.0*(rhos[i] * rhos_phi_ss_int_i[i]);
@@ -1324,8 +1310,6 @@ float omega(float *rho, float *r, float *fex_i, float *rho_phi_ff_int_i, float *
 	return omega_out;
 }
 
-//int main(int argc, char **argv){
-//MPI::Init(argc,argv);
 int main(){
 MPI::Init();
 	int i,j,k;
@@ -1342,10 +1326,9 @@ MPI::Init();
 	float rho[nstep], rho_new[nstep];
 	float rhos[nstep];
 	//
-#pragma omp parallel for
 	for (i=0; i<nstep; i++){
-		//r[i] = (2.0*ze)/2.0 + dr*float(i);
-		r[i] = sigma_ss/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
+		r[i] = (2.0*ze)/2.0 + dr*float(i);
+		//r[i] = (sigma_ss)/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1357,11 +1340,9 @@ MPI::Init();
 	float y, a, b, c;
 	float flag_P; flag_P = 0.0;
 	float rho_b1; rho_b1 = 0.0;
-	if ( rho_b0 != 0.0 ){
-		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else if ( rho_b0 == 0.0 ) {
+	if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
-	} else {
+	} else if ( rho_b0 < 0.0 ) {
 		// rho_b0 < 0.0
 		flag_P = -1.0;
 		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
@@ -1493,9 +1474,11 @@ MPI::Init();
 	}
 	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	//
 	for (k=0; k<=181; k++){
@@ -1517,18 +1500,23 @@ MPI::Init();
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-7;
+					rho_new[i] = 1e-8;
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
 					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
+					diff_old1 = 5.0;
+					diff = 5.0;
 				}
 			}
 			diff_old1 = diff;
 			diff = 0.0;
-#pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				if (rho[i] <= 1e-6) {
+					diff0 = 0.0;
+				} else {
+					diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				}
 				diff = diff + 2.0*diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
@@ -1552,8 +1540,8 @@ MPI::Init();
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		//v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
-		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		//v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
@@ -1591,6 +1579,7 @@ MPI::Init();
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_ls << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//
@@ -1613,18 +1602,23 @@ MPI::Init();
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-7;
+					rho_new[i] = 1e-8;
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
 					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
+					diff_old1 = 5.0;
+					diff = 5.0;
 				}
 			}
 			diff_old1 = diff;
 			diff = 0.0;
-#pragma omp parallel for
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				if (rho[i] <= 1e-6) {
+					diff0 = 0.0;
+				} else {
+					diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				}
 				diff = diff + 2.0*diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
@@ -1645,8 +1639,8 @@ MPI::Init();
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		//v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
-		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		//v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]

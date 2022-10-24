@@ -367,10 +367,10 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	//w_pw = (H-(2.0*ze)); // pore width [nm]
-	w_pw = (H-sigma_ss); // pore width [nm]
-	//dr = (H-(2.0*ze))/float(nstep-1);
-	dr = (H-sigma_ss)/float(nstep-1);
+	w_pw = (H-(2.0*ze)); // pore width [nm]
+	//w_pw = (H-sigma_ss); // pore width [nm]
+	dr = (H-(2.0*ze))/float(nstep-1);
+	//dr = (H-sigma_ss)/float(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	
@@ -551,7 +551,8 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	float n0, n1, n2, n3, nv1, nv2;
 	//
 	int nwstep = 500;
-	float dw = (ze)/nwstep;
+	//float dw = (ze)/nwstep;
+	float dw = (h0+2.0*delta)/nwstep;
 	//
 	float n0_wall_w[nwstep];
 	float n1_wall_w[nwstep];
@@ -1323,8 +1324,8 @@ int main(){
 	float rhos[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		//r[i] = (2.0*ze)/2.0 + dr*float(i);
-		r[i] = sigma_ss/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
+		r[i] = (2.0*ze)/2.0 + dr*float(i);
+		//r[i] = (sigma_ss)/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1469,12 +1470,12 @@ int main(){
 		Punits= "Pa";
 	}
 	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
-	//ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//ofsppov_vs << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
-	//std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	//
 	for (k=0; k<=181; k++){
@@ -1496,22 +1497,27 @@ int main(){
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-7;
+					rho_new[i] = 1e-8;
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
 					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
+					diff_old1 = 5.0;
+					diff = 5.0;
 				}
 			}
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				if (rho[i] <= 1e-6) {
+					diff0 = 0.0;
+				} else {
+					diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				}
 				diff = diff + 2.0*diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			//std::cout << "diff=" << diff << std::endl;
 			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
 				//std::cout << "j=" << j << std::endl;
 				if (chk == 1) {
@@ -1531,8 +1537,8 @@ int main(){
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		//v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
-		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		//v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
@@ -1569,8 +1575,8 @@ int main(){
 	// reverse
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_ls("./PP0_vs_Vgamma_data_ls.txt");
-	//ofsppov_ls << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
+	ofsppov_ls << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
+	//ofsppov_ls << "# w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
 	ofsppov_ls << "# P/P0, P[Pa], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//
@@ -1593,17 +1599,23 @@ int main(){
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-7;
+					rho_new[i] = 1e-8;
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
 					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
+					diff_old1 = 5.0;
+					diff = 5.0;
 				}
 			}
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				if (rho[i] <= 1e-6) {
+					diff0 = 0.0;
+				} else {
+					diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				}
 				diff = diff + 2.0*diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
@@ -1624,8 +1636,8 @@ int main(){
 		//
 		v_gamma = integral_simpson(rho, nstep-1, dr);
 		//v_gamma = v_gamma/(H-sigma_ss) - rho_b; // for NLDFT
-		//v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
-		v_gamma = v_gamma/(H-sigma_ss) - rho_b;
+		v_gamma = v_gamma/(H-(2.0*ze)) - rho_b;
+		//v_gamma = v_gamma/(H-sigma_ss) - rho_b;
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076 ) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10; // [mmol/cm3]
