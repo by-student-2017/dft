@@ -83,6 +83,7 @@ float rcsf; // for solid-fluid
 //float rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 float rm;   // fluid
 float rmsf; // solid-fluid
+float rmss; // solid-solid
 // ---------- ----------- ------------ ------------
 // fluid-solid
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
@@ -256,7 +257,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	nstep = int(num[2]);
 	if ( nstep == 0 ) {
-		nstep = int((H-sigma_ss)/0.002 + 0.5);
+		nstep = int((H-sigma_ss)/0.0075 + 0.5);
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
@@ -373,7 +374,7 @@ void read_parameters(void){
 	//dr = (H-sigma_ss)/float(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
-	
+	rmss = 1.12246205*sigma_sfs; // 2^(1/6)=1.12246205
 	// ---------- ----------- ------------ ------------
 	
 	ndmesh = nrmesh;
@@ -449,9 +450,9 @@ float phi_att_sf(float r){
 float phi_att_ss(float r){
 	float e;
 	// WCA (Weeks-Chandler-Anderson) type
-	if (r < rmsf){
+	if (r < rmss){
 		e = - epsilon_s;
-	}else if (rmsf <= r && r <= rcsf){
+	}else if (rmss <= r && r <= rcsf){
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_s*( std::pow((sigma_s/r),12.0) - std::pow((sigma_s/r),6.0) );
 		e = std::pow((sigma_s/r),6.0);
@@ -486,7 +487,50 @@ float phi_sf(float z){
 float phi_ext(float z){
 	float phi_ext_out;
 	phi_ext_out = phi_sf(z) + phi_sf(H-z);
-	//std::cout << phi_ext_out << std::endl;
+	//std::cout << phi_ext_out << " Steele" << std::endl;
+	//
+	int i,j,k;
+	float ra_left;
+	float ra_right;
+	float raj_left;
+	float raj_right;
+	float rak;
+	//drc = rc/float(nrmesh-1);
+	//
+	int sfmesh = 500;
+	float dsf = (h0+2.0*delta)/(sfmesh-1);
+	float rhos_phi_sf_int_j[sfmesh];
+	//
+	int sfnrmesh = 500;
+	float drcsf = rcsf/(sfnrmesh-1);
+	float phi_sf_int_k[sfnrmesh];
+	//
+	float tpi = 2.0*M_PI;
+	rhos_phi_sf_int_j[0] = 0.0;
+	phi_sf_int_k[0] = 0.0;
+	//
+	//z=r[i]
+	for (j=1; j<sfmesh; j++) {
+		raj_left  = (float(j)*dsf - z);
+		raj_right = ((H-float(j)*dsf) - z);
+		for (k=1; k<sfnrmesh; k++) {
+			rak = drcsf*float(k);
+			//
+			ra_left  = rak*rak + raj_left*raj_left;
+			ra_left  = std::sqrt(ra_left);
+			//
+			ra_right = rak*rak + raj_right*raj_right;
+			ra_right = std::sqrt(ra_right);
+			//
+			phi_sf_int_k[k]  = ( phi_att_sf(ra_left) + phi_att_sf(ra_right) ) * (tpi*rak);
+		}
+		//rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_simpson(phi_sf_int_k, sfnrmesh-1, drcsf);
+		rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_trapezoidal(phi_sf_int_k, sfnrmesh-1, drcsf);
+	}
+	//phi_ext_out += integral_simpson(rhos_phi_sf_int_j, sfmesh-1, dsf);
+	phi_ext_out += integral_trapezoidal(rhos_phi_sf_int_j, sfmesh-1, dsf);
+	//
+	//std::cout << phi_ext_out << " Steele + surface" << std::endl;
 	return phi_ext_out;
 }
 
@@ -1416,6 +1460,14 @@ int main(){
 		phi_ext_i[i] = phi_ext(r[i]);
 	}
 	std::cout << "phi_ext_i calculation was finished" << std::endl;
+	//
+	for (i=0; i<nstep; i++){
+		rho[i] = 0.0;
+		if (-phi_ext_i[i] > 0.0){
+			rho[i] = 2.0*rho_b0/dr*-phi_ext_i[i]/2000.0;
+		}
+		rho_new[i] = 0.0;
+	}
 	//
 	float n0_j[nstep], n0[nstep];
 	float n1_j[nstep], n1[nstep];
