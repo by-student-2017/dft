@@ -1215,13 +1215,6 @@ int main(){
 		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
-	//std::cout << rho_b0 << std::endl;
-	// initialization
-	for (i=0; i<nstep; i++){
-		rho[i] = rho_b0/(nstep*dr);
-		rho_new[i] = 0.0;
-	}
-	
 	std::cout << "--------------------------------------------------" << std::endl;
 	//float rho_sj[nstep];
 	//float rho_s0j[nstep];
@@ -1237,6 +1230,16 @@ int main(){
 	}
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	std::cout << "phi_att_int calculation was finished" << std::endl;
+	//
+	//std::cout << rho_b0 << std::endl;
+	// initialization
+	for (i=0; i<nstep; i++){
+		rho[i] = 0.0;
+		if (-phi_ext_i[i] > 0.0){
+			rho[i] = 2.0*rho_b0/dr*-phi_ext_i[i]/2000.0;
+		}
+		rho_new[i] = 0.0;
+	}
 	//
 	//float rho_dfex_int[nstep];
 	float dfex_int[nstep];
