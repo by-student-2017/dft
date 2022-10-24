@@ -599,12 +599,12 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 				xs = 0.0;
 			}
 			//
-			n0_wall_w[w] = rho_ssq(H-dw*float(w))/(2.0*Ris*Ris)*xs;
-			n1_wall_w[w] = rho_ssq(H-dw*float(w))/(2.0*Ris)*xs;
-			n2_wall_w[w] = rho_ssq(H-dw*float(w))*(2.0*M_PI*xs);
-			n3_wall_w[w] = rho_ssq(H-dw*float(w))*(M_PI*xs*xs);
-			nv1_wall_w[w] = rho_ssq(H-dw*float(w))/(2.0*Ris)*(rai/Ris)*xs;
-			nv2_wall_w[w] = rho_ssq(H-dw*float(w))*(rai/Ris)*(2.0*M_PI*xs);
+			n0_wall_w[w] = rho_ssq(dw*float(w))/(2.0*Ris*Ris)*xs;
+			n1_wall_w[w] = rho_ssq(dw*float(w))/(2.0*Ris)*xs;
+			n2_wall_w[w] = rho_ssq(dw*float(w))*(2.0*M_PI*xs);
+			n3_wall_w[w] = rho_ssq(dw*float(w))*(M_PI*xs*xs);
+			nv1_wall_w[w] = rho_ssq(dw*float(w))/(2.0*Ris)*(rai/Ris)*xs;
+			nv2_wall_w[w] = rho_ssq(dw*float(w))*(rai/Ris)*(2.0*M_PI*xs);
 		}
 		n0_wall_i[i] = n0_wall_i[i] + integral_simpson(n0_wall_w, nwstep-1, dw);
 		n1_wall_i[i] = n1_wall_i[i] + integral_simpson(n1_wall_w, nwstep-1, dw);
