@@ -1,6 +1,6 @@
 00_Dcc=XXX           # Memo
 01_sigma_ss=0.276    #[nm]
-02_nstep=0           # 0.0:auto, for mesh between center and graphite wall
+02_nstep=0.0         # 0.0:auto, for mesh of slit width
 03_cycle_max=100001  # Number of max cycles
 04_wmixing=0.01      # mixing parameter
 05_epsilon_ff=94.45  #[K]
