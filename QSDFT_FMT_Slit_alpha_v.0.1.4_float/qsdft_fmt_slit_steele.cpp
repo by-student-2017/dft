@@ -430,7 +430,8 @@ float phi_att_ff(float r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rm){
 		e = - epsilon_ff;
-	}else if (rm <= r && r <= rc){
+	//}else if (rm <= r && r <= rc){
+	} else {
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_ff*( std::pow((sigma_ff/r),12.0) - std::pow((sigma_ff/r),6.0) );
 		e = std::pow((sigma_ff/r),6.0);
@@ -448,7 +449,8 @@ float phi_att_sf(float r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rmsf){
 		e = - epsilon_sf;
-	}else if (rmsf <= r && r <= rcsf){
+	//}else if (rmsf <= r && r <= rcsf){
+	} else {
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_sf*( std::pow((sigma_sf/r),12.0) - std::pow((sigma_sf/r),6.0) );
 		e = std::pow((sigma_sf/r),6.0);
