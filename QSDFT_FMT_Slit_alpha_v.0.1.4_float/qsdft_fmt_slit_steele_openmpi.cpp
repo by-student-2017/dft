@@ -255,7 +255,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
-	nstep = int(num[2]);
+	nstep = num[2];
 	if ( nstep <= 0 ) {
 		if ( nstep < 0 ) {
 			nstep = int(H/nstep + 0.5);
@@ -267,6 +267,10 @@ void read_parameters(void){
 		}
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nstep = " << nstep << std::endl;
+	} else {
+		nstep = int(nstep);
+		std::cout << "--------------------------------------------------" << std::endl;
+		std::cout << "nstep = " << nstep << std::endl;
 	}
 	// move below (ze)
 	// ---------- ----------- ------------ ------------
@@ -289,7 +293,7 @@ void read_parameters(void){
 	}
 	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
-	nrmesh = int(num[9]);
+	nrmesh = num[9];
 	if ( nrmesh <= 0 ) {
 		if ( nrmesh < 0 ){
 			nrmesh = int(rc/nrmesh + 0.5);
@@ -300,6 +304,9 @@ void read_parameters(void){
 			nrmesh = nrmesh + 1;
 		}
 		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
+	} else {
+		nrmesh = int(nrmesh);
+		std::cout << "nrmesh = " << nrmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
@@ -309,7 +316,7 @@ void read_parameters(void){
 		rc = 5.0*sigma_ff;
 		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
 		rcsf = 30.0*sigma_sf;
-		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid)" << std::endl;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related to limit slit width)" << std::endl;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 	}
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -461,7 +468,7 @@ float phi_att_ss(float r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rmss){
 		e = - epsilon_s;
-	//}else if (rmss <= r && r <= rcsf){
+	//} else if (rmss <= r && r <= rcsf) {
 	} else {
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_s*( std::pow((sigma_s/r),12.0) - std::pow((sigma_s/r),6.0) );
