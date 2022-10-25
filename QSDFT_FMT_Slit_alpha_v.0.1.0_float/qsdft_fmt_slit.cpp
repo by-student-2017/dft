@@ -46,6 +46,8 @@ int nstep;
 float w_pw;
 float dr;
 // ---------- ----------- ------------ ------------
+int nsteps; // solid
+// ---------- ----------- ------------ ------------
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
 //int nrmesh = 20; //rho_si and xi function
@@ -81,6 +83,7 @@ float rcsf; // for solid-fluid
 //float rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 float rm;   // fluid
 float rmsf; // solid-fluid
+float rmss; // solid-solid
 // ---------- ----------- ------------ ------------
 // fluid-solid
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
@@ -119,7 +122,10 @@ float lams; // for solid
 // alpha = integal phi_att_ff * -1.0
 //extern float alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 //	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
-float alpha;
+float alpha;  //fluid
+// ---------- ----------- ------------ ------------
+// alpha = integal phi_att_ss * -1.0
+float alphas; //solid
 // ---------- ----------- ------------ ------------
 // rho_b0 is related with P0
 float rho_b0;
@@ -132,6 +138,18 @@ float ze;
 // ---------- ----------- ------------ ------------
 // Ris [nm] is the hard-sphere radius of solid (for QSDFT)
 float Ris;
+// ---------- ----------- ------------ ------------
+// graphite wall (for grand potential)
+float epsilon_sfs;
+float sigma_sfs;
+float deltas;
+// ---------- ----------- ------------ ------------
+float epsilon_s = 52.84; //[K] (solid)
+float sigma_s = 0.343; //[nm] (solid)
+// ---------- ----------- ------------ ------------
+int min_iter = 10; //Minimum number of iterations
+float thr_times = 10.0; //change threshold
+float wmx_times = 3.0; //change weight
 // ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
@@ -250,14 +268,22 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
-	nstep = int(num[2]);
-	if ( nstep == 0 ) {
-		nstep = int((H-1.555)/0.01 + 0.5) + 120;
+	nstep = num[2];
+	if ( nstep <= 0 ) {
+		if ( nstep < 0 ) {
+			nstep = int(H/nstep + 0.5);
+		} else {
+			nstep = int(H/0.006 + 0.5);
+		}
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
 		}
 		std::cout << "--------------------------------------------------" << std::endl;
 		std::cout << "autoset nstep = " << nstep << std::endl;
+	} else {
+		nstep = int(nstep);
+		std::cout << "--------------------------------------------------" << std::endl;
+		std::cout << "nstep = " << nstep << std::endl;
 	}
 	// move below (ze)
 	// ---------- ----------- ------------ ------------
@@ -280,13 +306,20 @@ void read_parameters(void){
 	}
 	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
-	nrmesh = int(num[9]);
-	if ( nrmesh == 0 ) {
-		nrmesh = int(rc/0.02 + 0.5);
+	nrmesh = num[9];
+	if ( nrmesh <= 0 ) {
+		if ( nrmesh < 0 ){
+			nrmesh = int(rc/nrmesh + 0.5);
+		} else {
+			nrmesh = int(rc/0.02 + 0.5);
+		}
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
 		}
 		std::cout << "autoset nrmesh = " << nrmesh << std::endl;
+	} else {
+		nrmesh = int(nrmesh);
+		std::cout << "nrmesh = " << nrmesh << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	epsilon_sf = num[10]; // [K]
@@ -294,9 +327,6 @@ void read_parameters(void){
 	sigma_sf = num[11]; // [nm]
 	if ( rc == 0.0 ) { 
 		rc = 5.0*sigma_ff;
-		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
-		rcsf = 30.0*sigma_sf;
-		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related with limit slit size" << std::endl;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 	}
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -306,7 +336,7 @@ void read_parameters(void){
 	rho_ss = num[13]; // [nm^-3], [mulecules/nm3]
 	// ---------- ----------- ------------ ------------
 	m = num[14]; // [kg], fluid
-	//m = m/(6.02214076e23)/1000; //H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
+	m = m/(6.02214076e23)/1000; //H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
 	// ---------- ----------- ------------ ------------
 	T = num[15]; // [K]
 	if ( d_hs == 0.0 ) { 
@@ -326,7 +356,27 @@ void read_parameters(void){
 	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	ms = num[20]; // [kg], solid
-	//ms = ms/(6.02214076e23)/1000; //H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
+	ms = ms/(6.02214076e23)/1000; //H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
+	// ---------- ----------- ------------ ------------
+	epsilon_sfs = num[21]; //[K]  graphite wall
+	sigma_sfs = num[22];   //[nm] graphite wall
+	deltas = num[23];      //[nm] graphite wall (not use for this QSDFT)
+	// ---------- ----------- ------------ ------------
+	rcsf = num[24];
+	if ( rcsf == 0.0 ) { 
+		rcsf = 30.0*sigma_sf;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related to limit slit width)" << std::endl;
+	}
+	// ---------- ----------- ------------ ------------
+	min_iter = int(num[25]); //Minimum number of iterations
+	thr_times = num[26]; //divied threshold value by thr_times after min_iter cycles and 1st threshold condition.
+	wmx_times = num[27]; //multiply weight value by wmx_times after min_iter cycles and 1st threshold condition.
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "Convergence conditions" << std::endl;
+	std::cout << "Minimum number of iterations:" << min_iter << " cycles" << std::endl;
+	std::cout << "divied threshold value by thr_times=" << thr_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "multiply weight value by wmx_times=" << wmx_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	
 	ze = calc_ze(2000);
@@ -343,6 +393,7 @@ void read_parameters(void){
 	dr = (H-(2.0*ze))/float(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
+	rmss = 1.12246205*sigma_sfs; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
 	
@@ -368,15 +419,23 @@ void read_parameters(void){
 	//float lams = h/std::pow((2.0*M_PI*ms*kb*T),0.5)*1e9;
 	lams = h/std::pow((2.0*M_PI*ms*kb*T),0.5)*1e9;
 	
+	// fluid-fluid
 	// alpha = integal phi_att_ff * -1.0
 	alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 		( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
 	// rm = rm when the potential is split according to the WCA schem and rm = simga_ff when the LJ potential is split according to the BH decomposition.
 	
+	// solid-solid
+	// alphas = integal phi_att_ss * -1.0
+	alphas = (32.0/9.0)*M_PI*epsilon_s*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_s*std::pow(sigma_s,3.0)*
+		( 3.0*std::pow((sigma_s/rc),3.0) - std::pow((sigma_s/rc),9.0) );
+	// rm = rm when the potential is split according to the WCA schem and rm = simga_ss when the LJ potential is split according to the BH decomposition.
+	
 	std::cout << "thermal de Broglie wavelength of fluid = " << lam << " [nm]" << std::endl;
 	std::cout << "thermal de Broglie wavelength of solid = " << lams << " [nm]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "integal phi_att_ff * -1.0 = alpha = " << alpha << std::endl;
+	std::cout << "integal phi_att_ss * -1.0 = alphas = " << alphas << std::endl;
 }
 
 // The attractive potentials of fluid-fluid interactions.
@@ -410,6 +469,25 @@ float phi_att_sf(float r){
 		//e = 4.0*epsilon_sf*( std::pow((sigma_sf/r),12.0) - std::pow((sigma_sf/r),6.0) );
 		e = std::pow((sigma_sf/r),6.0);
 		e = 4.0*epsilon_sf*( e*e - e );
+	//}else {
+	//	e = 0.0;
+	}
+	//std::cout << e << std::endl;
+	return e;
+}
+
+// The attractive potentials of solid-solid interactions.
+float phi_att_ss(float r){
+	float e;
+	// WCA (Weeks-Chandler-Anderson) type
+	if (r < rmss){
+		e = - epsilon_s;
+	//} else if (rmss <= r && r <= rcsf) {
+	} else {
+		// Lennard-Jones（LJ) potential
+		//e = 4.0*epsilon_s*( std::pow((sigma_s/r),12.0) - std::pow((sigma_s/r),6.0) );
+		e = std::pow((sigma_s/r),6.0);
+		e = 4.0*epsilon_s*( e*e - e );
 	//}else {
 	//	e = 0.0;
 	}
@@ -589,6 +667,22 @@ float mu_ex(float rho_b){
 	//mu_ex_out = kb1*T*(-std::log(den1e) + eta*(14.0 - 13.0*eta + 5.0*eta*eta)/(2.0*(den1e*den1e*den1e)));
 	mu_ex_out = kb1*T*(-std::log(den1y) + y*(14.0 - 13.0*y + 5.0*y*y)/(2.0*den1y*den1y*den1y));
 	return mu_ex_out;
+}
+
+// The excess hard sphere chemical potential (mus_ex) in the bulk solid.
+// mus_ex is calculated by the PY equation.
+float mus_ex(float rho_sb){
+	float y, mus_ex_out;
+	float d_hss = sigma_ss;
+	//eta = M_PI*rho_sb*std::pow(d_hss,3.0)/6.0;
+	//eta = M_PI*rho_sb*(d_hss*d_hss*d_hss)/6.0;
+	y = M_PI*rho_sb*(d_hss*d_hss*d_hss)/6.0;
+	//float den1e = (1.0-eta);
+	float den1y = (1.0-y);
+	//mus_ex_out = kb1*T*(-std::log(1-eta) + eta*(14.0 - 13.0*eta + 5.0*eta*eta)/(2.0*std::pow((1.0-eta),3.0)));
+	//mus_ex_out = kb1*T*(-std::log(den1e) + eta*(14.0 - 13.0*eta + 5.0*eta*eta)/(2.0*(den1e*den1e*den1e)));
+	mus_ex_out = kb1*T*(-std::log(den1y) + y*(14.0 - 13.0*y + 5.0*y*y)/(2.0*den1y*den1y*den1y));
+	return mus_ex_out;
 }
 
 float mu_b(float rho_b){
@@ -1178,6 +1272,58 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 	return 0;
 }
 
+// solid-solid
+float phi_att_ss_int(float *r, float *rhos_phi_ss_int_i){
+	int i,j,k;
+	float ra_left;
+	float ra_right;
+	float raj_left;
+	float raj_right;
+	float rak;
+	//dd = drc = rc/float(nrmesh-1);
+	//
+	int sfmesh = 500;
+	float dsf = (h0+2.0*delta)/(sfmesh-1);
+	float rhos_phi_ss_int_j[sfmesh];
+	//
+	int sfnrmesh = 1500;
+	float drcsf = rcsf/(sfnrmesh-1);
+	float phi_ss_int_k[sfnrmesh];
+	//
+	float tpi = 2.0*M_PI;
+	phi_ss_int_k[0] = 0.0;
+	//
+	//for (i=0; i<nstep; i++) {
+	for (i=0; i<=(nstep-2)/2; i++){
+		//
+		for (j=0; j<sfmesh; j++) {
+			raj_left  = (float(j)*dsf - r[i]);
+			raj_right = ((H-float(j)*dsf) - r[i]);
+			for (k=1; k<sfnrmesh; k++) {
+				rak = drcsf*float(k);
+				//
+				ra_left  = rak*rak + raj_left*raj_left;
+				ra_left  = std::sqrt(ra_left);
+				//
+				ra_right = rak*rak + raj_right*raj_right;
+				ra_right = std::sqrt(ra_right);
+				//
+				phi_ss_int_k[k]  = ( phi_att_ss(ra_left) + phi_att_ss(ra_right) ) * (tpi*rak);
+			}
+			rhos_phi_ss_int_j[j] = rho_ssq(float(j)*dsf)*integral_simpson(phi_ss_int_k, sfnrmesh-1, drcsf);
+			//rhos_phi_ss_int_j[j] = rho_ssq(float(j)*dsf)*integral_trapezoidal(phi_ss_int_k, sfnrmesh-1, drcsf);
+		}
+		//
+		rhos_phi_ss_int_i[i] = integral_simpson(rhos_phi_ss_int_j, sfmesh-1, dsf);
+		//rhos_phi_ss_int_i[i] = integral_trapezoidal(rhos_phi_ss_int_j, sfmesh-1, dsf);
+		rhos_phi_ss_int_i[(nstep-1)-i] = rhos_phi_ss_int_i[i];
+	}
+	//for (i=0; i<nstep; i++) {
+	//	std::cout << i << ", " << r[i] << ", " << rhos_phi_ss_int_i[i] << std::endl;
+	//}
+	return 0;
+}
+
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
@@ -1334,47 +1480,64 @@ float fex(int i, float *n0, float *n1, float *n2, float *n3, float *nv1, float *
 
 // grand potential for FMT
 // Omega(rho of fluid) + integral 0.5*rho*rhos*phi_att_sf(r-r') drdr'
-float omega(float *rho, float *r, float *fex_i, float *rho_phi_ff_int_i, float *rhos_phi_sf_int_i, float rho_b){
+float omega(float *rho, float *r, float *fex_i, float *rho_phi_ff_int_i, float *rhos_phi_sf_int_i, float rho_b, float *rhos, float *rhos_phi_ss_int_i){
 	float omega_out;
 	omega_out = 1.0;
-	float omega1, omega2, omega3_ff, omega3_sf, omega4;
+	float omega1_ff, omega1_ss, omega2, omega3_ff, omega3_sf, omega3_ss, omega4_ff, omega4_ss;
 	int i;
-	//int i,j;
 	float fidf[nstep];
 	float rho_x_rho_phi_ff_int[nstep];
 	float rho_x_rhos_phi_sf_int[nstep];
 	float rho_x_muf[nstep];
 	float muf = (kb1*T)*std::log(rho_b*lam*lam*lam) + mu_ex(rho_b) - rho_b*alpha;
 	//
+	float fids[nsteps];
+	float rho_x_rhos_phi_ss_int[nsteps];
+	float rho_x_mus[nsteps];
+	float rho_sb = rho_b; // dummy
+	float mus = (kb1*T)*std::log(rho_sb*lams*lams*lams) + mus_ex(rho_sb) - rho_sb*alphas;
+	//float h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
+	//float rho_ss = 114.0; // [molecules/nm3] (the density of bulk carbon)
+	//float delta = 0.13; // [nm] (the roughness parameter) (the half-width of the density ramp)
+	//
+	// fluid
 	for (i=0; i<nstep; i++){
-		fidf[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0);
+		fidf[i] = rho[i]*(std::log(rho[i]*lam*lam*lam)-1.0); //fluid
 		rho_x_rho_phi_ff_int[i] = rho[i] * rho_phi_ff_int_i[i];
 		rho_x_rhos_phi_sf_int[i] = rho[i] * rhos_phi_sf_int_i[i];
 		rho_x_muf[i] = rho[i] * - muf;
+		//
 	}
-	omega1 = (kb1*T) * integral_simpson(fidf, nstep-1, dr);
-	//
 	// solid
-	//int sfmesh = 2000;
-	//float dsf = H/(sfmesh-1);
-	//float rhos[sfmesh];
-	//float fids[sfmesh];
-	//float ms = 12.0107/(6.02214076e23)/1000;
-	//float lams = h/std::pow((2.0*M_PI*ms*kb*T),0.5)*1e9;
-	//for (j=0; j<sfmesh; j++) {
-	//	rhos[i] = rho_ssq(float(j)*dsf)+rho_ssq(H-float(j)*dsf);
-	//	fids[i] = rhos[i]*(std::log(rhos[i]*lam*lam*lam)-1.0);
-	//}
+	for (i=0; i<nsteps; i++){
+		fids[i] = 2.0*rhos[i]*(std::log(rhos[i]*lams*lams*lams)-1.0);
+		rho_x_rhos_phi_ss_int[i] = 2.0*(rhos[i] * rhos_phi_ss_int_i[i]);
+		rho_x_mus[i] = 2.0*(rhos[i] * - mus);
+	}
+	//
+	omega1_ff = (kb1*T) * integral_simpson(fidf, nstep-1, dr); //fluid
+	omega1_ss = (kb1*T) * integral_simpson(fids, nsteps-1, dr); //solid
 	//
 	omega2 = (kb1*T) * integral_simpson(fex_i, nstep-1, dr); // Fex (fluid + solid)
 	//
-	omega3_ff = 0.5 * integral_simpson(rho_x_rho_phi_ff_int, nstep-1, dr);
-	omega3_sf = 0.5 * integral_simpson(rho_x_rhos_phi_sf_int, nstep-1, dr);
+	omega3_ff = 0.5 * integral_simpson(rho_x_rho_phi_ff_int, nstep-1, dr); //fluid-fluid
+	omega3_sf = 0.5 * integral_simpson(rho_x_rhos_phi_sf_int, nstep-1, dr); //solid-fluid
+	omega3_ss = 0.5 * integral_simpson(rho_x_rhos_phi_ss_int, nsteps-1, dr); //solid-solid
 	//
-	omega4 = integral_simpson(rho_x_muf, nstep-1, dr);
+	omega4_ff = integral_simpson(rho_x_muf, nstep-1, dr); //fluid
+	omega4_ss = integral_simpson(rho_x_mus, nsteps-1, dr); //solid
 	//
-	omega_out = (omega1 + omega2 + omega3_ff + omega3_sf + omega4) / epsilon_ff;
-	//std::cout << omega1 << ", " << omega2 << ", " << omega3_ff << ", " << omega3_sf << ", " << omega4 << std::endl;
+	//Omega[rho_f(r);rho_s(r)] = Fint[rho_f(r);rho_s(r)] + omega4_ff + omega4_ss
+	//Fint[rho_f(r);rho_s(r)] = Fid[rho_f(r);rho_s(r)] + Fex[rho_f(r);rho_s(r)]
+	//Fid[rho_f(r);rho_s(r)] = Fid[rho_f(r)] + Fid[rho_s(r)]
+	//Fid[rho_f(r)] = omega1_ff, Fid[rho_s(r)] = omega1_ss
+	//Fex[rho_f(r);rho_s(r)] = omega2 + omega3_ff + omega3_sf + omega3_ss
+	//Fex_hs[rho_f(r);rho_s(r)] = omega2
+	omega_out = (omega1_ff + omega1_ss + omega2 + omega3_ff + omega3_sf + omega3_ss + omega4_ff + omega4_ss) / epsilon_ff;
+	//std::cout << "omega1_ff=" << omega1_ff << ", omega1_ss=" << omega1_ss << std::endl;
+	//std::cout << "   omega2=" << omega2 << std::endl;
+	//std::cout << "omega3_ff=" << omega3_ff << ", omega3_sf=" << omega3_sf << ", omega3_ss=" << omega3_ss << std::endl;
+	//std::cout << "omega4_ff=" << omega4_ff << ", omega4_ss=" << omega4_ss << std::endl;
 	return omega_out;
 }
 
@@ -1390,6 +1553,7 @@ int main(){
 	read_parameters();
 	float r[nstep];
 	float rho[nstep], rho_new[nstep];
+	float rhos[nstep];
 	//
 	for (i=0; i<nstep; i++){
 		r[i] = (2.0*ze)/2.0 + dr*float(i);
@@ -1404,11 +1568,9 @@ int main(){
 	float y, a, b, c;
 	float flag_P; flag_P = 0.0;
 	float rho_b1; rho_b1 = 0.0;
-	if ( rho_b0 != 0.0 ){
-		std::cout << "rho_b0 = " << rho_b0 << std::endl;
-	} else if ( rho_b0 == 0.0 ) {
+	if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
-	} else {
+	} else if ( rho_b0 < 0.0 ) {
 		// rho_b0 < 0.0
 		flag_P = -1.0;
 		y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
@@ -1434,12 +1596,23 @@ int main(){
 		std::cout << "Ref. Pressure: 1.01325e+07 [Pa] = 100 [atm] (10.1325 [MPa])" << std::endl;
 	}
 	
-	//std::cout << rho_b0 << std::endl;
 	// initialization
 	for (i=0; i<nstep; i++){
-		rho[i] = rho_b0/(nstep*dr);
-		rho_new[i] = 0.0;
+		// solid (one side)
+		if ( 0.0 <= r[i] && r[i] < h0 ){
+			rhos[i] = rho_ss;
+		} else if ( h0 <= r[i] && r[i] < h0+2.0*delta ){
+			rhos[i] = 0.75*rho_ss * (1.0 - (r[i] - h0)/(2.0*delta));
+			nsteps = i;
+		} else {
+			rhos[i] = 0.0;
+		}
 	}
+	if (nsteps%2 == 0) {
+		nsteps += 1;
+		rhos[i] = 0.0;
+	}
+	
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	//std::ofstream ofsppov_vs("./PP0_vs_Vgamma_data_vs.txt");
 	//ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
@@ -1465,6 +1638,16 @@ int main(){
 	float rhos_phi_sf_int_i[nstep];
 	phi_att_sf_int(r, rhos_phi_sf_int_i); // calculate integral phi_att_sf at r[i] -> rhos * phi_att_sf
 	//
+	float rhos_phi_ss_int_i[nstep];
+	phi_att_ss_int(r, rhos_phi_ss_int_i); // calculate integral phi_att_ss at r[i] -> rhos * phi_att_ss
+	//
+	//std::cout << rho_b0 << std::endl;
+	// initialization
+	for (i=0; i<nstep; i++){
+		rho[i] = 0.0;
+		rho_new[i] = 0.0;
+	}
+	//
 	float n0_wall_i[nstep];
 	float n1_wall_i[nstep];
 	float n2_wall_i[nstep];
@@ -1485,8 +1668,11 @@ int main(){
 	float diff_old1 = 1.0;
 	float diff;
 	float diff0;
-	float mixing;
-	float threshold = 0.5/100*nstep;
+	//
+	float threshold_origin = 0.5/100*nstep;
+	float threshold = threshold_origin * thr_times;
+	float wmixing_origin = wmixing;
+	int chk = 0;
 	//
 	float xio;
 	float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
@@ -1562,19 +1748,34 @@ int main(){
 				} else {
 					// overflow about std::exp(730)
 					// to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
+					diff_old1 = 5.0;
+					diff = 5.0;
 				}
 			}
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				if (rho[i] <= 1e-6) {
+					diff0 = 0.0;
+				} else {
+					diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				}
 				diff = diff + 2.0*diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>50) {
-				break;
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
+				//std::cout << "j=" << j << std::endl;
+				if (chk == 1) {
+					chk = 0;
+					threshold = threshold_origin * thr_times;
+					wmixing = wmixing_origin;
+					break;
+				}
+				threshold = threshold / thr_times;
+				wmixing = wmixing * wmx_times;
+				chk++;
 			}
 		}
 		//for (i=0; i<nstep; i++){
@@ -1607,14 +1808,15 @@ int main(){
 		}
 		// 1 [K/nm3] = 1.38064878e-23/(10^-9)^3 [Nm/m3] = 13806.4878 [Pa]
 		// grand ppotential, Omega(ff+sf part)
-		//for (i=0; i<nstep; i++){
-		//	fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
-		//}
-		//grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
-		grand_potential = 1.0;
-		//
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b, rhos, rhos_phi_ss_int_i);
+		//grand_potential = 1.0;		//grand_potential = 1.0;
+		//std::cout << "P/P0= " << pp0 << std::endl;
 		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
-		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;	}
+		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+	}
 	// reverse
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
@@ -1647,23 +1849,38 @@ int main(){
 				if (-14 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
 				} else if (xio < -14){
-					rho_new[i] = 1e-6;
+					rho_new[i] = 1e-8;
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
-					rho_new[i] = rho[i] / 10.0;
+					rho_new[i] = (2.0*rho_b0/dr + rho[i])*1.2;
+					diff_old1 = 5.0;
+					diff = 5.0;
 				}
 			}
 			diff_old1 = diff;
 			diff = 0.0;
 			for (i=0; i<=(nstep-2)/2; i++){
-				diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				if (rho[i] <= 1e-6) {
+					diff0 = 0.0;
+				} else {
+					diff0 = std::abs((rho_new[i]-rho[i])/rho[i]);
+				}
 				diff = diff + 2.0*diff0;
 				rho[i] = wmixing*rho_new[i] + (1.0-wmixing)*rho[i];
 				rho[(nstep-1)-i] = rho[i]; // The rest is filled with mirror symmetry. 
 			}
-			if (diff < threshold && diff_old1 < threshold && j>50) {
-				break;
+			if (diff < threshold && diff_old1 < threshold && j>=min_iter) {
+				//std::cout << "j=" << j << std::endl;
+				if (chk == 1) {
+					chk = 0;
+					threshold = threshold_origin * thr_times;
+					wmixing = wmixing_origin;
+					break;
+				}
+				threshold = threshold / thr_times;
+				wmixing = wmixing * wmx_times;
+				chk++;
 			}
 		}
 		//
@@ -1692,13 +1909,13 @@ int main(){
 		}
 		// 1 [K/nm3] = 1.38064878e-23/(10^-9)^3 [Nm/m3] = 13806.4878 [Pa]
 		// grand ppotential, Omega(ff+sf part)
-		//for (i=0; i<nstep; i++){
-		//	fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
-		//}
-		//grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b);
-		grand_potential = 1.0;
-		//
-		ofsppov_vs << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
+		for (i=0; i<nstep; i++){
+			fex_i[i] = fex(i, n0, n1, n2, n3, nv1, nv2);
+		}
+		grand_potential = omega(rho, r, fex_i, rho_phi_ff_int_i, rhos_phi_sf_int_i, rho_b, rhos, rhos_phi_ss_int_i);
+		//grand_potential = 1.0;
+		//std::cout << "P/P0= " << pp0 << std::endl;
+		ofsppov_ls << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 		std::cout << pp0 << ", "<< v_gamma << ", " << v_mmol_per_cm3 << ", " <<  v_cm3STP_per_cm3 << ", " << grand_potential << std::endl;
 	}
 	free(phi_att_ff_int_ij);
