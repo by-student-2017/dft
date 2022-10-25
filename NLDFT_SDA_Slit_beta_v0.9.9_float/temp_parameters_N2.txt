@@ -21,3 +21,4 @@
 20_wmx_times=1.0     # change weight after min_iter cycle and 1st threshold condition.
 21_deltas=0.13       #[nm] (the roughness parameter) (std of Gaussian distribution)
 22_rcsf=0.0          # 0.0:auto = 30*sigma_sf = cutoff of LJ potential (solid-fluid)
+23_perg=0.3          # perg*Gauss distribution

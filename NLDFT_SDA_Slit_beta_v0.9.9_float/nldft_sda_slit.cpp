@@ -102,9 +102,10 @@ int min_iter = 10; //Minimum number of iterations
 float thr_times = 10.0; //change threshold
 float wmx_times = 3.0; //change weight
 // ---------- ----------- ------------ ------------
-float deltas = 0.13;
+float deltas;
 float rmsf;
 float rcsf;
+float perg;
 // ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
@@ -248,6 +249,7 @@ void read_parameters(void){
 	min_iter = int(num[18]); //Minimum number of iterations
 	thr_times = num[19]; //divied threshold value by thr_times after min_iter cycles and 1st threshold condition.
 	wmx_times = num[20]; //multiply weight value by wmx_times after min_iter cycles and 1st threshold condition.
+	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "Convergence conditions" << std::endl;
 	std::cout << "Minimum number of iterations:" << min_iter << " cycles" << std::endl;
 	std::cout << "divied threshold value by thr_times=" << thr_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
@@ -260,6 +262,7 @@ void read_parameters(void){
 		rcsf = 30.0*sigma_sf;
 		std::cout << "autoset (cut off) rcsf = " << rcsf << " [nm]" << std::endl;
 	}
+	perg = num[23];
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -497,7 +500,7 @@ float rho_ssq(float z){
 	//float h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
 	//float rho_ss = 114.0; // [molecules/nm3] (the density of bulk carbon)
 	//float deltas = 0.13; // [nm] (the roughness parameter) (the half-width of the density ramp)
-	rho_ssq_out = rho_ss * (1.0/(std::sqrt(2.0*M_PI)*deltas))*exp(-z*z/(2.0*deltas*deltas));
+	rho_ssq_out = perg * rho_ss * (1.0/(std::sqrt(2.0*M_PI)*deltas))*exp(-z*z/(2.0*deltas*deltas));
 	return rho_ssq_out;
 }
 
@@ -554,14 +557,14 @@ float phi_ext(float z){
 				phi_sf_int_k[k]  = ( phi_att_sf(ra_left) + phi_att_sf(ra_right) 
 				                    -phi_att_sf(ra_leftm) -phi_att_sf(ra_rightm) ) * (tpi*rak);
 			}
-			//rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_simpson(phi_sf_int_k, sfnrmesh-1, drcsf);
-			rhos_phi_sf_int_j[j] = dsf*rho_ssq(float(j)*dsf)*integral_trapezoidal(phi_sf_int_k, sfnrmesh-1, drcsf);
+			rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_simpson(phi_sf_int_k, sfnrmesh-1, drcsf);
+			//rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_trapezoidal(phi_sf_int_k, sfnrmesh-1, drcsf);
 		}
-		//phi_ext_out += integral_simpson(rhos_phi_sf_int_j, sfmesh-1, dsf);
-		phi_ext_out += integral_trapezoidal(rhos_phi_sf_int_j, sfmesh-1, dsf);
+		phi_ext_out += integral_simpson(rhos_phi_sf_int_j, sfmesh-1, dsf);
+		//phi_ext_out += integral_trapezoidal(rhos_phi_sf_int_j, sfmesh-1, dsf);
+		//
+		//std::cout << phi_ext_out << std::endl;
 	}
-	//
-	//std::cout << phi_ext_out << std::endl;
 	return phi_ext_out;
 }
 
