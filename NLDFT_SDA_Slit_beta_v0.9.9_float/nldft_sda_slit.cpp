@@ -256,8 +256,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	deltas = num[21]; // [nm] (the roughness parameter) 
 	rcsf = num[22];
-	if ( rc == 0.0 ) { 
-		rc = 30.0*sigma_ff;
+	if ( rcsf == 0.0 ) { 
+		rcsf = 30.0*sigma_sf;
 		std::cout << "autoset (cut off) rcsf = " << rcsf << " [nm]" << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
