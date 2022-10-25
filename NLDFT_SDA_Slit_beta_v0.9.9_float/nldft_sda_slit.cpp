@@ -260,7 +260,7 @@ void read_parameters(void){
 	rcsf = num[22];
 	if ( rcsf == 0.0 ) { 
 		rcsf = 30.0*sigma_sf;
-		std::cout << "autoset (cut off) rcsf = " << rcsf << " [nm]" << std::endl;
+		std::cout << "autoset (cut off) rcsf = " << rcsf << " [nm] is related with limit slit width" << std::endl;
 	}
 	perg = num[23];
 	// ---------- ----------- ------------ ------------
