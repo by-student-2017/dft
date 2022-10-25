@@ -316,7 +316,7 @@ void read_parameters(void){
 		rc = 5.0*sigma_ff;
 		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
 		rcsf = 30.0*sigma_sf;
-		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related to limit slit width)" << std::endl;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related with limit slit width)" << std::endl;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 	}
 	std::cout << "--------------------------------------------------" << std::endl;

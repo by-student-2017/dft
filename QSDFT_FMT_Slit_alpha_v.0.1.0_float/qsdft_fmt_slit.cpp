@@ -295,9 +295,8 @@ void read_parameters(void){
 	if ( rc == 0.0 ) { 
 		rc = 5.0*sigma_ff;
 		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
-		rcsf = 5.0*sigma_sf;
-		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid)" << std::endl;
-		if ( rcsf > rc ) { rc = rcsf; }
+		rcsf = 30.0*sigma_sf;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related with limit slit size" << std::endl;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 	}
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -386,7 +385,8 @@ float phi_att_ff(float r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rm){
 		e = - epsilon_ff;
-	}else if (rm <= r && r <= rc){
+	//}else if (rm <= r && r <= rc){
+	} else {
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_ff*( std::pow((sigma_ff/r),12.0) - std::pow((sigma_ff/r),6.0) );
 		e = std::pow((sigma_ff/r),6.0);
@@ -404,7 +404,8 @@ float phi_att_sf(float r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rmsf){
 		e = - epsilon_sf;
-	}else if (rmsf <= r && r <= rcsf){
+	//}else if (rmsf <= r && r <= rcsf){
+	} else {
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_sf*( std::pow((sigma_sf/r),12.0) - std::pow((sigma_sf/r),6.0) );
 		e = std::pow((sigma_sf/r),6.0);
@@ -1139,7 +1140,7 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 500;
+	int sfnrmesh = 1500;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
