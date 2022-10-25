@@ -467,7 +467,7 @@ float phi_att_ss(float r){
 	if (r < rmss){
 		e = - epsilon_s;
 	//}else if (rmss <= r && r <= rcsf){
-	}else if (rmss <= r){
+	} else {
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_s*( std::pow((sigma_s/r),12.0) - std::pow((sigma_s/r),6.0) );
 		e = std::pow((sigma_s/r),6.0);
