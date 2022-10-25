@@ -308,9 +308,8 @@ void read_parameters(void){
 	if ( rc == 0.0 ) { 
 		rc = 5.0*sigma_ff;
 		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
-		rcsf = 5.0*sigma_sf;
+		rcsf = 30.0*sigma_sf;
 		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid)" << std::endl;
-		if ( rcsf > rc ) { rc = rcsf; }
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 	}
 	std::cout << "--------------------------------------------------" << std::endl;
@@ -460,7 +459,8 @@ float phi_att_ss(float r){
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rmss){
 		e = - epsilon_s;
-	}else if (rmss <= r && r <= rcsf){
+	//}else if (rmss <= r && r <= rcsf){
+	}else if (rmss <= r){
 		// Lennard-Jones（LJ) potential
 		//e = 4.0*epsilon_s*( std::pow((sigma_s/r),12.0) - std::pow((sigma_s/r),6.0) );
 		e = std::pow((sigma_s/r),6.0);
@@ -509,7 +509,7 @@ float phi_ext(float z){
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 500;
+	int sfnrmesh = 1500;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
