@@ -1710,10 +1710,10 @@ int main(){
 	}
 	std::ofstream ofsppov_vs("./"+Punits+"_vs_Vgamma_data_vs.txt");
 	ofsppov_vs << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_vs << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	std::cout << "P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	//for (k=0; k<100; k++){
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
@@ -1821,10 +1821,10 @@ int main(){
 	// P/P0, V[molecules/nm^3], Omega/epsilon_ff[nm^-2]
 	std::ofstream ofsppov_ls("./"+Punits+"_vs_Vgamma_data_ls.txt");
 	ofsppov_ls << "# w = (H-(2.0*ze)) = pore width = " << w_pw << " [nm]" << std::endl;
-	ofsppov_ls << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	ofsppov_ls << "# P[" << Punit << "], V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	//std::cout << "w = (H-sigma_ss) = pore width = " << w_pw << " [nm]" << std::endl;
-	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Omega/epsilon_ff[1/nm2]" << std::endl;
+	//std::cout << "P/P0, V[molecules/nm3], V[mmol/cm3], V[cm3(STP)/cm3], Relative_Omega/epsilon_ff[1/nm2]" << std::endl;
 	//for (k=0; k<100; k++){
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(k+1.0)/10.0));
 		//rho_b = rho_b0 * std::exp(-(20.0-2.0*float(99.0-k+1.0)/10.0));
