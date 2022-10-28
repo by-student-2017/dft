@@ -2,14 +2,14 @@
 01_sigma_ss=0.34     #[nm] (not use for QSDFT)
 02_nstep=0.0         # 0.0:auto, for mesh of slit width, <1.0:nstep=int(H/nstep+0.5)
 03_cycle_max=100001  # Number of max cycles
-04_wmixing=0.008     # mixing parameter
+04_wmixing=0.003     # mixing parameter
 05_epsilon_ff=95.77  #[K]
 06_sigma_ff=0.3549   #[nm]
 07_d_hs=0.3549       #[nm]
 08_rc=0              # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
 09_nrmesh=80         # 0.0:auto, for mesh of radial, <1.0:nrmesh=int(rc/nrmesh+0.5)
-10_epsilon_sf=150    #[K]
-11_sigma_sf=0.269    #[nm]
+10_epsilon_sf=53.72  #[K], 150
+11_sigma_sf=0.3508   #[nm], 0.269
 12_delta=0.13        #[nm] (delta < 0.3*sigma_ff for QSDFT)
 13_rho_ss=114.0      #[nm^-3], density of graphite
 14_m=28.0134         #[g/mol] (fluid), H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
@@ -25,4 +25,4 @@
 24_rcsf=0.0          # 0.0:auto = rcsf = rc = 5.0*sigma_ff = cut off LJ potential (solid-solid)
 25_min_iter=20       # Minimum number of iterations
 26_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
-27_wmx_times=1.0     # change weight after min_iter cycle and 1st threshold condition.
+27_wmx_times=3.0     # change weight after min_iter cycle and 1st threshold condition.
