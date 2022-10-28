@@ -1,13 +1,13 @@
 00_Dcc=XXX           # Memo
 01_sigma_ss=0.276    #[nm]
-02_nstep=0.0         # 0.0:auto, for mesh of slit width, <0.0:nstep=int((Dcc-sigma_ss)/nstep+0.5)
+02_nstep=0.0         # 0.0:auto, for mesh of slit width, <1.0:nstep=int((Dcc-sigma_ss)/nstep+0.5)
 03_cycle_max=100001  # Number of max cycles
 04_wmixing=0.003     # mixing parameter
 05_epsilon_ff=94.45  #[K]
 06_sigma_ff=0.3575   #[nm]
 07_d_hs=0.3575       #[nm]
 08_rc=0.0            # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
-09_nhmesh=20         # 0.0:auto, for mesh related fluid-fluid interaction, <0.0:nhmesh=int(rc/nhmesh+0.5)
+09_nhmesh=20         # 0.0:auto, for mesh related fluid-fluid interaction, <1.0:nhmesh=int(rc/nhmesh+0.5)
 10_epsilon_sf=53.22  #[K]
 11_sigma_sf=0.3494   #[nm]
 12_delta=0.335       #[nm]

@@ -146,11 +146,11 @@ void read_parameters(void){
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
 	nstep = num[2];
-	if ( nstep <= 0 ) {
-		if ( nstep < 0 ) {
-			nstep = int((H-sigma_ss)/nstep + 0.5);
-		} else {
+	if ( nstep <= 1.0 ) {
+		if ( nstep == 0 ) {
 			nstep = int((H-sigma_ss)/0.0075 + 0.5);
+		} else {
+			nstep = int((H-sigma_ss)/nstep + 0.5);
 		}
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
@@ -182,11 +182,11 @@ void read_parameters(void){
 	}
 	// ---------- ----------- ------------ ------------
 	nrmesh = num[9];
-	if ( nrmesh <= 0 ) {
-		if ( nrmesh < 0 ){
-			nrmesh = int(rc/nrmesh + 0.5);
-		} else {
+	if ( nrmesh <= 1.0 ) {
+		if ( nrmesh == 0 ){
 			nrmesh = int(rc/0.02 + 0.5);
+		} else {
+			nrmesh = int(rc/nrmesh + 0.5);
 		}
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
