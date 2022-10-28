@@ -256,11 +256,11 @@ void read_parameters(void){
 	sigma_ss = num[1]; // [nm]
 	// ---------- ----------- ------------ ------------
 	nstep = num[2];
-	if ( nstep <= 0 ) {
-		if ( nstep < 0 ) {
-			nstep = int(H/nstep + 0.5);
-		} else {
+	if ( nstep <= 1.0 ) {
+		if ( nstep == 0 ) {
 			nstep = int(H/0.006 + 0.5);
+		} else {
+			nstep = int(H/nstep + 0.5);
 		}
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
@@ -294,11 +294,11 @@ void read_parameters(void){
 	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
 	nrmesh = num[9];
-	if ( nrmesh <= 0 ) {
-		if ( nrmesh < 0 ){
-			nrmesh = int(rc/nrmesh + 0.5);
-		} else {
+	if ( nrmesh <= 1.0 ) {
+		if ( nrmesh == 0 ){
 			nrmesh = int(rc/0.02 + 0.5);
+		} else {
+			nrmesh = int(rc/nrmesh + 0.5);
 		}
 		if ( nrmesh%2 == 0 ){
 			nrmesh = nrmesh + 1;
@@ -315,7 +315,7 @@ void read_parameters(void){
 	if ( rc == 0.0 ) { 
 		rc = 5.0*sigma_ff;
 		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
-		rcsf = 30.0*sigma_sf;
+		rcsf = 40.0*sigma_sf;
 		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related with limit slit width)" << std::endl;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 	}
@@ -518,7 +518,7 @@ float phi_ext(float z){
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 1500;
+	int sfnrmesh = 2000;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
