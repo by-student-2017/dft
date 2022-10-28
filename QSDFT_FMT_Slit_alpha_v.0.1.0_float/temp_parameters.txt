@@ -22,7 +22,7 @@
 21_epsilon_sfs=53.72 #[K]  graphite wall (Steele) 53.72
 22_sigma_sfs=0.3508  #[nm] graphite wall (Steele) 0.3508
 23_deltas=0.335      #[nm] graphite wall (Steele) (not use for this QSDFT)
-24_rcsf=0.0          # 0.0:auto = 30.0*sigma_sf = cut off LJ potential (solid-solid)
+24_rcsf=0.0          # 0.0:auto = 40.0*sigma_sf = cut off LJ potential (solid-solid)
 25_min_iter=20       # Minimum number of iterations
 26_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
 27_wmx_times=1.0     # change weight after min_iter cycle and 1st threshold condition.

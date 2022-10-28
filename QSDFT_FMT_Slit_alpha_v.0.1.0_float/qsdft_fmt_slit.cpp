@@ -364,7 +364,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rcsf = num[24];
 	if ( rcsf == 0.0 ) { 
-		rcsf = 30.0*sigma_sf;
+		rcsf = 40.0*sigma_sf;
 		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related to limit slit width)" << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
@@ -1234,7 +1234,7 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 1500;
+	int sfnrmesh = 2000;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
@@ -1286,7 +1286,7 @@ float phi_att_ss_int(float *r, float *rhos_phi_ss_int_i){
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_ss_int_j[sfmesh];
 	//
-	int sfnrmesh = 1500;
+	int sfnrmesh = 2000;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_ss_int_k[sfnrmesh];
 	//
@@ -1644,7 +1644,7 @@ int main(){
 	//std::cout << rho_b0 << std::endl;
 	// initialization
 	for (i=0; i<nstep; i++){
-		rho[i] = 0.0;
+		rho[i] = 2.0*rho_b0/dr;
 		rho_new[i] = 0.0;
 	}
 	//
