@@ -4,9 +4,9 @@ items=( 0.38 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
  1.02 1.18 1.35 1.61 1.93 2.31 2.90 3.63 4.75 6.51 10.0
 )
 
-if [ ! -e qsdft_fmt_slit.exe ]; then
+#if [ ! -e qsdft_fmt_slit.exe ]; then
 	c++ -O2 qsdft_fmt_slit.cpp -o qsdft_fmt_slit.exe
-fi
+#fi
 
 if [ ! -d results ]; then
 	mkdir results
