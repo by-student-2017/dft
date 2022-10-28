@@ -104,7 +104,7 @@ float wmx_times = 3.0; //change weight
 // ---------- ----------- ------------ ------------
 float deltas;
 float rmsf;
-float alpha_wall=0.61;
+float alpha_wall;
 // ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
@@ -509,7 +509,7 @@ float phi_ext(float z){
 		//z=r[i]
 		//
 		alpha_wall = 1.0;
-		phi_ext_out = phi_sf(0.61*delta+z) + phi_sf((0.61*delta+H)-z);
+		phi_ext_out = phi_sf(delta+z) + phi_sf((delta+H)-z);
 		//
 		for (j=0; j<sfmesh; j++) {
 			raj_left  = abs(float(j)*dsf - z);
