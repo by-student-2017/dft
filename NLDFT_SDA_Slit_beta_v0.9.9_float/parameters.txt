@@ -19,6 +19,4 @@
 18_min_iter=10       # Minimum number of iterations
 19_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
 20_wmx_times=3.0     # change weight after min_iter cycle and 1st threshold condition.
-21_deltas=0.13       #[nm] (the roughness parameter) (std of Gaussian distribution)
-22_rcsf=0.0          # 0.0:auto = 30*sigma_sf = cutoff of LJ potential (solid-fluid)
-23_perg=0.3          # perg*Gauss distribution
+21_deltas=0.013      #[nm] (displacement U=0.017 [A^2] of XRD -> 0.13 [A] = 0.013 [nm]), Trucano P, Chen R., Nature 258 (1975) 136-137.

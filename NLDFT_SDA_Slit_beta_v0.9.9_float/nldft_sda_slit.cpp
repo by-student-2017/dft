@@ -104,8 +104,7 @@ float wmx_times = 3.0; //change weight
 // ---------- ----------- ------------ ------------
 float deltas;
 float rmsf;
-float rcsf;
-float perg;
+float alpha_wall=0.61;
 // ---------- ----------- ------------ ------------
 
 float integral_trapezoidal(float *f, int n, float dx){
@@ -256,13 +255,7 @@ void read_parameters(void){
 	std::cout << "multiply weight value by wmx_times=" << wmx_times << " after " << min_iter << " cycles and 1st threshold condition." << std::endl;
 	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
-	deltas = num[21]; // [nm] (the roughness parameter) 
-	rcsf = num[22];
-	if ( rcsf == 0.0 ) { 
-		rcsf = 30.0*sigma_sf;
-		std::cout << "autoset (cut off) rcsf = " << rcsf << " [nm] is related with limit slit width" << std::endl;
-	}
-	perg = num[23];
+	deltas = num[21]; // [nm] (the roughness parameter, displacement U of XRD) 
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
@@ -467,7 +460,7 @@ float phi_sf(float z){
 	float sigma_sf2 = sigma_sf*sigma_sf;
 	float sfpz = (sigma_sf/z);
 	float sfpz2 = sfpz*sfpz;
-	float dez = (0.61*delta+z);
+	float dez = (alpha_wall*delta+z);
 	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
 	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
 	//			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
@@ -477,22 +470,16 @@ float phi_sf(float z){
 	return phi_sf_out;
 }
 
-// The attractive potentials of solid-fluid interactions.
-float phi_att_sf(float r){
-	float e;
-	// WCA (Weeks-Chandler-Anderson) type
-	if (r < rmsf){
-		e = - epsilon_sf;
-	}else if (rmsf <= r && r <= rcsf){
-		// Lennard-Jones（LJ) potential
-		//e = 4.0*epsilon_sf*( std::pow((sigma_sf/r),12.0) - std::pow((sigma_sf/r),6.0) );
-		e = std::pow((sigma_sf/r),6.0);
-		e = 4.0*epsilon_sf*( e*e - e );
-	//}else {
-	//	e = 0.0;
-	}
-	//std::cout << e << std::endl;
-	return e;
+// 10-4 potential (Vone-plane) (remove rho_ss)
+float phi_sf_op(float z){
+	float phi_sf_op_out;
+	float sigma_sf2 = sigma_sf*sigma_sf;
+	float sfpz = (sigma_sf/z);
+	float sfpz2 = sfpz*sfpz;
+	//phi_sf_op_out = 2.0*M_PI*epsilon_sf*std::pow(sigma_sf,2.0)*
+	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0) );
+	phi_sf_op_out = 2.0*M_PI*epsilon_sf*(sigma_sf2)*delta*( (2.0/5.0)*std::pow(sfpz2,5.0)-(sfpz2*sfpz2) );
+	return phi_sf_op_out;
 }
 
 float rho_ssq(float z){
@@ -500,70 +487,49 @@ float rho_ssq(float z){
 	//float h0 = 2.0*0.34; // [nm] (the thickness of the solid wall)
 	//float rho_ss = 114.0; // [molecules/nm3] (the density of bulk carbon)
 	//float deltas = 0.13; // [nm] (the roughness parameter) (the half-width of the density ramp)
-	rho_ssq_out = perg * rho_ss * (1.0/(std::sqrt(2.0*M_PI)*deltas))*exp(-z*z/(2.0*deltas*deltas));
+	rho_ssq_out = rho_ss * (1.0/(std::sqrt(2.0*M_PI)*deltas))*exp(-z*z/(2.0*deltas*deltas));
 	return rho_ssq_out;
 }
 
 // e.g., wall potential (Carbon slit)
 float phi_ext(float z){
 	float phi_ext_out;
-	phi_ext_out = phi_sf(z) + phi_sf(H-z);
+	//phi_ext_out = phi_sf(z) + phi_sf(H-z);
 	//std::cout << phi_ext_out << " Steele" << std::endl;
 	//
 	int i,j,k;
-	float ra_left, ra_leftm;
-	float ra_right, ra_rightm;
 	float raj_left, raj_leftm;
 	float raj_right, raj_rightm;
-	float rak;
-	//drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 300;
-	float dsf = 6.0*deltas/(sfmesh-1);
+	int sfmesh = deltas/0.001;
+	float dsf = 5.0*deltas/(sfmesh-1); // >99.9999426697%
 	float rhos_phi_sf_int_j[sfmesh];
-	//
-	int sfnrmesh = 1500;
-	//rcsf = 30.0*sigma_sf;
-	float drcsf = rcsf/(sfnrmesh-1);
-	float phi_sf_int_k[sfnrmesh];
-	//
-	float tpi = 2.0*M_PI;
-	rhos_phi_sf_int_j[0] = 0.0;
-	phi_sf_int_k[0] = 0.0;
 	//
 	if ( deltas > 0 ){
 		//z=r[i]
-		for (j=1; j<sfmesh; j++) {
-			raj_left  = (float(j)*dsf - z);
-			raj_right = ((H-float(j)*dsf) - z);
+		//
+		alpha_wall = 1.0;
+		phi_ext_out = phi_sf(0.61*delta+z) + phi_sf((0.61*delta+H)-z);
+		//
+		for (j=0; j<sfmesh; j++) {
+			raj_left  = abs(float(j)*dsf - z);
+			raj_right = abs((H-float(j)*dsf) - z);
 			//
-			raj_leftm  = (-float(j)*dsf - z);
-			raj_rightm = ((H+float(j)*dsf) - z);
-			for (k=1; k<sfnrmesh; k++) {
-				rak = drcsf*float(k);
-				//
-				ra_left  = rak*rak + raj_left*raj_left;
-				ra_left  = std::sqrt(ra_left);
-				//
-				ra_right = rak*rak + raj_right*raj_right;
-				ra_right = std::sqrt(ra_right);
-				//
-				ra_leftm  = rak*rak + raj_leftm*raj_leftm;
-				ra_leftm  = std::sqrt(ra_leftm);
-				//
-				ra_rightm = rak*rak + raj_rightm*raj_rightm;
-				ra_rightm = std::sqrt(ra_rightm);
-				//
-				phi_sf_int_k[k]  = ( phi_att_sf(ra_left) + phi_att_sf(ra_right) 
-				                    -phi_att_sf(ra_leftm) -phi_att_sf(ra_rightm) ) * (tpi*rak);
-			}
-			rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_simpson(phi_sf_int_k, sfnrmesh-1, drcsf);
-			//rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)*integral_trapezoidal(phi_sf_int_k, sfnrmesh-1, drcsf);
+			raj_leftm  = abs(-float(j)*dsf - z);
+			raj_rightm = abs((H+float(j)*dsf) - z);
+			//
+			rhos_phi_sf_int_j[j] = rho_ssq(float(j)*dsf)
+				* ( phi_sf_op(raj_left) + phi_sf_op(raj_leftm) + phi_sf_op(raj_right) + phi_sf_op(raj_rightm) );
 		}
 		phi_ext_out += integral_simpson(rhos_phi_sf_int_j, sfmesh-1, dsf);
 		//phi_ext_out += integral_trapezoidal(rhos_phi_sf_int_j, sfmesh-1, dsf);
 		//
-		//std::cout << phi_ext_out << std::endl;
+		alpha_wall = 0.61;
+		std::cout << "r="<< z << "[nm]: V=" << phi_sf(z) + phi_sf(H-z) << " Ref. Steele" << std::endl;
+		std::cout << "r="<< z << "[nm]: V=" << phi_ext_out << std::endl;
+	} else {
+		alpha_wall = 0.61;
+		phi_ext_out = phi_sf(z) + phi_sf(H-z);
 	}
 	return phi_ext_out;
 }
