@@ -303,6 +303,7 @@ void read_parameters(void){
 	if ( rc == 0.0 ) { 
 		rc = 5.0*sigma_ff;
 		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
+		std::cout << "--------------------------------------------------" << std::endl;
 	}
 	// move below(sigma_sf)
 	// ---------- ----------- ------------ ------------
@@ -325,11 +326,6 @@ void read_parameters(void){
 	epsilon_sf = num[10]; // [K]
 	// ---------- ----------- ------------ ------------
 	sigma_sf = num[11]; // [nm]
-	if ( rc == 0.0 ) { 
-		rc = 5.0*sigma_ff;
-		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
-	}
-	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------
 	delta = num[12]; // nm, delta < 0.3*sigma_ff for QSDFT
 	// ---------- ----------- ------------ ------------
