@@ -314,10 +314,10 @@ void read_parameters(void){
 	sigma_sf = num[11]; // [nm]
 	if ( rc == 0.0 ) { 
 		rc = 5.0*sigma_ff;
-		std::cout << "cut off, rc = " << rc << " [nm] (for fluid)" << std::endl;
-		rcsf = 30.0*sigma_sf;
-		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related with limit slit width)" << std::endl;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
+		rcsf = rc;
+		//rcsf = 40.0*sigma_sf;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid)" << std::endl;
 	}
 	std::cout << "--------------------------------------------------" << std::endl;
 	// ---------- ----------- ------------ ------------

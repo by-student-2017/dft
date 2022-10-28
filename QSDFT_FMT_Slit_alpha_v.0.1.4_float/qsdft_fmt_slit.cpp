@@ -360,7 +360,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rcsf = num[24];
 	if ( rcsf == 0.0 ) { 
-		rcsf = 40.0*sigma_sf;
+		rcsf = rc;
+		//rcsf = 40.0*sigma_sf;
 		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related to limit slit width)" << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
@@ -1716,7 +1717,7 @@ int main(){
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		//float check_data;
-	for (k=1; k<=181; k++){
+	for (k=0; k<=181; k++){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
@@ -1827,7 +1828,7 @@ int main(){
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		//float check_data;
-	for (k=181; k>=1; k--){
+	for (k=181; k>=0; k--){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
