@@ -271,9 +271,9 @@ void read_parameters(void){
 	nstep = num[2];
 	if ( nstep <= 1.0 ) {
 		if ( nstep == 0 ) {
-			nstep = int(H/0.006 + 0.5);
+			nstep = int((H-1.555)/0.006 + 0.5);
 		} else {
-			nstep = int(H/nstep + 0.5);
+			nstep = int((H-1.555)/nstep + 0.5);
 		}
 		if ( nstep%2 == 1 ){
 			nstep = nstep + 1;
