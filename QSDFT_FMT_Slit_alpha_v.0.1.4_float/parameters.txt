@@ -8,8 +8,8 @@
 07_d_hs=0.3549       #[nm]
 08_rc=0              # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
 09_nrmesh=80         # 0.0:auto, for mesh of radial, <1.0:nrmesh=int(rc/nrmesh+0.5)
-10_epsilon_sf=53.72  #[K], 150
-11_sigma_sf=0.3508   #[nm], 0.269
+10_epsilon_sf=150    #[K]
+11_sigma_sf=0.269    #[nm]
 12_delta=0.13        #[nm] (delta < 0.3*sigma_ff for QSDFT)
 13_rho_ss=114.0      #[nm^-3], density of graphite
 14_m=28.0134         #[g/mol] (fluid), H2=2.01568, Ar=39.948, N2=28.0134, CO2=44.01, O2=31.998
