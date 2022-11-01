@@ -851,18 +851,18 @@ float dfex(float *r, int i, float *n0, float *n1, float *n2, float *n3, float *n
 		//)*(2.0*M_PI*x);
 		//
 		// dphi/dn2, q=3 case, RSLT version // PHYSICAL REVIEW E 64 011602
-		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
-		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-		//	* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
-		//)*(2.0*M_PI*x);
+		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+			* 3.0*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(-2.0*sxi*sign)*(-nv2[j]/(n2[j]*n2[j])*sign)
+		)*(2.0*M_PI*x);
 		//
 		// dphi/dn2, RSLT2 version // PHYSICAL REVIEW E 64 011602
-		dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
-			+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
-			+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
-				* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
-		)*(2.0*M_PI*x);
+		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
+		//	+ 3.0*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi*sign)
+		//	+ n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))
+		//		* (1.0-6.0*sxi*sign+6.0*sxi*sxi)*(-nv2[j]/(n2[j]*n2[j])*sign)
+		//)*(2.0*M_PI*x);
 		//
 		// dphi/dn2, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
 		//dphi_per_n2_j[j] = ( n1[j]/(1.0-n3[j])
@@ -887,16 +887,16 @@ float dfex(float *r, int i, float *n0, float *n1, float *n2, float *n3, float *n
 		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
 		//
 		// dphi/dn3, q=3 case, RSLT version // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
-		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
-		//)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
-		//
-		// dphi/dn3, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
 		dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
 			+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
-			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
-		)*(M_PI*x*x);
+			+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-sxi*sxi)*(1.0-sxi*sxi)*(1.0-sxi*sxi)
+		)*(M_PI*x*x); // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//
+		// dphi/dn3, RSLT2 version // PHYSICAL REVIEW E, VOLUME 64, 011602
+		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
+		//	+ (n1[j]*n2[j] - nv1[j]*nv2[j])/((1.0-n3[j])*(1.0-n3[j])) 
+		//	+ 2.0*n2[j]*n2[j]*n2[j]/(24.0*M_PI*(1.0-n3[j])*(1.0-n3[j])*(1.0-n3[j]))*(1.0-3.0*sxi*sxi+2.0*sxi*sxi*sxi)
+		//)*(M_PI*x*x);
 		//
 		// dphi/dn3, The modified fundamental-measure theory (MFMT) // Langmuir 2008, 24, 12431-12439
 		//dphi_per_n3_j[j] = ( n0[j]/(1.0-n3[j])
