@@ -514,7 +514,7 @@ float phi_ext(float z){
 	float rak;
 	//drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
@@ -611,9 +611,9 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	float xs, xs2;
 	float n0, n1, n2, n3, nv1, nv2;
 	//
-	int nwstep = 500;
+	int nwstep = 100;
 	//float dw = (ze)/nwstep;
-	float dw = (h0+2.0*delta)/nwstep;
+	float dw = (h0+2.0*delta)/(nwstep-1);
 	//
 	float n0_wall_w[nwstep];
 	float n1_wall_w[nwstep];
@@ -1058,11 +1058,11 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 	float rak;
 	//dd = drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 500;
+	int sfnrmesh = 1500;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
@@ -1110,11 +1110,11 @@ float phi_att_ss_int(float *r, float *rhos_phi_ss_int_i){
 	float rak;
 	//dd = drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_ss_int_j[sfmesh];
 	//
-	int sfnrmesh = 500;
+	int sfnrmesh = 1500;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_ss_int_k[sfnrmesh];
 	//
