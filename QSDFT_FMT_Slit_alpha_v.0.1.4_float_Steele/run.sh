@@ -23,7 +23,7 @@ for ((i=42;i<=1000;i+=2)); do  #new version
 	#echo $w
 	cp temp_parameters.txt parameters.txt
 	echo "Pore width = ${w} [nm]"
-	H=`awk -v w=${w} "BEGIN {print w+0.195}"`
+	H=`awk -v w=${w} "BEGIN {print w+0.34}"`
 	echo "Slit width = ${H} [nm]"
 	sed -i "s/XXX/${H}/g" parameters.txt
 	./qsdft_fmt_slit_steele.exe
