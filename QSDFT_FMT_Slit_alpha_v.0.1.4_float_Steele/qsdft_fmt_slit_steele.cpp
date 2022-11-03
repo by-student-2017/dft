@@ -313,7 +313,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	sigma_sf = num[11]; // [nm]
 	if ( rc == 0.0 ) { 
-		rc = 5.0*sigma_ff;
+		rc = 40.0*sigma_ff;
 		std::cout << "autoset (cut off) = " << rc << " [nm]" << std::endl;
 		rcsf = rc;
 		//rcsf = 40.0*sigma_sf;
@@ -514,11 +514,11 @@ float phi_ext(float z){
 	float rak;
 	//drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 2000;
+	int sfnrmesh = nrmesh;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
@@ -611,7 +611,7 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	float xs, xs2;
 	float n0, n1, n2, n3, nv1, nv2;
 	//
-	int nwstep = 500;
+	int nwstep = 100;
 	//float dw = (ze)/nwstep;
 	float dw = (h0+2.0*delta)/nwstep;
 	//
@@ -651,7 +651,7 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	// right
 	for (i=0; i<nstep; i++) {
 		for (w=0; w<nwstep; w++) {
-			rai = ((H-dw*float(w))-r[i]);
+			rai = -((H-dw*float(w))-r[i]);
 			//
 			xs2 = (Ris*Ris-rai*rai);
 			if ( xs2 >= 0.0 ){
@@ -721,27 +721,26 @@ float ni(float *rho, float *r, int i, float *n0_j, float *n1_j, float *n2_j, flo
 		//
 		//n0_j[j] = (rho[j])/(4.0*M_PI*Rif*Rif)*(2.0*M_PI*x);
 		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*x;
-		n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs;
-		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf;
+		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs;
+		n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf;
 		//
 		//n1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(2.0*M_PI*x);
 		//n1_j[j] = (rho[j])/(2.0*Rif)*x;
-		n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs;
-		//n1_j[j] = (rho[j])/(2.0*Rif)*xf;
+		//n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs;
+		n1_j[j] = (rho[j])/(2.0*Rif)*xf;
 		//
-		n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
-		//n2_j[j] = (rho[j])*(2.0*M_PI*xf);
+		//n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
+		n2_j[j] = (rho[j])*(2.0*M_PI*xf);
 		//
-		n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
-		//n3_j[j] = (rho[j])*(M_PI*xf*xf);
+		//n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
+		n3_j[j] = (rho[j])*(M_PI*xf*xf);
 		//
 		//nv1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(raj/Rif)*(2.0*M_PI*x);
-		nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs;
-		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf;
+		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])-rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs;
+		nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf;
 		//
-		nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs);
-		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf);
-		
+		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])-rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs);
+		nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf);
 		//
 		//std::cout << i << ", " << j << ", " << r[i] << ", " << r[j] << ", " << raj << ", " << x << std::endl;
 		//std::cout << "i, j, rho[j], n0_j[j], n1_j[j], n2_j[j], n3_j[j], nv1_j[j], nv2_j[j]" << std::endl;
@@ -1058,11 +1057,11 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 	float rak;
 	//dd = drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 500;
+	int sfnrmesh = nrmesh;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
@@ -1110,11 +1109,11 @@ float phi_att_ss_int(float *r, float *rhos_phi_ss_int_i){
 	float rak;
 	//dd = drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_ss_int_j[sfmesh];
 	//
-	int sfnrmesh = 500;
+	int sfnrmesh = nrmesh;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_ss_int_k[sfnrmesh];
 	//

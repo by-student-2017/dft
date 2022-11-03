@@ -301,7 +301,7 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	rc = num[8]; // [nm], cut off
 	if ( rc == 0.0 ) { 
-		rc = 5.0*sigma_ff;
+		rc = 40.0*sigma_ff;
 		std::cout << "autoset (cut off) rc = " << rc << " [nm]" << std::endl;
 		std::cout << "--------------------------------------------------" << std::endl;
 	}
@@ -362,7 +362,7 @@ void read_parameters(void){
 	if ( rcsf == 0.0 ) { 
 		rcsf = rc;
 		//rcsf = 40.0*sigma_sf;
-		std::cout << "cut off, rcsf = " << rcsf << " [nm] (for solid-fluid) (is related to limit slit width)" << std::endl;
+		std::cout << "cut off, rcsf = " << rcsf << " [nm] " << std::endl;
 	}
 	// ---------- ----------- ------------ ------------
 	min_iter = int(num[25]); //Minimum number of iterations
@@ -387,7 +387,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-(2.0*ze)); // pore width [nm]
-	dr = (H-(2.0*ze))/float(nstep-1);
+	//dr = (H-(2.0*ze))/float(nstep-1);
+	dr = (H-(2.0*ze))/float(nstep);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	rmsf = 1.12246205*sigma_sf; // 2^(1/6)=1.12246205
 	rmss = 1.12246205*sigma_sfs; // 2^(1/6)=1.12246205
@@ -743,9 +744,9 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	float xs, xs2;
 	float n0, n1, n2, n3, nv1, nv2;
 	//
-	int nwstep = 500;
+	int nwstep = 100;
 	//float dw = (ze)/nwstep;
-	float dw = (h0+2.0*delta)/nwstep;
+	float dw = (h0+2.0*delta)/(nwstep-1);
 	//
 	float n0_wall_w[nwstep];
 	float n1_wall_w[nwstep];
@@ -783,7 +784,7 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 	// right
 	for (i=0; i<nstep; i++) {
 		for (w=0; w<nwstep; w++) {
-			rai = ((H-dw*float(w))-r[i]);
+			rai = -((H-dw*float(w))-r[i]);
 			//
 			xs2 = (Ris*Ris-rai*rai);
 			if ( xs2 >= 0.0 ){
@@ -799,12 +800,12 @@ float ni_wall(float *r, float *n0_wall_i, float *n1_wall_i, float *n2_wall_i, fl
 			nv1_wall_w[w] = rho_ssq(dw*float(w))/(2.0*Ris)*(rai/Ris)*xs;
 			nv2_wall_w[w] = rho_ssq(dw*float(w))*(rai/Ris)*(2.0*M_PI*xs);
 		}
-		n0_wall_i[i] = n0_wall_i[i] + integral_simpson(n0_wall_w, nwstep-1, dw);
-		n1_wall_i[i] = n1_wall_i[i] + integral_simpson(n1_wall_w, nwstep-1, dw);
-		n2_wall_i[i] = n2_wall_i[i] + integral_simpson(n2_wall_w, nwstep-1, dw);
-		n3_wall_i[i] = n3_wall_i[i] + integral_simpson(n3_wall_w, nwstep-1, dw);
-		nv1_wall_i[i] = nv1_wall_i[i] + integral_simpson(nv1_wall_w, nwstep-1, dw);
-		nv2_wall_i[i] = nv2_wall_i[i] + integral_simpson(nv2_wall_w, nwstep-1, dw);
+		n0_wall_i[i] += integral_simpson(n0_wall_w, nwstep-1, dw);
+		n1_wall_i[i] += integral_simpson(n1_wall_w, nwstep-1, dw);
+		n2_wall_i[i] += integral_simpson(n2_wall_w, nwstep-1, dw);
+		n3_wall_i[i] += integral_simpson(n3_wall_w, nwstep-1, dw);
+		nv1_wall_i[i] += integral_simpson(nv1_wall_w, nwstep-1, dw);
+		nv2_wall_i[i] += integral_simpson(nv2_wall_w, nwstep-1, dw);
 	}
 	return 0;
 }
@@ -853,26 +854,26 @@ float ni(float *rho, float *r, int i, float *n0_j, float *n1_j, float *n2_j, flo
 		//
 		//n0_j[j] = (rho[j])/(4.0*M_PI*Rif*Rif)*(2.0*M_PI*x);
 		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*x;
-		n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs;
-		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf;
+		//n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris*Ris)*xs;
+		n0_j[j] = (rho[j])/(2.0*Rif*Rif)*xf;
 		//
 		//n1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(2.0*M_PI*x);
 		//n1_j[j] = (rho[j])/(2.0*Rif)*x;
-		n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs;
-		//n1_j[j] = (rho[j])/(2.0*Rif)*xf;
+		//n1_j[j] = (rho[j])/(2.0*Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*xs;
+		n1_j[j] = (rho[j])/(2.0*Rif)*xf;
 		//
-		n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
-		//n2_j[j] = (rho[j])*(2.0*M_PI*xf);
+		//n2_j[j] = (rho[j])*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(2.0*M_PI*xs);
+		n2_j[j] = (rho[j])*(2.0*M_PI*xf);
 		//
-		n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
-		//n3_j[j] = (rho[j])*(M_PI*xf*xf);
+		//n3_j[j] = (rho[j])*(M_PI*xf*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(M_PI*xs*xs);
+		n3_j[j] = (rho[j])*(M_PI*xf*xf);
 		//
 		//nv1_j[j] = (rho[j])/(4.0*M_PI*Rif)*(raj/Rif)*(2.0*M_PI*x);
-		nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])+rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs;
-		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf;
+		//nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf + (rho_ssq(r[j])-rho_ssq(H-r[j]))/(2.0*Ris)*(raj/Ris)*xs;
+		nv1_j[j] = (rho[j])/(2.0*Rif)*(raj/Rif)*xf;
 		//
-		nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])+rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs);
-		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf);
+		//nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf) + (rho_ssq(r[j])-rho_ssq(H-r[j]))*(raj/Ris)*(2.0*M_PI*xs);
+		nv2_j[j] = (rho[j])*(raj/Rif)*(2.0*M_PI*xf);
 		
 		//
 		//std::cout << i << ", " << j << ", " << r[i] << ", " << r[j] << ", " << raj << ", " << x << std::endl;
@@ -888,12 +889,12 @@ float ni(float *rho, float *r, int i, float *n0_j, float *n1_j, float *n2_j, flo
 	//nv2[i] = integral_trapezoidal(nv2_j, nstep-1, dr) + nv2_wall_i[i];
 	//
 	//integral_simpson(float *f, int n, float dx)
-	n0[i] = integral_simpson(n0_j, nstep-1, dr) + n0_wall_i[i];
-	n1[i] = integral_simpson(n1_j, nstep-1, dr) + n1_wall_i[i];
-	n2[i] = integral_simpson(n2_j, nstep-1, dr) + n2_wall_i[i];
-	n3[i] = integral_simpson(n3_j, nstep-1, dr) + n3_wall_i[i];
-	nv1[i] = integral_simpson(nv1_j, nstep-1, dr) + nv1_wall_i[i];
-	nv2[i] = integral_simpson(nv2_j, nstep-1, dr) + nv2_wall_i[i];
+	n0[i] = integral_simpson(n0_j, nstep-1, dr) + n0_wall_i[i]*2.0; //why 2.0 ?
+	n1[i] = integral_simpson(n1_j, nstep-1, dr) + n1_wall_i[i]*2.0; //why 2.0 ?
+	n2[i] = integral_simpson(n2_j, nstep-1, dr) + n2_wall_i[i]*2.0; //why 2.0 ?
+	n3[i] = integral_simpson(n3_j, nstep-1, dr) + n3_wall_i[i]*2.0; //why 2.0 ?
+	nv1[i] = integral_simpson(nv1_j, nstep-1, dr) + nv1_wall_i[i]*2.0; //why 2.0 ?
+	nv2[i] = integral_simpson(nv2_j, nstep-1, dr) + nv2_wall_i[i]*2.0; //why 2.0 ?
 	//
 	//float in2, inv2;
 	//float rai;
@@ -1227,11 +1228,11 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 	float rak;
 	//dd = drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_sf_int_j[sfmesh];
 	//
-	int sfnrmesh = 2000;
+	int sfnrmesh = nrmesh;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_sf_int_k[sfnrmesh];
 	//
@@ -1263,9 +1264,9 @@ float phi_att_sf_int(float *r, float *rhos_phi_sf_int_i){
 		//rhos_phi_sf_int_i[i] = integral_trapezoidal(rhos_phi_sf_int_j, sfmesh-1, dsf);
 		rhos_phi_sf_int_i[(nstep-1)-i] = rhos_phi_sf_int_i[i];
 	}
-	//for (i=0; i<nstep; i++) {
-	//	std::cout << i << ", " << r[i] << ", " << rhos_phi_sf_int_i[i] << std::endl;
-	//}
+	for (i=0; i<nstep; i++) {
+		std::cout << i << ", " << r[i] << ", " << rhos_phi_sf_int_i[i] << std::endl;
+	}
 	return 0;
 }
 
@@ -1279,11 +1280,11 @@ float phi_att_ss_int(float *r, float *rhos_phi_ss_int_i){
 	float rak;
 	//dd = drc = rc/float(nrmesh-1);
 	//
-	int sfmesh = 500;
+	int sfmesh = 100;
 	float dsf = (h0+2.0*delta)/(sfmesh-1);
 	float rhos_phi_ss_int_j[sfmesh];
 	//
-	int sfnrmesh = 2000;
+	int sfnrmesh = nrmesh;
 	float drcsf = rcsf/(sfnrmesh-1);
 	float phi_ss_int_k[sfnrmesh];
 	//
@@ -1553,7 +1554,7 @@ int main(){
 	float rhos[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		r[i] = (2.0*ze)/2.0 + dr*float(i);
+		r[i] = (2.0*ze)/2.0 + dr*float(i) + dr/2.0;
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -1717,7 +1718,7 @@ int main(){
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		//float check_data;
-	for (k=0; k<=181; k++){
+	for (k=1; k<=181; k++){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;
@@ -1828,7 +1829,7 @@ int main(){
 		//std::cout << "--------------------------------------------------" << std::endl;
 		//std::cout << "rho_b = " << rho_b << std::endl;
 		//float check_data;
-	for (k=181; k>=0; k--){
+	for (k=181; k>=1; k--){
 		//rho_b = rho_b0 * rho_b_k[k];
 		if(flag_P<=-100.0){
 			rho_b = (rho_b0 - rho_b1) * (rho_b_k[k] - 3.91276e-08) + rho_b1;

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-items=( 0.38 0.42 0.46 0.50 0.55 0.60 0.69 0.79 0.90
- 1.02 1.18 1.35 1.61 1.93 2.31 2.90 3.63 4.75 6.51 10.0
+items=( 0.385 0.432 0.524 0.640 0.753 0.889
+ 1.05 1.25 1.48 1.76 2.49 2.97 3.54 4.22 5.04 60.2 72.0 86.0 103.0
 )
 
 #if [ ! -e qsdft_fmt_slit.exe ]; then
@@ -15,7 +15,7 @@ fi
 for w in "${items[@]}"; do
 	cp temp_parameters.txt parameters.txt
 	echo "Pore width = ${w} [nm]"
-	H=`awk -v w=${w} "BEGIN {print w+1.555}"`
+	H=`awk -v w=${w} "BEGIN {print w+1.555}"` #1.555
 	echo "Slit width = ${H} [nm]"
 	sed -i "s/XXX/${H}/g" parameters.txt
 	./qsdft_fmt_slit.exe

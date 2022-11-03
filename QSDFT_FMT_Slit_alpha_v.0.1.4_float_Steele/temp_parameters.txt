@@ -7,7 +7,7 @@
 06_sigma_ff=0.3549   #[nm]
 07_d_hs=0.3549       #[nm]
 08_rc=0              # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
-09_nrmesh=120        # 0.0:auto, for mesh of radial, <1.0:nrmesh=int(rc/nrmesh+0.5)
+09_nrmesh=100        # 0.0:auto, for mesh of radial, <1.0:nrmesh=int(rc/nrmesh+0.5)
 10_epsilon_sf=150    #[K]
 11_sigma_sf=0.269    #[nm]
 12_delta=0.13        #[nm] (delta < 0.3*sigma_ff for QSDFT)
