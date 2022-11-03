@@ -382,8 +382,9 @@ void read_parameters(void){
 	
 	// ---------- ----------- ------------ ------------
 	
-	w_pw = (H-(2.0*ze)); // pore width [nm]
+	//w_pw = (H-(2.0*ze)); // pore width [nm]
 	//w_pw = (H-sigma_ss); // pore width [nm]
+	w_pw = (H-ze_ssf); // pore width [nm]
 	dr = (H-(2.0*ze))/float(nstep-1);
 	//dr = (H-sigma_ss)/float(nstep-1);
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
