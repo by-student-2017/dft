@@ -149,7 +149,7 @@ void read_parameters(void){
 	nstep = num[2];
 	if ( nstep <= 1.0 ) {
 		if ( nstep == 0 ) {
-			nstep = int((H-sigma_ss)/0.0075 + 0.5);
+			nstep = int((H-sigma_ss)/0.01 + 0.5);
 		} else {
 			nstep = int((H-sigma_ss)/nstep + 0.5);
 		}
