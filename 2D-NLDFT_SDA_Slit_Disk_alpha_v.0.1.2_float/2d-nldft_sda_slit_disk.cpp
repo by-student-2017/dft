@@ -1237,11 +1237,11 @@ int main(){
 		}
 		v_gamma = integral_simpson(rho_int_iz, nzstep-1, dz);
 		v_gamma = v_gamma/((H-sigma_ss)*(M_PI*(D/2.0)*(D/2.0))) - rho_b;
+		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
 		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
-		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
 		//std::cout << "V= " << v_gamma << std::endl;
@@ -1324,11 +1324,11 @@ int main(){
 		}
 		v_gamma = integral_simpson(rho_int_iz, nzstep-1, dz);
 		v_gamma = v_gamma/((H-sigma_ss)*(M_PI*(D/2.0)*(D/2.0))) - rho_b;
+		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_mmol_per_cm3 = v_gamma * (1e7 * 1e7 * 1e7) / (6.02214076 * 1e23) * 1e3; // [mmol/cm3]
 		//v_mmol_per_cm3 = (v_gamma / 6.02214076) * (1e24 / 1e23); // [mmol/cm3]
 		v_mmol_per_cm3 = (v_gamma / 6.02214076) * 10.0; // [mmol/cm3]
 		v_cm3STP_per_cm3 = v_mmol_per_cm3 * 22.414;
-		if (v_gamma < 0) { v_gamma = 0.0; }
 		//v_gamma = v_gamma * (0.8064/28.0134/1e21*6.02214e23)/rho_b;
 		// N2(77K): 0.8064 g/mL, 0.8064/28.0134 mol/mL, 0.8064/28.0134/1e21 mol/nm3, 0.8064/28.0134/1e21*6.02214e23 molecules/nm3
 		//std::cout << "V= " << v_gamma << std::endl;
