@@ -31,7 +31,9 @@ import pandas as pd
 
 dfy = pd.read_csv('case.csv')
 pp0 = dfy['PP0'].values
-y = dfy['gg'].values / (2.0*1.00784) * 1000.0 # g/g to mmol/g for H2
+if dfy.columns[1] == "gg":
+	print("convert g/g to mmol/g for H2")
+	y = dfy['gg'].values / (2.0*1.00784) * 1000.0 # g/g to mmol/g for H2
 
 dfx = pd.read_csv('kernel.csv')
 x = dfx.values
@@ -61,12 +63,12 @@ for p in pp0:
 from sklearn.linear_model import Ridge
 
 #------------------
-ndata = 300
+ndata = 240
 Ly = np.zeros(ndata)
 Lx = np.zeros(ndata)
 Lam = np.zeros(ndata)
 for i in range(ndata):
-	Lam[i] = i*1+1
+	Lam[i] = i*3+30
 	#
 	# self-made
 	linear = RidgeReg(lambda_ = Lam[i])
@@ -82,12 +84,18 @@ for i in range(ndata):
 	#
 	if np.min(linear.coef_)<0:
 		iLam_x0 = i
+		iLx = Lx[i]
+		iLy = Ly[i]
 
 Lam_x0 = Lam[iLam_x0]
 #--------------------------------------------------------------------
 import matplotlib.pyplot as plt
 #------------------
-plt.plot(Lx,Ly)
+plt.plot(Lx, Ly, "--", color="blue", label="Series")
+plt.plot(iLx, iLy, "o", c="r", label="Fit(lambda={0})".format(Lam_x0))
+plt.legend()
+plt.xlabel("log10||Ax-y||", fontsize=10)
+plt.ylabel("log10||x||", fontsize=10)
 plt.show()
 #------------------
 # self-made
