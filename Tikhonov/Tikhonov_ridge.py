@@ -26,6 +26,12 @@ class RidgeReg:
         #return (X @ self.coef_ + self.intercept_)
         return (X @ self.coef_)
 
+def Sigma1(lam,U,S,y):
+	s1 = 0.0
+	for idx in range((len(S))):
+		s1 = s1 + S[idx]**2*(S[idx]**2-2.0*lam) / (S[idx]**2+lam)**4 * np.dot(U,y)**2
+	return s1
+
 #--------------------------------------------------------------------
 import pandas as pd
 
@@ -63,12 +69,34 @@ for p in pp0:
 from sklearn.linear_model import Ridge
 
 #------------------
-ndata = 240
+U0, S0, V0 = np.linalg.svd(X, full_matrices=True)
+idx = S0.argsort()[::-1]
+S = S0[idx]
+U = U0[idx]
+V = V0[idx]
+print("2nd order square matrix with left singular value vectors arranged as columns, U")
+print(U)
+print("Quadratic square matrix filled with 0 except for singular values, Sigma")
+print(S)
+print(np.diag(S))
+print("quadratic square matrix with right singular value vectors arranged as columns, V")
+print(V)
+#
+#print( Sigma1(150,U,S,y) )
+#
+#
+#Check Singular Value Decomposition (U x Sigma x V, Matrix A is calculated)
+#print("Eigenvalue decomposition Check A = U x Sigma x V")
+#print(np.dot(np.dot(U,np.diag(S)),V))
+#------------------
+ndata = 250
 Ly = np.zeros(ndata)
 Lx = np.zeros(ndata)
 Lam = np.zeros(ndata)
+kappa = np.zeros(ndata)
+kappa_max = 0
 for i in range(ndata):
-	Lam[i] = i*3+30
+	Lam[i] = i*2+50
 	#
 	# self-made
 	linear = RidgeReg(lambda_ = Lam[i])
@@ -78,24 +106,56 @@ for i in range(ndata):
 	
 	linear.fit(X, y)
 	#print(linear.coef_)
-	Ly[i] = np.log10( np.linalg.norm(linear.coef_, ord=1) )
-	Lx[i] = np.log10( np.linalg.norm((X @ linear.coef_ - y), ord=1) )
-	print(Lam[i], Lx[i], Ly[i])
+	xlamn1 = np.linalg.norm(linear.coef_, ord=1)
+	rlamn1 = np.linalg.norm((y - X @ linear.coef_), ord=1)
+	Ly[i] = np.log10(xlamn1)
+	Lx[i] = np.log10(rlamn1)
 	#
-	if np.min(linear.coef_)<0:
+	chs = S[idx]/(S[idx]**2+Lam[i])*np.dot(U,y)*V.T
+	if np.max(chs) > 1:
+		print("  This system is unstable. You must increase lambda. lambda=", Lam[i])
+	#
+	#print(S)
+	#print(S**2)
+	sig1 = np.sum( (S**2 * (S**2-2.0*Lam[i]))/((S**2+Lam[i])**4) * np.dot(U,y)**2 )
+	sig2 = np.sum( (S**2)/((S**2+Lam[i])**4) * np.dot(U,y)**2 )
+	sig3 = np.sum( (S**2)/((S**2+Lam[i])**3) * np.dot(U,y)**2 )
+	xlamn2 = np.linalg.norm(linear.coef_, ord=1)**2
+	rlamn2 = np.linalg.norm((y - X @ linear.coef_), ord=1)**2
+	kappa[i] = (1.0/(rlamn2 + Lam[i]**2*xlamn2)**(3/2))*abs( rlamn2*xlamn2*(sig1+3.0*Lam[i]*sig2)/(sig3**2) - Lam[i]*(Lam[i]*rlamn2 + xlamn2) )
+	#
+	print(Lam[i], Lx[i], Ly[i], kappa[i])
+	#
+	if np.min(linear.coef_)>0 and kappa[i]>kappa_max:
 		iLam_x0 = i
 		iLx = Lx[i]
 		iLy = Ly[i]
+		kappa_max = kappa[i]
 
 Lam_x0 = Lam[iLam_x0]
 #--------------------------------------------------------------------
 import matplotlib.pyplot as plt
 #------------------
-plt.plot(Lx, Ly, "--", color="blue", label="Series")
-plt.plot(iLx, iLy, "o", c="r", label="Fit(lambda={0})".format(Lam_x0))
+#plt.plot(Lx, Ly, "--", color="blue", label="Series")
+#plt.plot(Lx, kappa, "--", color="green", label="curvature")
+#plt.plot(iLx, iLy, "o", c="r", label="Fit(lambda={0})".format(Lam_x0))
+#plt.legend()
+#plt.xlabel("log10||Ax-y||", fontsize=10)
+#plt.ylabel("log10||x||", fontsize=10)
+#plt.show()
+#
+fig = plt.figure()
+ax1 = fig.subplots()
+ax2 = ax1.twinx()
+ax1.plot(Lx, Ly, "--", color="blue", label="Series")
+ax1.plot(iLx, iLy, "o", c="r", label="Fit(lambda={0})".format(Lam_x0))
+ax2.plot(Lx, kappa, "--", color="green", label="curvature")
+ax1.set_xlabel("log10||Ax-y||", fontsize=10)
+ax1.set_ylabel("log10||x||", fontsize=10)
+ax2.set_ylabel("curvature", fontsize=10)
+plt.title("Title")
 plt.legend()
-plt.xlabel("log10||Ax-y||", fontsize=10)
-plt.ylabel("log10||x||", fontsize=10)
+#plt.xscale('log')
 plt.show()
 #------------------
 # self-made
@@ -112,7 +172,7 @@ dvdw = np.zeros(wdata)
 a = np.zeros(wdata)
 i = 0
 for ww in dfx[:0]:
-	if not i==0:
+	if i>=1:
 		a[i-1] = float(ww)
 		dvdw[i-1] = linear.coef_[i-1] / a[i-1]
 	i = i + 1
@@ -133,8 +193,8 @@ plt.show()
 fig = plt.figure()
 ax1 = fig.subplots()
 ax2 = ax1.twinx()
-#ax1.plot(a,linear.coef_, color="blue", label="dVdw")
-ax1.plot(a,dvdw, color="blue", label="dVdw")
+ax1.plot(a,linear.coef_, color="blue", label="dVdw")
+#ax1.plot(a,dvdw, color="blue", label="dVdw")
 ax2.plot(a, cw, c="r", label="cum")
 ax1.set_xlabel("Pore width, w [nm]", fontsize=10)
 #ax1.set_ylabel("Distribution, dV/dw [cm3/g]", fontsize=10)
