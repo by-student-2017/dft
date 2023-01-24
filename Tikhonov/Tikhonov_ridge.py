@@ -8,13 +8,14 @@ class RidgeReg:
         self.coef_ = None
         self.intercept_ = None
 
-    def fit(self, X, y):
+    def fit(self, X, y, L):
         #Add a column of all ones to the first row of the matrix of explanatory variables to include the calculation of the intercept
         #X = np.insert(X, 0, 1, axis=1)
         #Create Identity Matrix
-        i = np.eye(X.shape[1])
+        #i = np.eye(X.shape[1])
         #formula for weight
-        temp = np.linalg.inv(X.T @ X + self.lambda_ * i) @ X.T @ y
+        #temp = np.linalg.inv(X.T @ X + self.lambda_ * i) @ X.T @ y
+        temp = np.linalg.inv(X.T @ X + self.lambda_ * L.T @ L) @ X.T @ y
         #value of the regression coefficient
         #self.coef_ = temp[1:]
         self.coef_ = temp[0:]
@@ -84,17 +85,22 @@ print(V)
 #
 #print( Sigma1(150,U,S,y) )
 #
-#
 #Check Singular Value Decomposition (U x Sigma x V, Matrix A is calculated)
 #print("Eigenvalue decomposition Check A = U x Sigma x V")
 #print(np.dot(np.dot(U,np.diag(S)),V))
 #------------------
+#L = np.eye(X.shape[1])
+#print(np.diag(L))
+L1 = np.ones(X.shape[1])
+L = np.diag(L1)
+#
 ndata = 250
 Ly = np.zeros(ndata)
 Lx = np.zeros(ndata)
 Lam = np.zeros(ndata)
 kappa = np.zeros(ndata)
 kappa_max = 0
+chk = 0
 for i in range(ndata):
 	Lam[i] = i*2+50
 	#
@@ -104,7 +110,7 @@ for i in range(ndata):
 	# sklearn
 	#linear = Ridge(alpha=Lam[i])
 	
-	linear.fit(X, y)
+	linear.fit(X, y, L)
 	#print(linear.coef_)
 	xlamn1 = np.linalg.norm(linear.coef_, ord=1)
 	rlamn1 = np.linalg.norm((y - X @ linear.coef_), ord=1)
@@ -126,11 +132,14 @@ for i in range(ndata):
 	#
 	print(Lam[i], Lx[i], Ly[i], kappa[i])
 	#
-	if np.min(linear.coef_)>0 and kappa[i]>kappa_max:
+	if np.min(linear.coef_)>0 and kappa[i]>kappa_max and chk<=1:
 		iLam_x0 = i
 		iLx = Lx[i]
 		iLy = Ly[i]
 		kappa_max = kappa[i]
+		chk = 1
+	if np.min(linear.coef_)>0 and kappa[i]<=kappa_max and chk==1:
+		chk = 2
 
 Lam_x0 = Lam[iLam_x0]
 #--------------------------------------------------------------------
@@ -164,7 +173,7 @@ linear = RidgeReg(lambda_ = Lam_x0)
 # sklearn
 #linear = Ridge(alpha = Lam_x0)
 
-linear.fit(X, y)
+linear.fit(X, y, L)
 #print(linear.coef_)
 #------------------
 wdata = len(x[0])-1
