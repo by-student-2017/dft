@@ -16,7 +16,7 @@ fi
 
 #for w in "${items[@]}"; do  #old version
 #for ((i=30;i<=1000;i+=1)); do  #new version
-for ((i=30;i<=200;i+=1)); do  #new version
+for ((i=29;i<=201;i+=1)); do  #new version
 	w=`echo $i | awk '{printf "%4.2f", $1/100}'`  #new version
 	#echo $w
 	cp temp_parameters_H2_HP_double.txt parameters.txt
