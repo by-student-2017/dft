@@ -29,90 +29,90 @@ using namespace std;
 
 // ---------- ----------- ------------ ------------
 // Adsorbent
-float H;    //distace of slit [nm]
-float sigma_ss; // sigma_ss = 0.34 [nm]
+double H;    //distace of slit [nm]
+double sigma_ss; // sigma_ss = 0.34 [nm]
 int nstep;   // number of mesh on z axis
-float w_pw; // w_pw = (H-sigma_ss), pore width [nm]
-float dr;   // dr = (H-sigma_ss)/float(nstep-1)
+double w_pw; // w_pw = (H-sigma_ss), pore width [nm]
+double dr;   // dr = (H-sigma_ss)/double(nstep-1)
 // ---------- ----------- ------------ ------------
 // assume rho is same value in x-y plane.
 // cylinder and normalization, because of cut off (rc).
 int nrmesh; //rho_si and xi function
-float drc; //float drc = rc/float(nrmesh-1);
+double drc; //double drc = rc/double(nrmesh-1);
 // ---------- ----------- ------------ ------------
 // iteration of rho
 int cycle_max;  //int cycle_max = 50;
-float wmixing; //float wmixing = 0.005;
+double wmixing; //double wmixing = 0.005;
 // ---------- ----------- ------------ ------------
 //Carbon dioxide 253.9  [K](epsilon), 0.3454 [nm](sigma), 0.3495 [nm](d_hs)
 //Argon          118.05 [K](epsilon), 0.3305 [nm](sigma), 0.3390 [nm](d_hs)
 //Nitrogen        94.45 [K](epsilon), 0.3575 [nm](sigma), 0.3575 [nm](d_hs), P0=4.97528=101325 Pa
 //Hydrogen        34.3  [K](epsilon), 0.3040 [nm](sigma), 0.3040 [nm](d_hs) (J. Jagiello 2007)
-//extern float epsilon_ff = 94.45;
-//float sigma_ff = 0.3575;
-//extern float d_hs = 0.3575; // Maxwell_construction()
-//float rc = 1.28; // [nm],cut off, (12.8 [A])
-float epsilon_ff;
-float sigma_ff;
-float d_hs;
-float rc;
+//extern double epsilon_ff = 94.45;
+//double sigma_ff = 0.3575;
+//extern double d_hs = 0.3575; // Maxwell_construction()
+//double rc = 1.28; // [nm],cut off, (12.8 [A])
+double epsilon_ff;
+double sigma_ff;
+double d_hs;
+double rc;
 // ---------- ----------- ------------ ------------
-float rm; // rm = std::pow(2.0,1.0/6.0)*sigma_ff = 1.12246205*sigma_ff; //minimum position of LJ
+double rm; // rm = std::pow(2.0,1.0/6.0)*sigma_ff = 1.12246205*sigma_ff; //minimum position of LJ
 // ---------- ----------- ------------ ------------
 // Carbon dioxide/Carbon slit 81.5  [K](epsilon), 0.3430 [nm](sigma)
 // Nitrogen/Carbon slit       53.72 [K](epsilon), 0.3508 [nm](sigma)
-//float epsilon_sf = 53.72; // [K] 
-//float sigma_sf = 0.3508; // [nm]
-float epsilon_sf;
-float sigma_sf;
+//double epsilon_sf = 53.72; // [K] 
+//double sigma_sf = 0.3508; // [nm]
+double epsilon_sf;
+double sigma_sf;
 // ---------- ----------- ------------ ------------
 // slit pore (graphite)
-//float delta = 0.335; // [nm]
-//float rho_ss = 114.0; // [nm^-3], [molecules/nm3]?, 0.114 [A^-3]
-float delta;
-float rho_ss;
+//double delta = 0.335; // [nm]
+//double rho_ss = 114.0; // [nm^-3], [molecules/nm3]?, 0.114 [A^-3]
+double delta;
+double rho_ss;
 // ---------- ----------- ------------ ------------
-//float m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
-//float m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
+//double m = 14.0067*2.0/(6.02214076e23)/1000; // N2 = 4.65173e-26 [kg]
+//double m = 4.65173e-26; //[kg] (N2) (e.g., Ar = 6.63e-26 [kg])
 // N2=4.6517345e-26[kg], Ar=6.63e-26[kg], H2=3.3471154e-27[kg], CO2=7.3080324e-26[kg], O2=5.3133929e-26[kg]
 // H=1.00784, Ar=39.948, N=14.0067, CO2=44.01, O=15.999
-float m;
-float kb1 = 1.0;
-float kb = 1.38e-23; //[J/K] (8.61733262e-5 [eV/K])
-//extern float T = 77.347; //[K]
-float T;
-float h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
+double m;
+double kb1 = 1.0;
+double kb = 1.38e-23; //[J/K] (8.61733262e-5 [eV/K])
+//extern double T = 77.347; //[K]
+double T;
+double h = 6.63e-34; //[Js] (4.135667696e-15 [eVs])
 // thermal de Broglie wavelength
-//extern float lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
-float lam;
+//extern double lam = h/std::pow((2.0*M_PI*m*kb*T),0.5)*1e9; //[nm], Maxwell_construction()
+double lam;
 // Ref: https://www1.doshisha.ac.jp/~bukka/lecture/statistic/pdftext/std-07.pdf
 // ---------- ----------- ------------ ------------
 // alpha = integal phi_att * -1.0
-//extern float alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
+//extern double alpha = (32.0/9.0)*M_PI*epsilon_ff*std::pow(rm,3.0) - (16.0/9.0)*M_PI*epsilon_ff*std::pow(sigma_ff,3.0)*
 //	( 3.0*std::pow((sigma_ff/rc),3.0) - std::pow((sigma_ff/rc),9.0) );
-float alpha;
+double alpha;
 // ---------- ----------- ------------ ------------
 // rho_b0 is related with P0
-float rho_b0;
+double rho_b0;
 // ---------- ----------- ------------ ------------
 // P0
-float p0;
+double p0;
 // ---------- ----------- ------------ ------------
 int min_iter = 10; //Minimum number of iterations
-float thr_times = 10.0; //change threshold
-float wmx_times = 3.0; //change weight
+double thr_times = 10.0; //change threshold
+double wmx_times = 3.0; //change weight
 // ---------- ----------- ------------ ------------
 
 //Barker-Henderson (BH) theory
-float d_bh_calc(float epsilon, float sigma){
-	//float epsilon = 94.45;
-	//float sigma = 0.3575;
+double d_bh_calc(double epsilon, double sigma){
+	//double epsilon = 94.45;
+	//double sigma = 0.3575;
 	//Lstoskie et al.,
-	float xi1 = 0.3837;
-	float xi2 = 1.035;
-	float xi3 = 0.4249;
-	float xi4 = 1.0;
-	float d_bh_out;
+	double xi1 = 0.3837;
+	double xi2 = 1.035;
+	double xi3 = 0.4249;
+	double xi4 = 1.0;
+	double d_bh_out;
 	d_bh_out = (xi1*kb1*T/epsilon+xi2)/(xi3*kb1*T/epsilon+xi4)*sigma;
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "d = d_hs = " << d_bh_out << " [nm] at " << T << " [K] from Barker-Henderson (BH) theory" << std::endl;
@@ -124,7 +124,7 @@ void read_parameters(void){
 	std::string str;
 	//
 	int i,j;
-	float num[25];
+	double num[25];
 	j = 0;
 	while(getline(ifs,str)){
 		std::string tmp;
@@ -226,8 +226,8 @@ void read_parameters(void){
 	// ---------- ----------- ------------ ------------
 	
 	w_pw = (H-sigma_ss); // pore width [nm]
-	dr = (H-sigma_ss)/float(nstep-1);
-	drc = rc/float(nrmesh-1); // rho_si(), calc_alpha(), xi()
+	dr = (H-sigma_ss)/double(nstep-1);
+	drc = rc/double(nrmesh-1); // rho_si(), calc_alpha(), xi()
 	rm = 1.12246205*sigma_ff; // 2^(1/6)=1.12246205
 	
 	// ---------- ----------- ------------ ------------
@@ -246,11 +246,11 @@ void read_parameters(void){
 	std::cout << "integal phi_att * -1.0 = alpha = " << alpha << std::endl;
 }
 
-float integral_simpson(float *f, int n, float dx){
+double integral_simpson(double *f, int n, double dx){
 	//if( (n+1)%2 == 1 ){
 	//	std::cout << "Error, plase change number of data to even ( = array[odd] )" << std::endl;
 	//}
-	float sum;
+	double sum;
 	sum = f[0] + f[n];
 	int i;
 	for(i=1; i<n; i+=2){
@@ -262,8 +262,8 @@ float integral_simpson(float *f, int n, float dx){
 	return (dx/3.0)*sum;
 }
 
-float phi_att(float r){
-	float e;
+double phi_att(double r){
+	double e;
 	// WCA (Weeks-Chandler-Anderson) type
 	if (r < rm){
 		e = - epsilon_ff;
@@ -280,9 +280,9 @@ float phi_att(float r){
 }
 
 // Percus-Yevick (PY) two-particle direct correlation function of the homogeneous hard-sphere fluid
-float wi(float r, int i){
-	float wi_out;
-	float rpdhs;
+double wi(double r, int i){
+	double wi_out;
+	double rpdhs;
 	switch(i){
 		case 0:
 			if (r <= d_hs){
@@ -323,19 +323,19 @@ float wi(float r, int i){
 	return wi_out;
 }
 
-float rho_si_int_k(float *r, float *rho_si_int_ijrj){
+double rho_si_int_k(double *r, double *rho_si_int_ijrj){
 	int i;
 	int jr;
 	int j,k;
-	float ra;
-	float raj;
-	float rak;
+	double ra;
+	double raj;
+	double rak;
 	//
-	//float rho_si_int_j[nstep];
-	float tmp_rho_si_int_k[nrmesh];
+	//double rho_si_int_j[nstep];
+	double tmp_rho_si_int_k[nrmesh];
 	//
-	// drc = rc/float(nrmesh-1);
-	float tpidrc = 2.0*M_PI*drc;
+	// drc = rc/double(nrmesh-1);
+	double tpidrc = 2.0*M_PI*drc;
 	//
 	for (i=0; i<3; i++) {
 		for (jr=0; jr<nstep; jr++) {
@@ -344,13 +344,13 @@ float rho_si_int_k(float *r, float *rho_si_int_ijrj){
 				raj = (r[j]-r[jr]);
 				tmp_rho_si_int_k[0] = 0.0;
 				for (k=1; k<nrmesh; k++) {
-					rak = drc*float(k);
+					rak = drc*double(k);
 					ra =  rak*rak + raj*raj;
 					ra = std::sqrt(ra);
 					//
-					tmp_rho_si_int_k[k] = wi(ra,i)*(tpidrc*float(k));
+					tmp_rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
 				}
-				//integral_simpson(float *f, int n, float dx)
+				//integral_simpson(double *f, int n, double dx)
 				rho_si_int_ijrj[i*nstep*nstep+jr*nstep+j] = integral_simpson(tmp_rho_si_int_k, nrmesh-1, drc);
 			}
 			//
@@ -360,41 +360,41 @@ float rho_si_int_k(float *r, float *rho_si_int_ijrj){
 }
 
 // Tarazona theory
-float rho_si(float *rho, float *r, int jr, int i, float *rho_si_int_ijrj){
+double rho_si(double *rho, double *r, int jr, int i, double *rho_si_int_ijrj){
 	int j,k;
-	float ra;
-	float raj;
-	float rak;
+	double ra;
+	double raj;
+	double rak;
 	//
-	float rho_si_int_j[nstep];
-	//float rho_si_int_k[nrmesh];
+	double rho_si_int_j[nstep];
+	//double rho_si_int_k[nrmesh];
 	//
-	// drc = rc/float(nrmesh-1);
-	float tpidrc = 2.0*M_PI*drc;
+	// drc = rc/double(nrmesh-1);
+	double tpidrc = 2.0*M_PI*drc;
 	//rho_si_int_k[0] = 0.0;
 	//
 	for (j=0; j<nstep; j++) {
 		//raj = (r[j]-r[jr]);
 		//for (k=1; k<nrmesh; k++) {
-		//	rak = drc*float(k);
+		//	rak = drc*double(k);
 		//	ra =  rak*rak + raj*raj;
 		//	ra = std::sqrt(ra);
 		//	//
-		//	rho_si_int_k[k] = wi(ra,i)*(tpidrc*float(k));
+		//	rho_si_int_k[k] = wi(ra,i)*(tpidrc*double(k));
 		//}
-		//integral_simpson(float *f, int n, float dx)
+		//integral_simpson(double *f, int n, double dx)
 		//rho_si_int_j[j] = rho[j]*integral_simpson(rho_si_int_k, nrmesh-1, drc);
 		rho_si_int_j[j] = rho[j] * rho_si_int_ijrj[i*nstep*nstep+jr*nstep+j];
 	}
-	float rho_si_out;
+	double rho_si_out;
 	rho_si_out = integral_simpson(rho_si_int_j, nstep-1, dr);
 	//
 	return rho_si_out;
 }
 
 // smoothed density approximation (SDA)
-//float rho_s(float *rho, float r1, float *r){
-//	float rho_den1, rho_den2, rho_s_out;
+//double rho_s(double *rho, double r1, double *r){
+//	double rho_den1, rho_den2, rho_s_out;
 //	//rho_den1 = std::pow((1.0 - rho_si(rho,r1,r,1)),2.0);
 //	rho_den1 = (1.0 - rho_si(rho,r1,r,1));
 //	rho_den1 = rho_den1 * rho_den1;
@@ -405,9 +405,9 @@ float rho_si(float *rho, float *r, int jr, int i, float *rho_si_int_ijrj){
 //}
 
 // smoothed density approximation (SDA), modified version
-float rho_s(float *rho, float *r, float *rho_sj, float *rho_s0j, float *rho_s1j, float *rho_s2j, float *rho_si_int_ijrj){
+double rho_s(double *rho, double *r, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *rho_si_int_ijrj){
 	int j;
-	float rho_den1j, rho_den2j;
+	double rho_den1j, rho_den2j;
 	//for (j=0; j<(nstep-2)/2; j++) {
 	for (j=0; j<nstep; j++) {
 		rho_s0j[j] = rho_si(rho, r, j, 0, rho_si_int_ijrj);
@@ -437,12 +437,12 @@ float rho_s(float *rho, float *r, float *rho_sj, float *rho_s0j, float *rho_s1j,
 }
 
 // Steele 10-4-3 potential
-float phi_sf(float z){
-	float phi_sf_out;
-	float sigma_sf2 = sigma_sf*sigma_sf;
-	float sfpz = (sigma_sf/z);
-	float sfpz2 = sfpz*sfpz;
-	float dez = (0.61*delta+z);
+double phi_sf(double z){
+	double phi_sf_out;
+	double sigma_sf2 = sigma_sf*sigma_sf;
+	double sfpz = (sigma_sf/z);
+	double sfpz2 = sfpz*sfpz;
+	double dez = (0.61*delta+z);
 	//phi_sf_out = 2.0*M_PI*rho_ss*epsilon_sf*std::pow(sigma_sf,2.0)*delta*
 	//			( (2.0/5.0)*std::pow((sigma_sf/z),10.0)-std::pow((sigma_sf/z),4.0)-std::pow(sigma_sf,4.0)/
 	//			(3.0*delta*std::pow((0.61*delta+z),3.0)) );
@@ -453,27 +453,27 @@ float phi_sf(float z){
 }
 
 // e.g., wall potential (Carbon slit)
-float phi_ext(float z){
-	float phi_ext_out;
+double phi_ext(double z){
+	double phi_ext_out;
 	phi_ext_out = phi_sf(z) + phi_sf(H-z);
 	//std::cout << phi_ext_out << std::endl;
 	return phi_ext_out;
 }
 
 // from Carnahan-Starling (CS) equation of state
-float mu_ex(float rho_b){
-	float y, mu_ex_out;
+double mu_ex(double rho_b){
+	double y, mu_ex_out;
 	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
 	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
-	float den1y = (1.0-y);
+	double den1y = (1.0-y);
 	//mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/std::pow((1.0-y),3.0);
 	//mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
 	mu_ex_out = kb1*T*(8.0*y-9.0*y*y+3.0*y*y*y)/(den1y*den1y*den1y);
 	return mu_ex_out;
 }
 
-float mu_b(float rho_b){
-	float mu_id, mu_hs, mu_b_out;
+double mu_b(double rho_b){
+	double mu_id, mu_hs, mu_b_out;
 	//mu_id = kb1*T*std::log(std::pow(lam,3.0)*rho_b);
 	mu_id = kb1*T*std::log((lam*lam*lam)*rho_b);
 	mu_hs = mu_id + mu_ex(rho_b);
@@ -481,11 +481,11 @@ float mu_b(float rho_b){
 	return mu_b_out;
 }
 
-float f_ex(float rho_s){
-	float eta, f_ex_out;
+double f_ex(double rho_s){
+	double eta, f_ex_out;
 	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
 	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
-	float den1e = (1.0-eta);
+	double den1e = (1.0-eta);
 	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/std::pow((1.0-eta),2.0);
 	//f_ex_out = kb1*T*eta*(4.0-3.0*eta)/((1.0-eta)*(1.0-eta));
 	f_ex_out = kb1*T*eta*(4.0-3.0*eta)/(den1e*den1e);
@@ -493,12 +493,12 @@ float f_ex(float rho_s){
 }
 
 // d(f_ex)/d(rho_s)
-float dfex_per_drhos(float rho_s){
-	float dfex_per_drhos_out;
-	float eta;
+double dfex_per_drhos(double rho_s){
+	double dfex_per_drhos_out;
+	double eta;
 	//eta = M_PI*rho_s*std::pow(d_hs,3.0)/6.0;
 	eta = M_PI*rho_s*(d_hs*d_hs*d_hs)/6.0;
-	float den1e = (1.0-eta);
+	double den1e = (1.0-eta);
 	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/std::pow((1.0-eta),3.0)*M_PI*std::pow(d_hs,3.0)/6.0;
 	//dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/((1.0-eta)*(1.0-eta)*(1.0-eta))*M_PI*(d_hs*d_hs*d_hs)/6.0;
 	dfex_per_drhos_out = kb1*T*(4.0-2.0*eta)/(den1e*den1e*den1e)*(M_PI*(d_hs*d_hs*d_hs)/6.0);
@@ -506,8 +506,8 @@ float dfex_per_drhos(float rho_s){
 }
 
 // d(rho_s)/d(rho)
-//float drhos_per_drho(float *rho, float r1, float r2, float *r, float ra){
-//	float w, drhos_per_drho_out;
+//double drhos_per_drho(double *rho, double r1, double r2, double *r, double ra){
+//	double w, drhos_per_drho_out;
 //	// Percus-Yevick approximation, Tarazona theory
 //	w = wi(ra,0) + wi(ra,1)*rho_s(rho,r1,r) + wi(ra,2)*std::pow(rho_s(rho,r1,r),2.0);
 //	drhos_per_drho_out = w/(1.0-rho_si(rho,r2,r,1)-2.0*rho_si(rho,r2,r,2)*rho_s(rho,r2,r));
@@ -515,8 +515,8 @@ float dfex_per_drhos(float rho_s){
 //}
 
 // d(rho_s)/d(rho), modified version
-float drhos_per_drho_j(float ra, float rho_sj, float rho_s1j, float rho_s2j){
-	float w, drhos_per_drho_out;
+double drhos_per_drho_j(double ra, double rho_sj, double rho_s1j, double rho_s2j){
+	double w, drhos_per_drho_out;
 	// Percus-Yevick approximation, Tarazona theory
 	//w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*std::pow(rho_sj,2.0);
 	w = wi(ra,0) + wi(ra,1)*rho_sj + wi(ra,2)*(rho_sj*rho_sj);
@@ -524,31 +524,31 @@ float drhos_per_drho_j(float ra, float rho_sj, float rho_s1j, float rho_s2j){
 	return drhos_per_drho_out;
 }
 
-float calc_alpha(float *r){
+double calc_alpha(double *r){
 	int i,j,k;
-	float ra;
-	float raj;
-	float rak;
+	double ra;
+	double raj;
+	double rak;
 	//
-	float alpha_other_method;
-	float alpha_int_j[nstep];
-	float alpha_int_k[nrmesh];
+	double alpha_other_method;
+	double alpha_int_j[nstep];
+	double alpha_int_k[nrmesh];
 	//
-	//float drc = rc/float(nrmesh-1);
-	float tpidrc = 2.0*M_PI*drc;
+	//double drc = rc/double(nrmesh-1);
+	double tpidrc = 2.0*M_PI*drc;
 	alpha_int_k[0] = 0.0;
 	//
 	for (i=0; i<=(nstep-2)/2; i++){
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
 			for (k=1; k<nrmesh; k++) {
-				rak = drc*float(k);
+				rak = drc*double(k);
 				ra = raj*raj + rak*rak;
 				ra = std::sqrt(ra);
 				//
-				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*float(k));
+				alpha_int_k[k]  = -phi_att(ra)*(tpidrc*double(k));
 			}
-			//integral_simpson(float *f, int n, float dx)
+			//integral_simpson(double *f, int n, double dx)
 			alpha_int_j[j]  = integral_simpson(alpha_int_k, nrmesh-1, drc);
 		}
 		alpha_other_method  = alpha_other_method + integral_simpson(alpha_int_j, nstep-1, dr);
@@ -559,28 +559,28 @@ float calc_alpha(float *r){
 	return alpha_other_method;
 }
 
-float phi_att_int(float *r, float *phi_att_int_ij){
+double phi_att_int(double *r, double *phi_att_int_ij){
 	int i,j,k;
-	float ra;
-	float raj;
-	float rak;
+	double ra;
+	double raj;
+	double rak;
 	//
-	float phi_int_k[nrmesh];
+	double phi_int_k[nrmesh];
 	//
-	//float drc = rc/float(nrmesh-1);
-	float tpidrc = 2.0*M_PI*drc;
+	//double drc = rc/double(nrmesh-1);
+	double tpidrc = 2.0*M_PI*drc;
 	phi_int_k[0] = 0.0;
 	//
 	for (i=0; i<nstep; i++) {
 		for (j=0; j<nstep; j++) {
 			raj = (r[i]-r[j]);
 			for (k=1; k<nrmesh; k++) {
-				rak = drc*float(k);
+				rak = drc*double(k);
 				ra =  rak*rak + raj*raj;
 				ra = std::sqrt(ra);
 				//
-				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(float(k)*drc));
-				phi_int_k[k]  = phi_att(ra)*(tpidrc*float(k));
+				//phi_int_k[k]  = phi_att(ra)*(2.0*M_PI*(double(k)*drc));
+				phi_int_k[k]  = phi_att(ra)*(tpidrc*double(k));
 			}
 			phi_att_int_ij[i*nstep+j] = integral_simpson(phi_int_k, nrmesh-1, drc);
 		}
@@ -591,77 +591,77 @@ float phi_att_int(float *r, float *phi_att_int_ij){
 // xi include kb1*T*(std::log(rho_b)) type.
 // Grand potential Omega
 // Euler-Lagrange equation d(Omega)/d(rho) = 0 at mu = mu_b
-float xi(float *rho, float *r, int i, float rho_b, float *rho_sj, float *rho_s0j, float *rho_s1j, float *rho_s2j, float *phi_att_int_ij, float *rho_dfex_int, float *rho_phi_int, float *phi_ext_i){
+double xi(double *rho, double *r, int i, double rho_b, double *rho_sj, double *rho_s0j, double *rho_s1j, double *rho_s2j, double *phi_att_int_ij, double *rho_dfex_int, double *rho_phi_int, double *phi_ext_i){
 	int j,k;
-	float ra;
-	float raj;
-	float rak;
+	double ra;
+	double raj;
+	double rak;
 	//
-	float rho_phi_int_j[nstep];
-	float rho_dfex_int_j[nstep];
-	float rho_dfex_int_k[nrmesh];
+	double rho_phi_int_j[nstep];
+	double rho_dfex_int_j[nstep];
+	double rho_dfex_int_k[nrmesh];
 	//
-	// drc = rc/float(nrmesh-1);
-	float tpidrc = 2.0*M_PI*drc;
+	// drc = rc/double(nrmesh-1);
+	double tpidrc = 2.0*M_PI*drc;
 	rho_dfex_int_k[0] = 0.0;
 	//
 	for (j=0; j<nstep; j++) {
 		raj = (r[i]-r[j]);
 		for (k=1; k<nrmesh; k++) {
-			rak = drc*float(k);
+			rak = drc*double(k);
 			ra =  rak*rak + raj*raj;
 			ra = std::sqrt(ra);
 			//
 			// d(f_ex)/d(rho) = d(f_ex)/d(rho_s) * d(rho_s)/d(rho)
-			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(tpidrc*float(k));
+			rho_dfex_int_k[k] = drhos_per_drho_j(ra, rho_sj[j], rho_s1j[j], rho_s2j[j])*(tpidrc*double(k));
 		}
-		//integral_simpson(float *f, int n, float dx)
+		//integral_simpson(double *f, int n, double dx)
 		rho_dfex_int_j[j] = rho[j]*dfex_per_drhos(rho_sj[j])*integral_simpson(rho_dfex_int_k, nrmesh-1, drc);
 		rho_phi_int_j[j]  = rho[j]*phi_att_int_ij[i*nstep+j];
 	}
-	//integral_simpson(float *f, int n, float dx)
+	//integral_simpson(double *f, int n, double dx)
 	rho_dfex_int[i] = integral_simpson(rho_dfex_int_j, nstep-1, dr);
 	rho_phi_int[i]  = integral_simpson(rho_phi_int_j, nstep-1, dr);
 	//
-	float xi_out;
+	double xi_out;
 	xi_out = ( - rho_b*alpha - rho_dfex_int[i] - f_ex(rho_sj[i]) ) + ( mu_ex(rho_b) - rho_phi_int[i] ) + ( kb1*T*std::log(rho_b) - phi_ext_i[i] );
 	//
 	return xi_out;
 }
 
-float press_hs(float rho_b){
-	float y, press_hs_out;
+double press_hs(double rho_b){
+	double y, press_hs_out;
 	//y = M_PI*rho_b*std::pow(d_hs,3.0)/6.0;
 	y = M_PI*rho_b*(d_hs*d_hs*d_hs)/6.0;
-	float den1y = (1.0-y);
+	double den1y = (1.0-y);
 	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/std::pow((1.0-y),3.0);
 	//press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/((1.0-y)*(1.0-y)*(1.0-y));
 	press_hs_out = rho_b*kb1*T* (1.0 + y + y*y - y*y*y)/(den1y*den1y*den1y);
 	return press_hs_out;
 }
 
-float Maxwell_construction(void){
+double Maxwell_construction(void){
 	int i,j;
 	int iter_max_drhob0 = 500000;
 	int iter_max_dmue = 50000;
-	float drhob0 = 0.00005;
-	float dmue = 0.0005;
-	float threshold_diff = 0.055;
-	float threshold_find = 0.055;
+	double drhob0 = 0.00005;
+	double dmue = 0.0005;
+	double threshold_diff = 0.055;
+	double threshold_find = 0.055;
 	//
-	float mu_b_per_epsilon_ff[iter_max_drhob0];
-	float mu_e_per_epsilon_ff;
-	float diff,diffp;
+	double mu_b_per_epsilon_ff[iter_max_drhob0];
+	double mu_e_per_epsilon_ff;
+	double diff,diffp;
 	int flag;
-	float rho_b0_out;
-	float rho_b0_gas, rho_b0_metastable, rho_b0_liquid;
-	float press_b0;
+	double rho_b0_out;
+	double rho_b0_gas, rho_b0_metastable, rho_b0_liquid;
+	double press_b0;
 	//
 	// rho_b vs. mu_b/epsilon_ff
 	std::ofstream ofs("./Maxwell_construction_data.txt");
 	ofs << "# Chemical_potential(mu_b/epsilon_ff), Density(rho_b*d_hs^3)" << std::endl;
 	for (i=0; i<iter_max_drhob0; i++){
-		rho_b0_out = drhob0*float(i+1.0);
+		rho_b0_out = drhob0*double(i+1.0);
 		mu_b_per_epsilon_ff[i] = mu_b(rho_b0_out)/epsilon_ff;
 		//ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0_out*std::pow(d_hs,3.0) << std::endl;
 		ofs << mu_b_per_epsilon_ff[i] << ", " << rho_b0_out*(d_hs*d_hs*d_hs) << std::endl;
@@ -669,7 +669,7 @@ float Maxwell_construction(void){
 	}
 	// Maxwell equal area rule
 	for (j=0; j<iter_max_dmue; j++){
-		mu_e_per_epsilon_ff = dmue*float(j+1.0) - 12.0;
+		mu_e_per_epsilon_ff = dmue*double(j+1.0) - 12.0;
 		diff = 0.0;
 		flag = 0;
 		for (i=0; i<iter_max_drhob0; i++){
@@ -684,7 +684,7 @@ float Maxwell_construction(void){
 			//std::cout << diffp << std::endl;
 		}
 		//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
-		rho_b0_out = drhob0*float(j+1.0);
+		rho_b0_out = drhob0*double(j+1.0);
 		if (std::abs(diff) <= threshold_diff) {
 			//std::cout << "mu_e/epsilon_ff = " << mu_e_per_epsilon_ff << ", diff = " << diff << std::endl;
 			break;
@@ -693,7 +693,7 @@ float Maxwell_construction(void){
 	// find rho_b0
 	flag = 0;
 	for (i=0; i<iter_max_drhob0; i++){
-		rho_b0_out = drhob0*float(i+1.0);
+		rho_b0_out = drhob0*double(i+1.0);
 		//if ( std::abs(mu_b(rho_b0_out)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find &&
 		//	 0.05 <= rho_b0_out*std::pow(d_hs,3.0) &&  rho_b0_out*std::pow(d_hs,3.0) <= 0.75) {
 		if ( std::abs(mu_b(rho_b0_out)/epsilon_ff - mu_e_per_epsilon_ff) <= threshold_find ) {
@@ -726,13 +726,13 @@ float Maxwell_construction(void){
 }
 
 // grand potential
-float omega(float *rho, float *r, float *rho_dfex_int, float *rho_phi_int){
-	float omega_out;
-	float omega1, omega2, omega3;
+double omega(double *rho, double *r, double *rho_dfex_int, double *rho_phi_int){
+	double omega_out;
+	double omega1, omega2, omega3;
 	int i;
 	int omega_nstep = (nstep-2)/2;
-	float rho_x_rho_dfex_int[omega_nstep+1];
-	float rho_x_rho_phi_int[omega_nstep+1];
+	double rho_x_rho_dfex_int[omega_nstep+1];
+	double rho_x_rho_phi_int[omega_nstep+1];
 	for (i=0; i<=omega_nstep; i++){
 		rho_x_rho_dfex_int[i] = rho[i] * rho_dfex_int[i];
 		rho_x_rho_phi_int[i]  = rho[i] * rho_phi_int[i];
@@ -746,19 +746,19 @@ float omega(float *rho, float *r, float *rho_dfex_int, float *rho_phi_int){
 
 int main(){
 	int i,j,k;
-	float v_gamma;
-	float press_b, press_b0, pp0;
-	float rho_b;
-	float v_mmol_per_cm3;
-	float v_cm3STP_per_cm3;
-	float grand_potential;
+	double v_gamma;
+	double press_b, press_b0, pp0;
+	double rho_b;
+	double v_mmol_per_cm3;
+	double v_cm3STP_per_cm3;
+	double grand_potential;
 	//
 	read_parameters();
-	float r[nstep];
-	float rho[nstep], rho_new[nstep];
+	double r[nstep];
+	double rho[nstep], rho_new[nstep];
 	//
 	for (i=0; i<nstep; i++){
-		r[i] = sigma_ss/2.0 + dr*float(i); // dr = (H-sigma_ss)/float(nstep+1);
+		r[i] = sigma_ss/2.0 + dr*double(i); // dr = (H-sigma_ss)/double(nstep+1);
 		//std::cout << i << ", " << r[i] << std::endl;
 	}
 	
@@ -767,9 +767,9 @@ int main(){
 	// alpha = calc_alpha(r);
 	
 	// set rho_b0
-	float y, a, b, c;
-	float flag_P; flag_P = 0.0;
-	float rho_b1; rho_b1 = 0.0;
+	double y, a, b, c;
+	double flag_P; flag_P = 0.0;
+	double rho_b1; rho_b1 = 0.0;
 	if ( rho_b0 == 0.0 ) {
 		rho_b0 = Maxwell_construction();
 	} else if ( rho_b0 < 0.0 ) {
@@ -802,20 +802,20 @@ int main(){
 	}
 	
 	std::cout << "--------------------------------------------------" << std::endl;
-	float rho_sj[nstep];
-	float rho_s0j[nstep];
-	float rho_s1j[nstep];
-	float rho_s2j[nstep];
+	double rho_sj[nstep];
+	double rho_s0j[nstep];
+	double rho_s1j[nstep];
+	double rho_s2j[nstep];
 	//
-	float rho_dfex_int[nstep];
-	float rho_phi_int[nstep];
-	float phi_ext_i[nstep];
+	double rho_dfex_int[nstep];
+	double rho_phi_int[nstep];
+	double phi_ext_i[nstep];
 	for (i=0; i<nstep; i++){
 		phi_ext_i[i] = phi_ext(r[i]);
 	}
 	std::cout << "phi_ext_i calculation was finished" << std::endl;
-	//float phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
-	float *phi_att_int_ij = (float *)malloc(sizeof(float)*((nstep+1)*nstep));
+	//double phi_att_int_ij[(nstep+1)*nstep]; // [(nstep+1)*nstep]=[nstep*nstep+nstep], a[i][j]= a[i*n+j] for a[][n]
+	double *phi_att_int_ij = (double *)malloc(sizeof(double)*((nstep+1)*nstep));
 	if (phi_att_int_ij == NULL) {
 		printf("Memory cannot be allocated.");
 		std::exit(1);
@@ -825,7 +825,7 @@ int main(){
 	phi_att_int(r, phi_att_int_ij); // calculate integral phi_att at r[i]
 	std::cout << "phi_att_int calculation was finished" << std::endl;
 	//
-	float *rho_si_int_ijrj = (float *)malloc(sizeof(float)*(2*nstep*nstep+nstep*nstep+nstep));
+	double *rho_si_int_ijrj = (double *)malloc(sizeof(double)*(2*nstep*nstep+nstep*nstep+nstep));
 	rho_si_int_k(r, rho_si_int_ijrj);
 	std::cout << "rho_si_int_k calculation was finished" << std::endl;
 	//
@@ -842,18 +842,18 @@ int main(){
 		rho_new[i] = 0.0;
 	}
 	//
-	float diff_old1 = 1.0;
-	float diff;
-	float diff0;
+	double diff_old1 = 1.0;
+	double diff;
+	double diff0;
 	//
-	float threshold_origin = 0.5/100*nstep;
-	float threshold = threshold_origin * thr_times;
-	float wmixing_origin = wmixing;
+	double threshold_origin = 0.5/100*nstep;
+	double threshold = threshold_origin * thr_times;
+	double wmixing_origin = wmixing;
 	int chk = 0;
 	//
-	float xio;
+	double xio;
 	//low pressure
-	//float rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
+	//double rho_b_k[182]={3.91276e-08,7.56979e-08,1.42189e-07,2.59316e-07,4.59813e-07,
 	//					7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 	//					0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
 	//					0.004594237,0.005915211,0.007526184,0.009468211,0.011783671,0.014515526,0.017706579,0.021398421,0.025631184,0.030442237,
@@ -874,7 +874,7 @@ int main(){
 	//					0.996040789,0.996226316,0.996403947,0.996572368,0.996732895,0.996885526,0.997031579};
 	//
 	//high pressure
-	float rho_b_k[189]={7.65e-10,1.42189e-09,2.59316e-09,3.91276e-09,7.56979e-09,1.42189e-08,2.59316e-08,3.91276e-08,7.56979e-08,1.42189e-07,
+	double rho_b_k[189]={7.65e-10,1.42189e-09,2.59316e-09,3.91276e-09,7.56979e-09,1.42189e-08,2.59316e-08,3.91276e-08,7.56979e-08,1.42189e-07,
 						2.59316e-07,4.59813e-07,7.65e-07,1.48e-06,2.78e-06,5.07e-06,8.99e-06,1.55e-05,2.61e-05,4.28e-05,6.87e-05,0.000107744,
 						0.000165450,0.000249000,0.000367617,0.000532901,0.000759151,0.001063641,0.001466842,0.001992605,0.002668158,0.003524105,
 						0.004594237,0.005915211,0.007526184,0.009468211,0.011783671,0.014515526,0.017706579,0.021398421,0.025631184,0.030442237,
