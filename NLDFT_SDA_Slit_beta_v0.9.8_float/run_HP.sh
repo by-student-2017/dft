@@ -19,7 +19,7 @@ fi
 for ((i=24;i<=200;i+=1)); do  #new version
 	w=`echo $i | awk '{printf "%4.2f", $1/100}'`  #new version
 	#echo $w
-	cp temp_parameters_H2_HP.txt parameters.txt
+	cp temp_parameters_H2_HP_double.txt parameters.txt
 	echo "Pore width = ${w} [nm]"
 	H=`awk -v w=${w} "BEGIN {print w+0.34}"`
 	echo "Slit width = ${H} [nm]"
