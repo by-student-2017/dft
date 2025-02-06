@@ -930,10 +930,13 @@ int main(){
 				//rho_new[i] = rho_b*std::exp(xi(rho,r[i],rho_b,r)/(kb1*T)); // this equation occure inf.
 				//rho_new[i] = std::exp(xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T)); // xi include kb1*T*(std::log(rho_b)) type.
 				xio = xi(rho,r,i,rho_b, rho_sj, rho_s0j, rho_s1j, rho_s2j, phi_att_int_ij, rho_dfex_int, rho_phi_int, phi_ext_i)/(kb1*T);
-				if (-14 < xio && xio < 12){
+				//if (-14 < xio && xio < 12){
+				if (-24 < xio && xio < 12){
 					rho_new[i] = std::exp(xio); // xi include kb1*T*(std::log(rho_b)) type.
-				} else if (xio < -14){
-					rho_new[i] = 1e-10;
+				//} else if (xio < -14){
+				} else if (xio < -24){
+					//rho_new[i] = 1e-10;
+					rho_new[i] = 1e-20;
 				} else {
 					// overflow about std::exp(730)
 				    // to avoid overflow
