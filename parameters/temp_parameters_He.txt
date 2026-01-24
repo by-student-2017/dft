@@ -1,4 +1,4 @@
-00_H=XXX             # Memo: He settings (Ref: T. Hiratuska et al, J. Phys. Chem. C 122 (2018) 15446-15455.)
+00_H=XXX             # Memo: He settings (failed) (Ref: T. Hiratuska et al, J. Phys. Chem. C 122 (2018) 15446-15455.)
 01_sigma_ss=0.34     #[nm](carbon slit)
 02_nstep=0.0         # 0.0:auto, for mesh of slit width, <1.0:nstep=int((H-sigma_ss)/nstep+0.5)
 03_cycle_max=100001  # Number of max cycles
@@ -19,3 +19,4 @@
 18_min_iter=10       # Minimum number of iterations
 19_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
 20_wmx_times=3.0     # change weight after min_iter cycle and 1st threshold condition.
+
