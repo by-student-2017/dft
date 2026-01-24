@@ -1,0 +1,21 @@
+00_H=XXX             # Memo: He settings (Ref: T. Hiratuska et al, J. Phys. Chem. C 122 (2018) 15446-15455.)
+01_sigma_ss=0.34     #[nm](carbon slit)
+02_nstep=0.0         # 0.0:auto, for mesh of slit width, <1.0:nstep=int((H-sigma_ss)/nstep+0.5)
+03_cycle_max=100001  # Number of max cycles
+04_wmixing=0.003     # mixing parameter
+05_epsilon_ff=10.22  #[K]  (He:10.22 , Ne:35.80 , Ar:119.8)
+06_sigma_ff=0.2556   #[nm] (He:0.2556, Ne:0.2750, Ar:0.3410)
+07_d_hs=0.2978       #[nm] sigma_sf or (He:0.20 ?, Ne:0.20 ?, Ar:0.26 ?)
+08_rc=0.0            # 0.0:auto = 5*sigma_ff = cutoff of LJ potential
+09_nrmesh=80         # 0.0:auto, for mesh of radial, <1.0:nrmesh=int(rc/nrmesh+0.5)
+10_epsilon_sf=16.916 #[K]  (He:16.916, Ne:31.661, Ar:57.9172) = sqrt(eff * ess), ess = 28.0 (carbon)
+11_sigma_sf=0.2978   #[nm] (He:0.2978, Ne:0.3075, Ar:0.3405) = (sff + sss)/2, sss = 0.34 (carbon)
+12_delta=0.335       #[nm] (carbon slit)
+13_rho_ss=114.0      #[nm^-3], density of graphite
+14_m=4.00            #[g/mol] He=4.00, Ne=20.18, Ar=39.948
+15_T=4.23            #[K] He:4.23, Ne:27.1, Ar:87.3
+16_rho_b0=0.0        # 0.0:auto, <0.0:Pa, <=-10.0:atm, <=-100:100atm, <=-XXX.X:XXX.Xatm(for <=-100.0)
+17_p0=101325.0       #[Pa] 101325.0 = 1 bar
+18_min_iter=10       # Minimum number of iterations
+19_thr_times=10.0    # change threshold after min_iter cycle and 1st threshold condition.
+20_wmx_times=3.0     # change weight after min_iter cycle and 1st threshold condition.
